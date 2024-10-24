@@ -1,5 +1,6 @@
 package com.example.appify;
 
+import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.activity.EdgeToEdge;
@@ -25,5 +26,8 @@ public class MainActivity extends AppCompatActivity {
             return insets;
         });
         db = FirebaseFirestore.getInstance();
+
+        Intent intent = new Intent(MainActivity.this, editUserActivity.class);
+        startActivity(intent);
     }
 }
