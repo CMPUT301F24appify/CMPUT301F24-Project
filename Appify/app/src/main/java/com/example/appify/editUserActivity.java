@@ -60,13 +60,13 @@ public class editUserActivity extends AppCompatActivity {
         });
 
         submitButton.setOnClickListener(v -> {
+            String name = nameEditText.getText().toString();
+            String phoneNumber = phoneEditText.getText().toString();
+            String email = emailEditText.getText().toString();
+            sendEntrantData(android_id,name,phoneNumber,email);
             if (imageUri == null) {
                 // Generate a profile picture with the first letter of the user's name
-                String name = nameEditText.getText().toString();
                 String firstName = name.trim();
-                String phoneNumber = phoneEditText.getText().toString();
-                String email = emailEditText.getText().toString();
-                sendEntrantData(android_id,name,phoneNumber,email);
                 if (!firstName.isEmpty()) {
                     String firstLetter = String.valueOf(firstName.charAt(0)).toUpperCase();
                     Bitmap profilePicture = generateProfilePicture(firstLetter);
@@ -124,5 +124,9 @@ public class editUserActivity extends AppCompatActivity {
     private void sendEntrantData(String id,String name, String phone, String email){
         Entrant User = new Entrant(id,name,phone,email);
         db.collection("Android ID").document(android_id).set(User);
+        //TODO: Send bitmap image to database
+    }
+    private void populateTextBoxes(String android_id){
+        //TODO: If ID exists in Database then send data to User TextBoxes
     }
 }
