@@ -23,16 +23,18 @@
         android:layout_marginBottom="16dp" />
 
     <!-- Profile Picture Label and Upload Button -->
+
+    <!-- Name Row with Editable Field -->
     <LinearLayout
         android:id="@+id/profilePictureLayout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
         android:gravity="center"
-        app:layout_constraintTop_toBottomOf="@id/profileImageView"
-        app:layout_constraintStart_toStartOf="parent"
+        android:orientation="horizontal"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginBottom="16dp">
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/profileImageView">
 
         <TextView
             android:id="@+id/profilePictureLabel"
@@ -45,13 +47,21 @@
             android:id="@+id/uploadButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Upload"
             android:layout_marginStart="16dp"
             android:backgroundTint="@android:color/holo_orange_light"
+            android:text="Upload"
+            android:textColor="@android:color/black" />
+
+        <Button
+            android:id="@+id/removeButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:backgroundTint="@android:color/holo_orange_light"
+            android:text="Remove"
             android:textColor="@android:color/black" />
     </LinearLayout>
 
-    <!-- Name Row with Editable Field -->
     <TextView
         android:id="@+id/nameLabel"
         android:layout_width="wrap_content"
@@ -68,6 +78,7 @@
         android:layout_height="wrap_content"
         android:textSize="18sp"
         android:inputType="textPersonName"
+        android:hint="John Doe"
         app:layout_constraintStart_toEndOf="@id/nameLabel"
         app:layout_constraintTop_toBottomOf="@id/profilePictureLayout"
         app:layout_constraintEnd_toEndOf="parent"
@@ -90,6 +101,7 @@
         android:layout_height="wrap_content"
         android:textSize="18sp"
         android:inputType="phone"
+        android:hint="1234567890"
         app:layout_constraintStart_toEndOf="@id/phoneLabel"
         app:layout_constraintTop_toBottomOf="@id/nameEditText"
         app:layout_constraintEnd_toEndOf="parent"
@@ -112,6 +124,7 @@
         android:layout_height="wrap_content"
         android:textSize="18sp"
         android:inputType="textEmailAddress"
+        android:hint="John@gmail.com"
         app:layout_constraintStart_toEndOf="@id/emailLabel"
         app:layout_constraintTop_toBottomOf="@id/phoneEditText"
         app:layout_constraintEnd_toEndOf="parent"
