@@ -94,8 +94,8 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onAnimationEnd(Animator animation) {
                 // CHANGE THE 'TempActivity' TO WHATEVER ACTIVITY YOU'RE WORKING ON
-                Intent intent = new Intent(MainActivity.this,TempActivity.class);
-                startActivity(intent);
+                // Intent intent = new Intent(MainActivity.this,TempActivity.class);
+                // startActivity(intent);
 
             }
         });
