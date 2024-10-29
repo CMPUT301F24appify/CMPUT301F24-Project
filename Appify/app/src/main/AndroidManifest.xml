@@ -21,6 +21,9 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- EventDetailsActivity Declaration -->
+        <activity android:name=".EventDetailsActivity" />
     </application>
 
 </manifest>
