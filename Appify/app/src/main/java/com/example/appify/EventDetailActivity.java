@@ -3,6 +3,7 @@ package com.example.appify;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -42,6 +43,9 @@ public class EventDetailActivity extends AppCompatActivity {
         maxWishTextView.setText("Max Wish Entrants: " + maxWishEntrants);
         maxSampleTextView.setText("Max Sample Entrants: " + maxSampleEntrants);
         geolocateTextView.setText(isGeolocate ? "Geo-Location Enabled" : "Geo-Location Disabled");
+
+        Button backButton = findViewById(R.id.buttonBackToEvents);
+        backButton.setOnClickListener(v -> finish());
 
         // Display the image if the URI is valid
         if (posterUri != null) {

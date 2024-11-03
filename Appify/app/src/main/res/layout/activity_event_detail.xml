@@ -55,5 +55,13 @@
             android:layout_height="wrap_content"
             android:textSize="18sp"
             android:paddingTop="8dp" />
+
+        <Button
+            android:id="@+id/buttonBackToEvents"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Back to Events"
+            android:layout_gravity="center_horizontal"
+            android:paddingTop="16dp" />
     </LinearLayout>
 </ScrollView>
