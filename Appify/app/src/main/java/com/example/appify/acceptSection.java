@@ -3,30 +3,30 @@ package com.example.appify;
 import android.content.Context;
 
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.auth.User;
+//Not needed - import com.google.firebase.firestore.auth.User;
+
+import java.util.ArrayList;
 
 public class acceptSection {
     private FirebaseFirestore db;
-    private Context currentUser;
-    private Context userEvents;
+    private User currentUser;
+    private ArrayList<Event> userEvents;
+
 
     //registered events is an array of the events the user registered for.
     //user is user
     //Replace with appropriate classes during integration
-    public acceptSection(Context registeredEvents, Context user) {
+    public acceptSection(User user) {
         currentUser = user;
-        userEvents = registeredEvents;
-        // Initialize Firestore (commented out for now, as requested)
-        // db = FirebaseFirestore.getInstance();
-
-        // Temporary feedback for testing without Firebase
-        //Toast.makeText(context, "acceptSection initialized", Toast.LENGTH_SHORT).show();
+        userEvents = user.getEvents();
     }
 
-    public void acceptEvent(Context chosenEvent) {
-        //Mark the event as joined. Check the exact method again.
-        //add to firebase
+    public void acceptEvent(Event chosenEvent) {
+        //General logic - grab ids of event and user. Find the user in the waiting list by id, update
+        ArrayList<User> = waitingListchosenEvent.getWaitingList();
     }
     public void declineEvent(Context chosenEvent) {
-        //remove the event
+        //General logic - grab ids of event and user. Find the user in the waiting list by id, update
     }
 }
