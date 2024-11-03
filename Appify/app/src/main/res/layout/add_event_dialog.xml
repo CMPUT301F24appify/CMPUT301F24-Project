@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="20dp">
+
+    <EditText
+        android:id="@+id/editTextEventName"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Event Name" />
+
+    <EditText
+        android:id="@+id/editFacility"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Facility" />
+
+    <EditText
+        android:id="@+id/editTextEventDescription"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Event Description" />
+
+    <CheckBox
+        android:id="@+id/checkGeolocation"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Geo-Location" />
+
+    <TextView
+        android:id="@+id/posterLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Poster file:" />
+
+    <Button
+        android:id="@+id/buttonUploadPoster"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Upload Poster" />
+
+    <EditText
+        android:id="@+id/maxNumberWishList"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:hint="Max Entrants For WishList:" />
+
+    <EditText
+        android:id="@+id/maxNumberSample"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:hint="Max Entrants For Sample:" />
+
+
+</LinearLayout>

@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -94,7 +95,8 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onAnimationEnd(Animator animation) {
 //                 CHANGE THE 'TempActivity' TO WHATEVER ACTIVITY YOU'RE WORKING ON
-                 Intent intent = new Intent(MainActivity.this,TempActivity.class);
+
+                 Intent intent = new Intent(MainActivity.this,EventActivity.class);
                  startActivity(intent);
 
             }
