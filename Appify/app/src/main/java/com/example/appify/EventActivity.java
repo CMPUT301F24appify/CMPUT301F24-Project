@@ -14,18 +14,19 @@ import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 public class EventActivity extends AppCompatActivity implements AddEventDialogFragment.AddEventDialogListener {
-    private ArrayList<Event> eventList = new ArrayList<>();
     private FirebaseFirestore db;
     ListView eventListView;
-    ArrayList<Event> dataList;
-    ArrayAdapter<Event> eventAdapter;
+    CustomEventAdapter eventAdapter;
+    ArrayList<Event> eventList;
 
     // Sample events
     Event event1;
     Event event2;
     Event event3;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -43,9 +44,11 @@ public class EventActivity extends AppCompatActivity implements AddEventDialogFr
 
         Event []events = {event1,event2, event3};
 
-        dataList = new ArrayList<>();
-        dataList.addAll(Arrays.asList(events));
-        eventAdapter = new ArrayAdapter<>(this,R.layout.event_list_content, dataList);
+        System.out.println("test1");
+        eventList = new ArrayList<>();
+        eventList.addAll(Arrays.asList(events));
+        System.out.println("test2");
+        eventAdapter = new CustomEventAdapter(this,eventList);
         eventListView.setAdapter(eventAdapter);
 
         Button addEventButton = findViewById(R.id.button_add);
@@ -56,8 +59,7 @@ public class EventActivity extends AppCompatActivity implements AddEventDialogFr
 
         // Set an item click listener to open the EventDetailActivity
         eventListView.setOnItemClickListener((parent, view, position, id) -> {
-            System.out.println("awouhwad");
-            Event selectedEvent = dataList.get(position);
+            Event selectedEvent = eventList.get(position);
 
             Intent intent = new Intent(EventActivity.this, EventDetailActivity.class);
 
@@ -88,7 +90,7 @@ public class EventActivity extends AppCompatActivity implements AddEventDialogFr
                 .set(newEvent)
                 .addOnSuccessListener(aVoid -> {
                     Toast.makeText(EventActivity.this, "Event added: " + name, Toast.LENGTH_SHORT).show();
-                    dataList.add(newEvent);
+                    eventList.add(newEvent);
                     eventAdapter.notifyDataSetChanged();
                 })
                 .addOnFailureListener(e -> {
