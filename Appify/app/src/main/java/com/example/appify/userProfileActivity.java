@@ -13,14 +13,17 @@ import android.widget.TextView;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.MetadataChanges;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
 public class userProfileActivity extends AppCompatActivity {
 
     private FirebaseFirestore db;
-    private ImageView profileImageView;
+    private ImageView profileImageView, headerImageView;
     private TextView nameTextView, phoneTextView, emailTextView, notificationTextView;
     private ListenerRegistration listenerRegistration;
     private Button editButton;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,7 +33,6 @@ public class userProfileActivity extends AppCompatActivity {
 
         // Get Android ID passed from the previous activity
         String android_id = getIntent().getStringExtra("Android ID");
-        byte[] profilePicture = getIntent().getByteArrayExtra("Profile Picture");
 
         // Initialize Views
         profileImageView = findViewById(R.id.profileImageView);
@@ -39,7 +41,7 @@ public class userProfileActivity extends AppCompatActivity {
         emailTextView = findViewById(R.id.emailTextView);
         notificationTextView = findViewById(R.id.notificationTextView);
         editButton = findViewById(R.id.editButton);
-
+        headerImageView = findViewById(R.id.profileImageViewHeader);
         // Edit button to open edit activity
         editButton.setOnClickListener(v -> {
             Intent intent = new Intent(userProfileActivity.this, editUserActivity.class);
@@ -57,20 +59,35 @@ public class userProfileActivity extends AppCompatActivity {
                             Boolean notificationsCheck = documentSnapshot.getBoolean("notifications");
                             //String profileImageUrl = documentSnapshot.getString("profilePictureUrl");
                             nameTextView.setText("Name: " + name);
-                            phoneTextView.setText("Phone: " + phone);
-                            emailTextView.setText("Email Address: " + email);
-                            if (profilePicture != null) {
-                                Bitmap bitmap = BitmapFactory.decodeByteArray(profilePicture, 0, profilePicture.length);
-                                profileImageView.setImageBitmap(bitmap);
+                            if(phone == ""){
+                                phoneTextView.setText("");
                             }
+                            else{
+                                phoneTextView.setText("Phone: " + phone);
+                            }
+                            emailTextView.setText("Email Address: " + email);
+
                             if (notificationsCheck != null && notificationsCheck) {
                                 notificationTextView.setText("Notifications: ON");
                             } else {
                                 notificationTextView.setText("Notifications: OFF");
                             }
+                            loadProfilePicture(android_id);
                         }
                     });
         }
     }
+    private void loadProfilePicture(String android_id) {
+        FirebaseStorage storage = FirebaseStorage.getInstance();
+        StorageReference storageRef = storage.getReference().child("profile_images/" + android_id + ".jpg");
 
+        long size = 1024 * 1024;
+        storageRef.getBytes(size)
+                .addOnSuccessListener(bytes -> {
+                    // Convert the byte array to a Bitmap
+                    Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+                    profileImageView.setImageBitmap(bitmap);
+                    headerImageView.setImageBitmap(bitmap);
+                });
+    }
 }
