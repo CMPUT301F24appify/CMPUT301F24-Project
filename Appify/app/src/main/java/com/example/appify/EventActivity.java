@@ -37,9 +37,9 @@ public class EventActivity extends AppCompatActivity implements AddEventDialogFr
         eventListView = findViewById(R.id.event_list);
 
         // Sample events
-        event1 = new Event("Event 1", "Oct 12", "Here is the event description", 20, 5, null, false);
-        event2 = new Event("Event 2", "Nov 23", "Some description", 200, 50, null, true);
-        event3 = new Event("Event 3", "Jan 01", "blha blah blha", 3, 1, null, true);
+        event1 = new Event(this,"Event 1", "Oct 12", "Here is the event description", 20, 5, null, false);
+        event2 = new Event(this,"Event 2", "Nov 23", "Some description", 200, 50, null, true);
+        event3 = new Event(this,"Event 3", "Jan 01", "blha blah blha", 3, 1, null, true);
 
 
         Event []events = {event1,event2, event3};
@@ -83,7 +83,7 @@ public class EventActivity extends AppCompatActivity implements AddEventDialogFr
 
     @Override
     public void onEventAdded(String name, String date, String description, int maxWishEntrants, int maxSampleEntrants, Uri posterUri, boolean isGeolocate) {
-        Event newEvent = new Event(name, date, description, maxWishEntrants, maxSampleEntrants, posterUri, isGeolocate);
+        Event newEvent = new Event(this,name, date, description, maxWishEntrants, maxSampleEntrants, posterUri, isGeolocate);
         String eventID = newEvent.getEventId();
         db.collection("events")
                 .document(eventID)

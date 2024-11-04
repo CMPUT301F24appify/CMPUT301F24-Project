@@ -1,7 +1,8 @@
 package com.example.appify;
 
+import android.content.Context;
 import android.net.Uri;
-
+import android.provider.Settings;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.UUID;
@@ -15,11 +16,12 @@ public class Event {
     private String posterUri;  // Store URI as String
     private boolean isGeolocate;
     private String eventId;
-    private FirebaseFirestore db = FirebaseFirestore.getInstance();;
-    // No-argument constructor for Firestore
+    private FirebaseFirestore db = FirebaseFirestore.getInstance();
+    private Context context;
+    private String organizerID;
 
 
-    public Event(String name, String date, String description, int maxWishEntrants, int maxSampleEntrants, Uri posterUri, boolean isGeolocate) {
+    public Event(Context context,String  name, String date, String description, int maxWishEntrants, int maxSampleEntrants, Uri posterUri, boolean isGeolocate) {
         this.name = name;
         this.date = date;
         this.description = description;
@@ -28,7 +30,10 @@ public class Event {
         this.posterUri = posterUri != null ? posterUri.toString() : null; // Convert URI to String
         this.isGeolocate = isGeolocate;
         this.eventId = UUID.randomUUID().toString();
-        System.out.println("Event Id: " + eventId);
+        this.context = context;
+        this.organizerID = Settings.Secure.getString(context.getApplicationContext().getContentResolver(), Settings.Secure.ANDROID_ID);
+
+        System.out.println("Device ID: " + organizerID);
 
     }
 
@@ -55,6 +60,10 @@ public class Event {
 
     public String getPosterUri() {
         return posterUri;
+    }
+
+    public String getOrganizerID() {
+        return organizerID;
     }
 
     public String getEventId() {
