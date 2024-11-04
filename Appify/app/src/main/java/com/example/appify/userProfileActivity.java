@@ -18,7 +18,7 @@ public class userProfileActivity extends AppCompatActivity {
 
     private FirebaseFirestore db;
     private ImageView profileImageView;
-    private TextView nameTextView, phoneTextView, emailTextView;
+    private TextView nameTextView, phoneTextView, emailTextView, notificationTextView;
     private ListenerRegistration listenerRegistration;
     private Button editButton;
 
@@ -37,6 +37,7 @@ public class userProfileActivity extends AppCompatActivity {
         nameTextView = findViewById(R.id.nameTextView);
         phoneTextView = findViewById(R.id.phoneTextView);
         emailTextView = findViewById(R.id.emailTextView);
+        notificationTextView = findViewById(R.id.notificationTextView);
         editButton = findViewById(R.id.editButton);
 
         // Edit button to open edit activity
@@ -45,7 +46,7 @@ public class userProfileActivity extends AppCompatActivity {
             intent.putExtra("Android ID", android_id);
             startActivity(intent);
         });
-         //Retrieve and display user data
+        //Retrieve and display user data
         if (android_id != null) {
             db.collection("Android ID").document(android_id).get()
                     .addOnSuccessListener(documentSnapshot -> {
@@ -53,6 +54,7 @@ public class userProfileActivity extends AppCompatActivity {
                             String name = documentSnapshot.getString("name");
                             String phone = documentSnapshot.getString("phoneNumber");
                             String email = documentSnapshot.getString("email");
+                            Boolean notificationsCheck = documentSnapshot.getBoolean("notifications");
                             //String profileImageUrl = documentSnapshot.getString("profilePictureUrl");
                             nameTextView.setText("Name: " + name);
                             phoneTextView.setText("Phone: " + phone);
@@ -61,11 +63,14 @@ public class userProfileActivity extends AppCompatActivity {
                                 Bitmap bitmap = BitmapFactory.decodeByteArray(profilePicture, 0, profilePicture.length);
                                 profileImageView.setImageBitmap(bitmap);
                             }
+                            if (notificationsCheck != null && notificationsCheck) {
+                                notificationTextView.setText("Notifications: ON");
+                            } else {
+                                notificationTextView.setText("Notifications: OFF");
+                            }
                         }
                     });
         }
     }
 
 }
-
-

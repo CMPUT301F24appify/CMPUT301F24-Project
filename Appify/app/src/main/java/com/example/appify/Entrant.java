@@ -1,9 +1,10 @@
 package com.example.appify;
 
-import android.graphics.Bitmap;
 import android.util.Log;
 
 import com.google.firebase.firestore.FirebaseFirestore;
+
+import java.util.List;
 
 public class Entrant {
     private String id;
@@ -12,6 +13,8 @@ public class Entrant {
     private String email;
     private String status;
     private String profilePictureUrl;
+    private boolean notifications;
+    private List<String> eventList;
 
     public Entrant(String id, String name, String phoneNumber, String email, String status, String profilePicture) {
         this.id = id;
@@ -22,12 +25,13 @@ public class Entrant {
         this.profilePictureUrl = profilePicture;
     }
 
-    public Entrant(String id, String name, String phoneNumber, String email, String profilePicture) {
+    public Entrant(String id, String name, String phoneNumber, String email, String profilePicture, boolean notifications) {
         this.id = id;
         this.name = name;
         this.phoneNumber = phoneNumber;
         this.email = email;
         this.profilePictureUrl = profilePicture;
+        this.notifications = notifications;
     }
     public Entrant(String id, String name, String phoneNumber, String email) {
         this.id = id;
@@ -93,5 +97,21 @@ public class Entrant {
 
     public void setProfilePictureUrl(String profilePictureUrl) {
         this.profilePictureUrl = profilePictureUrl;
+    }
+
+    public boolean isNotifications() {
+        return notifications;
+    }
+
+    public void setNotifications(boolean notifications) {
+        this.notifications = notifications;
+    }
+
+    public List<String> getEventList() {
+        return eventList;
+    }
+
+    public void setEventList(List<String> eventList) {
+        this.eventList = eventList;
     }
 }

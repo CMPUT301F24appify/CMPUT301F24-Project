@@ -1,8 +1,6 @@
 package com.example.appify;
 
 
-import static androidx.activity.result.ActivityResultCallerKt.registerForActivityResult;
-
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -16,6 +14,7 @@ import android.os.Looper;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageView;
 import androidx.activity.result.ActivityResultLauncher;
@@ -38,6 +37,7 @@ public class editUserActivity extends AppCompatActivity {
     private String android_id;
     private byte[] profilePictureByte;
     private EditText nameEditText, phoneEditText, emailEditText;
+    private CheckBox notifications;
     private ActivityResultLauncher<Intent> activityResultLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
             result -> {
@@ -67,6 +67,7 @@ public class editUserActivity extends AppCompatActivity {
         Button uploadButton = findViewById(R.id.uploadButton);
         Button removeButton = findViewById(R.id.removeButton);
         Button submitButton = findViewById(R.id.submitButton);
+        notifications = findViewById(R.id.notificationsCheckBox);
 
         db = FirebaseFirestore.getInstance();
         populateTextBoxes(android_id);
@@ -82,7 +83,6 @@ public class editUserActivity extends AppCompatActivity {
             String phoneNumber = phoneEditText.getText().toString();
             String email = emailEditText.getText().toString();
 
-
             if (imageUri == null) {
                 // Generate a profile picture with the first letter of the user's name
                 String firstName = name.trim();
@@ -93,10 +93,10 @@ public class editUserActivity extends AppCompatActivity {
                 }
             }
             sendEntrantData(android_id,name,phoneNumber,email);
-            Intent intent = new Intent(editUserActivity.this,userProfileActivity.class);
-            intent.putExtra("Android ID", android_id);
-            intent.putExtra("Profile Picture Byte", profilePictureByte);
-            startActivity(intent);
+//            Intent intent = new Intent(editUserActivity.this,userProfileActivity.class);
+//            intent.putExtra("Android ID", android_id);
+//            intent.putExtra("Profile Picture Byte", profilePictureByte);
+//            startActivity(intent);
 
         });
     }
@@ -150,7 +150,7 @@ public class editUserActivity extends AppCompatActivity {
         Bitmap profilePicture = getBitmapFromImageView(profileImageView);
         FirebaseStorage storage = FirebaseStorage.getInstance();
         StorageReference storageRef = storage.getReference().child("profile_images/" + android_id + ".jpg");
-
+        boolean notifcationCheck = notifications.isChecked();
         // Convert Bitmap to ByteArray
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         profilePicture.compress(Bitmap.CompressFormat.JPEG, 100, baos);
@@ -160,14 +160,17 @@ public class editUserActivity extends AppCompatActivity {
                     String downloadUrl = uri.toString();
 
                     // Create Entrant object with the download URL
-                    Entrant user = new Entrant(id, name, phone, email, downloadUrl);
+                    Entrant user = new Entrant(id, name, phone, email, downloadUrl, notifcationCheck);
 
                     // Save Entrant data to Firestore
-                    db.collection("Android ID").document(android_id).set(user);
-                    Intent intent = new Intent(editUserActivity.this, userProfileActivity.class);
-                    intent.putExtra("Android ID", android_id);
-                    intent.putExtra("Profile Picture", profilePictureByte);
-                    startActivity(intent);
+                    db.collection("Android ID").document(android_id).set(user)
+                            .addOnSuccessListener(aVoid -> {
+                                // Successfully saved data to Firestore
+                                Intent intent = new Intent(editUserActivity.this, userProfileActivity.class);
+                                intent.putExtra("Android ID", android_id);
+                                intent.putExtra("Profile Picture", profilePictureByte);
+                                startActivity(intent);
+                            });
                 }));
     }
     private void populateTextBoxes(String android_id){
