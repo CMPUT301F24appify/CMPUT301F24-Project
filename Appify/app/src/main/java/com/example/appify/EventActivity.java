@@ -44,10 +44,9 @@ public class EventActivity extends AppCompatActivity implements AddEventDialogFr
 
         Event []events = {event1,event2, event3};
 
-        System.out.println("test1");
         eventList = new ArrayList<>();
         eventList.addAll(Arrays.asList(events));
-        System.out.println("test2");
+
         eventAdapter = new CustomEventAdapter(this,eventList);
         eventListView.setAdapter(eventAdapter);
 

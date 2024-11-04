@@ -59,7 +59,4 @@ public class Entrant {
                     Log.w("Entrant", "Error leaving waiting list", e);
                 });
     }
-
-
-
 }

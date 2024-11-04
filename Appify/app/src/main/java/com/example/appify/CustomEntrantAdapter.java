@@ -25,16 +25,16 @@ public class CustomEntrantAdapter extends ArrayAdapter<Entrant> {
     @Override
     public View getView(int position, View convertView, @NonNull ViewGroup parent){
         if (convertView == null){
-            convertView = LayoutInflater.from(context).inflate(R.layout.event_list_content, parent, false);
+            convertView = LayoutInflater.from(context).inflate(R.layout.entrant_list_content, parent, false);
         }
 
-        Event event = entrantList.get(position);
+        Entrant entrant = entrantList.get(position);
 
-        TextView eventTitle = convertView.findViewById(R.id.event_title);
-        TextView eventDesc = convertView.findViewById(R.id.event_desc);
+        TextView entrantNameView = convertView.findViewById(R.id.entrant_name_text);
+        TextView entrantStatusView = convertView.findViewById(R.id.entrant_status_text);
 
-        eventTitle.setText(event.getName());
-        eventDesc.setText(event.getDescription());
+        entrantNameView.setText(entrant.getName());
+        entrantStatusView.setText(entrant.getStatus());
         return convertView;
     }
 

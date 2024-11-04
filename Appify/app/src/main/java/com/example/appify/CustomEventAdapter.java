@@ -31,7 +31,7 @@ public class CustomEventAdapter extends ArrayAdapter<Event> {
         Event event = eventList.get(position);
 
         TextView eventTitle = convertView.findViewById(R.id.event_title);
-        TextView eventDesc = convertView.findViewById(R.id.event_desc);
+        TextView eventDesc = convertView.findViewById(R.id.entrant_status_text);
 
         eventTitle.setText(event.getName());
         eventDesc.setText(event.getDescription());

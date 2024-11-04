@@ -20,7 +20,7 @@
             android:textSize="18sp" />
 
         <TextView
-            android:id="@+id/event_desc"
+            android:id="@+id/entrant_status_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="description"
