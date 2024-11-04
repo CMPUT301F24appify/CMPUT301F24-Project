@@ -63,5 +63,6 @@
             android:text="Back to Events"
             android:layout_gravity="center_horizontal"
             android:paddingTop="16dp" />
+
     </LinearLayout>
 </ScrollView>

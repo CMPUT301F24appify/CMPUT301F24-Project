@@ -25,7 +25,7 @@ public class CustomEventAdapter extends ArrayAdapter<Event> {
     @Override
     public View getView(int position, View convertView, @NonNull ViewGroup parent){
         if (convertView == null){
-            convertView = LayoutInflater.from(context).inflate(R.layout.event_list_content_test, parent, false);
+            convertView = LayoutInflater.from(context).inflate(R.layout.event_list_content, parent, false);
         }
 
         Event event = eventList.get(position);
