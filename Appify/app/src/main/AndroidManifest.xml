@@ -23,6 +23,16 @@
         </activity>
 
         <activity
+            android:name=".EventEntrantsActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <activity
             android:name=".EventDetailActivity"
             android:exported="true">
             <intent-filter>

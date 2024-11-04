@@ -69,6 +69,8 @@ public class EventActivity extends AppCompatActivity implements AddEventDialogFr
             intent.putExtra("description", selectedEvent.getDescription() != null ? selectedEvent.getDescription() : "N/A");
             intent.putExtra("maxWishEntrants", selectedEvent.getMaxWishEntrants());
             intent.putExtra("maxSampleEntrants", selectedEvent.getMaxSampleEntrants());
+            intent.putExtra("eventID", selectedEvent.getEventId());
+
 
             // Poster URI might be null, so check before passing
             String posterUriString = selectedEvent.getPosterUri() != null ? selectedEvent.getPosterUri() : "";

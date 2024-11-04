@@ -26,6 +26,8 @@ public class EventDetailActivity extends AppCompatActivity {
         int maxSampleEntrants = intent.getIntExtra("maxSampleEntrants", 0);
         String posterUriString = intent.getStringExtra("posterUri");
         boolean isGeolocate = intent.getBooleanExtra("isGeolocate", false);
+        String eventID = intent.getStringExtra("eventID");
+
 
         Uri posterUri = posterUriString != null && !posterUriString.isEmpty() ? Uri.parse(posterUriString) : null;
 
@@ -52,7 +54,9 @@ public class EventDetailActivity extends AppCompatActivity {
         entrantListButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(EventDetailActivity.this, MainActivity.class);
+                Intent intent = new Intent(EventDetailActivity.this, EventEntrantsActivity.class);
+                intent.putExtra("eventID", eventID);
+
                 startActivity(intent);
             }
         });
