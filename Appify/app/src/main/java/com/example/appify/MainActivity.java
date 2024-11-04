@@ -104,15 +104,20 @@ public class MainActivity extends AppCompatActivity {
         firstSet.addListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(Animator animation) {
-                // CHANGE THE 'TempActivity' TO WHATEVER ACTIVITY YOU'RE WORKING ON
-//                if(checkAndAddAndroidId(android_id)){
-//                    Intent intent = new Intent(MainActivity.this,editUserActivity.class);
-//                    startActivity(intent);
-//                }
+                if(checkAndAddAndroidId(android_id)){
+                    Intent intent = new Intent(MainActivity.this,editUserActivity.class);
+                    intent.putExtra("Android ID", android_id);
+                    startActivity(intent);
+                }
+                else{
+                    Intent intent = new Intent(MainActivity.this,userProfileActivity.class);
+                    intent.putExtra("Android ID", android_id);
+                    startActivity(intent);
+                }
 
-                 Intent intent = new Intent(MainActivity.this,editUserActivity.class);
-                 intent.putExtra("Android ID", android_id);
-                 startActivity(intent);
+//                 Intent intent = new Intent(MainActivity.this,editUserActivity.class);
+//                 intent.putExtra("Android ID", android_id);
+//                 startActivity(intent);
 
             }
         });
