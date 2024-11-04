@@ -84,9 +84,9 @@ public class EventActivity extends AppCompatActivity implements AddEventDialogFr
     @Override
     public void onEventAdded(String name, String date, String description, int maxWishEntrants, int maxSampleEntrants, Uri posterUri, boolean isGeolocate) {
         Event newEvent = new Event(name, date, description, maxWishEntrants, maxSampleEntrants, posterUri, isGeolocate);
-
+        String eventID = newEvent.getEventId();
         db.collection("events")
-                .document(name)
+                .document(eventID)
                 .set(newEvent)
                 .addOnSuccessListener(aVoid -> {
                     Toast.makeText(EventActivity.this, "Event added: " + name, Toast.LENGTH_SHORT).show();

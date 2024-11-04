@@ -3,6 +3,7 @@ package com.example.appify;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -46,6 +47,16 @@ public class EventDetailActivity extends AppCompatActivity {
 
         Button backButton = findViewById(R.id.buttonBackToEvents);
         backButton.setOnClickListener(v -> finish());
+
+        Button entrantListButton = findViewById(R.id.entrant_list_button);
+        entrantListButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(EventDetailActivity.this, MainActivity.class);
+                startActivity(intent);
+            }
+        });
+
 
         // Display the image if the URI is valid
         if (posterUri != null) {
