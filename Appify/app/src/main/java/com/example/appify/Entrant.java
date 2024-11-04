@@ -1,5 +1,6 @@
 package com.example.appify;
 
+import android.graphics.Bitmap;
 import android.util.Log;
 
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -10,13 +11,23 @@ public class Entrant {
     private String phoneNumber;
     private String email;
     private String status;
+    private String profilePictureUrl;
 
-    public Entrant(String id, String name, String phoneNumber, String email, String status) {
+    public Entrant(String id, String name, String phoneNumber, String email, String status, String profilePicture) {
         this.id = id;
         this.name = name;
         this.phoneNumber = phoneNumber;
         this.email = email;
         this.status = status;
+        this.profilePictureUrl = profilePicture;
+    }
+
+    public Entrant(String id, String name, String phoneNumber, String email, String profilePicture) {
+        this.id = id;
+        this.name = name;
+        this.phoneNumber = phoneNumber;
+        this.email = email;
+        this.profilePictureUrl = profilePicture;
     }
     public Entrant(String id, String name, String phoneNumber, String email) {
         this.id = id;
@@ -76,5 +87,11 @@ public class Entrant {
     }
 
 
+    public String getProfilePictureUrl() {
+        return profilePictureUrl;
+    }
 
+    public void setProfilePictureUrl(String profilePictureUrl) {
+        this.profilePictureUrl = profilePictureUrl;
+    }
 }

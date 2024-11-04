@@ -1,5 +1,6 @@
 package com.example.appify;
 
+
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -8,6 +9,10 @@ import android.graphics.Paint;
 import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.provider.MediaStore;
+import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -16,7 +21,11 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Random;
 
@@ -25,12 +34,19 @@ public class editUserActivity extends AppCompatActivity {
     private ImageView profileImageView;
     private Uri imageUri;
     private String android_id;
+    private byte[] profilePictureByte;
+    private EditText nameEditText, phoneEditText, emailEditText;
     private ActivityResultLauncher<Intent> activityResultLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
             result -> {
                 if (result.getResultCode() == RESULT_OK && result.getData() != null) {
                     imageUri = result.getData().getData();
-                    profileImageView.setImageURI(imageUri);  // Set the selected image
+                    try {
+                        Bitmap bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), imageUri);
+                        profileImageView.setImageBitmap(bitmap);
+                    } catch (IOException e) {
+                        profileImageView.setImageURI(imageUri);
+                    }
                 }
             }
     );
@@ -40,18 +56,18 @@ public class editUserActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.edit_user);
         android_id = getIntent().getStringExtra("Android ID");
+
         // Fetch the EditText fields
-        EditText nameEditText = findViewById(R.id.nameEditText);
-        EditText phoneEditText = findViewById(R.id.phoneEditText);
-        EditText emailEditText = findViewById(R.id.emailEditText);
+        nameEditText = findViewById(R.id.nameEditText);
+        phoneEditText = findViewById(R.id.phoneEditText);
+        emailEditText = findViewById(R.id.emailEditText);
         profileImageView = findViewById(R.id.profileImageView);
         Button uploadButton = findViewById(R.id.uploadButton);
         Button removeButton = findViewById(R.id.removeButton);
         Button submitButton = findViewById(R.id.submitButton);
 
         db = FirebaseFirestore.getInstance();
-
-
+        populateTextBoxes(android_id);
         uploadButton.setOnClickListener(v -> openFileChooser());
 
         removeButton.setOnClickListener(v -> {
@@ -63,7 +79,8 @@ public class editUserActivity extends AppCompatActivity {
             String name = nameEditText.getText().toString();
             String phoneNumber = phoneEditText.getText().toString();
             String email = emailEditText.getText().toString();
-            sendEntrantData(android_id,name,phoneNumber,email);
+
+
             if (imageUri == null) {
                 // Generate a profile picture with the first letter of the user's name
                 String firstName = name.trim();
@@ -73,6 +90,12 @@ public class editUserActivity extends AppCompatActivity {
                     profileImageView.setImageBitmap(profilePicture);  // Set the generated image
                 }
             }
+            sendEntrantData(android_id,name,phoneNumber,email);
+            Intent intent = new Intent(editUserActivity.this,userProfileActivity.class);
+            intent.putExtra("Android ID", android_id);
+            intent.putExtra("Profile Picture Byte", profilePictureByte);
+            startActivity(intent);
+
         });
     }
 
@@ -122,11 +145,49 @@ public class editUserActivity extends AppCompatActivity {
     }
 
     private void sendEntrantData(String id,String name, String phone, String email){
-        Entrant User = new Entrant(id,name,phone,email);
-        db.collection("Android ID").document(android_id).set(User);
-        //TODO: Send bitmap image to database
+        Bitmap profilePicture = getBitmapFromImageView(profileImageView);
+        FirebaseStorage storage = FirebaseStorage.getInstance();
+        StorageReference storageRef = storage.getReference().child("profile_images/" + android_id + ".jpg");
+
+        // Convert Bitmap to ByteArray
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        profilePicture.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+        profilePictureByte = baos.toByteArray();
+        storageRef.putBytes(profilePictureByte)
+                .addOnSuccessListener(taskSnapshot -> storageRef.getDownloadUrl().addOnSuccessListener(uri -> {
+                    String downloadUrl = uri.toString();
+
+                    // Create Entrant object with the download URL
+                    Entrant user = new Entrant(id, name, phone, email, downloadUrl);
+
+                    // Save Entrant data to Firestore
+                    db.collection("Android ID").document(android_id).set(user);
+                    Intent intent = new Intent(editUserActivity.this, userProfileActivity.class);
+                    intent.putExtra("Android ID", android_id);
+                    intent.putExtra("Profile Picture", profilePictureByte);
+                    startActivity(intent);
+                }));
     }
     private void populateTextBoxes(String android_id){
-        //TODO: If ID exists in Database then send data to User TextBoxes
+        db.collection("Android ID").document(android_id).get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        // Retrieve current user data
+                        String name = documentSnapshot.getString("name");
+                        String phone = documentSnapshot.getString("phoneNumber");
+                        String email = documentSnapshot.getString("email");
+                        //String profileImageUrl = documentSnapshot.getString("profilePictureUrl");
+
+                        // Populate the EditText fields with the retrieved data
+                        nameEditText.setText(name);
+                        phoneEditText.setText(phone);
+                        emailEditText.setText(email);
+                    }
+                });
+    }
+    private Bitmap getBitmapFromImageView(ImageView imageView) {
+        imageView.setDrawingCacheEnabled(true);
+        imageView.buildDrawingCache();
+        return Bitmap.createBitmap(imageView.getDrawingCache());
     }
 }
