@@ -6,12 +6,7 @@ import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.Button;
-import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -19,8 +14,7 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
-import com.google.firebase.firestore.CollectionReference;
-import com.google.firebase.firestore.DocumentSnapshot;
+import com.example.appify.Activities.EntrantHomePageActivity;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 public class MainActivity extends AppCompatActivity {
@@ -96,7 +90,7 @@ public class MainActivity extends AppCompatActivity {
             public void onAnimationEnd(Animator animation) {
 //                 CHANGE THE 'TempActivity' TO WHATEVER ACTIVITY YOU'RE WORKING ON
 
-                 Intent intent = new Intent(MainActivity.this,EventActivity.class);
+                 Intent intent = new Intent(MainActivity.this, EntrantHomePageActivity.class);
                  startActivity(intent);
 
             }

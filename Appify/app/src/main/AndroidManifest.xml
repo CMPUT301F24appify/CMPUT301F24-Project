@@ -22,30 +22,14 @@
             </intent-filter>
         </activity>
 
-        <activity
-            android:name=".EventDetailActivity"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
+        <activity android:name=".Activities.EntrantHomePageActivity" />
+        <activity android:name=".Activities.EntrantEnlistActivity" />
 
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
 
-        <activity
-        android:name=".TempActivity"
-        android:exported="true">
-        <intent-filter>
-            <action android:name="android.intent.action.VIEW" />
-
-            <category android:name="android.intent.category.LAUNCHER" />
-        </intent-filter>
-    </activity>
         <meta-data
             android:name="preloaded_fonts"
             android:resource="@array/preloaded_fonts" />
-
-        <activity android:name=".EventActivity" />
     </application>
+
 
 </manifest>
