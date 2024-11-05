@@ -30,6 +30,9 @@
         <activity android:name=".Activities.EventEntrantsActivity" />
         <activity android:name=".Activities.EventDetailActivity" />
         <activity android:name=".Activities.EventActivity" />
+        <activity android:name=".Activities.EnlistConfirmationActivity" />
+
     </application>
+
 
 </manifest>

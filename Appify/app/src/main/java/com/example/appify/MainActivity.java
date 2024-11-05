@@ -21,6 +21,7 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import android.provider.Settings.Secure;
 
+import com.example.appify.Activities.EntrantHomePageActivity;
 import com.google.firebase.firestore.CollectionReference;
 import com.example.appify.Activities.editUserActivity;
 import com.example.appify.Activities.userProfileActivity;
@@ -47,7 +48,6 @@ public class MainActivity extends AppCompatActivity {
          * @param savedInstanceState Saved instance data for restoring state if applicable.
          */
         super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
 
         // Retrieve the unique Android ID
@@ -155,9 +155,9 @@ public class MainActivity extends AppCompatActivity {
                             Log.d("MainActivity", "User is new. Navigating to editUserActivity.");
                             navigateToEditUser(androidId);
                         } else {
-                            // Existing user, navigate to userProfileActivity
+                            // Existing user, navigate to HomePage
                             Log.d("MainActivity", "User exists. Navigating to userProfileActivity.");
-                            navigateToUserProfile(androidId);
+                            navigateToHomePage(androidId);
                         }
                     } else {
                         // Handle the error
@@ -180,12 +180,12 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * Navigates the user to userProfileActivity to view their profile.
+     * Navigates the user to EntrantHomePageActivity to view their Home Page.
      *
      * @param androidId The unique Android ID of the device/user.
      */
-    private void navigateToUserProfile(String androidId) {
-        Intent intent = new Intent(MainActivity.this, userProfileActivity.class);
+    private void navigateToHomePage(String androidId) {
+        Intent intent = new Intent(MainActivity.this, EntrantHomePageActivity.class);
         intent.putExtra("Android ID", androidId);
         startActivity(intent);
         finish(); // Prevent user from returning to MainActivity
