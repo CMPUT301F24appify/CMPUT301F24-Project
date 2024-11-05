@@ -1,14 +1,7 @@
 package com.example.appify.Model;
-import android.content.Context;
-import android.net.Uri;
-import android.provider.Settings;
-import android.widget.Toast;
 
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
-import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.StorageReference;
-import com.google.firebase.storage.UploadTask;
 
 import java.util.UUID;
 
@@ -34,21 +27,41 @@ public class Event {
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
     private String organizerID;
 
+    // New notification message fields
+    private String waitlistedMessage;
+    private String enrolledMessage;
+    private String cancelledMessage;
+    private String invitedMessage;
 
     /**
      * Constructs an Event object with the specified attributes.
      *
      * @param name              the name of the event
      * @param date              the date of the event
+     * @param facility          the facility where the event takes place
      * @param registrationEndDate the registration end date for the event
      * @param description       a description of the event
-     * @param facility          the facility where the event takes place
      * @param maxWishEntrants   the maximum number of wish-listed entrants
      * @param maxSampleEntrants the maximum number of sample-selected entrants
      * @param posterUri         the URI of the event's poster image
      * @param isGeolocate       whether geolocation is required for this event
+     * @param notifyWaitlisted  whether to notify waitlisted entrants
+     * @param notifyEnrolled    whether to notify enrolled entrants
+     * @param notifyCancelled   whether to notify cancelled entrants
+     * @param notifyInvited     whether to notify invited entrants
+     * @param waitlistedMessage the notification message for waitlisted entrants
+     * @param enrolledMessage   the notification message for enrolled entrants
+     * @param cancelledMessage  the notification message for cancelled entrants
+     * @param invitedMessage    the notification message for invited entrants
+     * @param organizerID       the ID of the organizer
      */
-    public Event(String name, String date, String facility, String registrationEndDate, String description, int maxWishEntrants, int maxSampleEntrants, String posterUri, boolean isGeolocate, boolean notifyWaitlisted, boolean notifyEnrolled, boolean notifyCancelled, boolean notifyInvited, String organizerID) {
+    public Event(String name, String date, String facility, String registrationEndDate,
+                 String description, int maxWishEntrants, int maxSampleEntrants,
+                 String posterUri, boolean isGeolocate, boolean notifyWaitlisted,
+                 boolean notifyEnrolled, boolean notifyCancelled, boolean notifyInvited,
+                 String waitlistedMessage, String enrolledMessage,
+                 String cancelledMessage, String invitedMessage,
+                 String organizerID) {
         this.name = name;
         this.date = date;
         this.registrationEndDate = registrationEndDate;
@@ -63,10 +76,13 @@ public class Event {
         this.notifyEnrolled = notifyEnrolled;
         this.notifyCancelled = notifyCancelled;
         this.notifyInvited = notifyInvited;
-        this.organizerID= organizerID;
-//        this.context = context;
-//        this.organizerID = Settings.Secure.getString(context.getApplicationContext().getContentResolver(), Settings.Secure.ANDROID_ID);
+        this.waitlistedMessage = waitlistedMessage;
+        this.enrolledMessage = enrolledMessage;
+        this.cancelledMessage = cancelledMessage;
+        this.invitedMessage = invitedMessage;
+        this.organizerID = organizerID;
     }
+
     // No-argument constructor (required for Firebase)
     public Event() {
     }
@@ -93,8 +109,17 @@ public class Event {
         boolean notifyInvited = document.getBoolean("notifyInvited") != null ? document.getBoolean("notifyInvited") : false;
         String organizerID = document.getString("organizerID");
 
+        // Retrieve notification messages
+        String waitlistedMessage = document.getString("waitlistedMessage");
+        String enrolledMessage = document.getString("enrolledMessage");
+        String cancelledMessage = document.getString("cancelledMessage");
+        String invitedMessage = document.getString("invitedMessage");
 
-        Event event = new Event(name, date, registrationEndDate, description, facility, maxWishEntrants, maxSampleEntrants, posterUri, isGeolocate, notifyWaitlisted, notifyEnrolled, notifyCancelled,notifyInvited, organizerID);
+        Event event = new Event(name, date, facility, registrationEndDate, description,
+                maxWishEntrants, maxSampleEntrants, posterUri, isGeolocate,
+                notifyWaitlisted, notifyEnrolled, notifyCancelled, notifyInvited,
+                waitlistedMessage, enrolledMessage, cancelledMessage, invitedMessage, organizerID);
+
         event.eventId = document.getId(); // Use Firestore ID if available
 
         return event;
@@ -125,14 +150,18 @@ public class Event {
      *
      * @return the registration end date for the event
      */
-    public String getRegistrationEndDate() { return registrationEndDate; }
+    public String getRegistrationEndDate() {
+        return registrationEndDate;
+    }
 
     /**
      * Gets the facility where the event takes place.
      *
      * @return the facility of the event
      */
-    public String getFacility() { return facility; }
+    public String getFacility() {
+        return facility;
+    }
 
     /**
      * Gets the description of the event.
@@ -213,6 +242,44 @@ public class Event {
         return notifyInvited;
     }
 
+    /**
+     * Gets the notification message for waitlisted entrants.
+     *
+     * @return the waitlisted notification message
+     */
+    public String getWaitlistedMessage() {
+        return waitlistedMessage;
+    }
+
+    /**
+     * Gets the notification message for enrolled entrants.
+     *
+     * @return the enrolled notification message
+     */
+    public String getEnrolledMessage() {
+        return enrolledMessage;
+    }
+
+    /**
+     * Gets the notification message for cancelled entrants.
+     *
+     * @return the cancelled notification message
+     */
+    public String getCancelledMessage() {
+        return cancelledMessage;
+    }
+
+    /**
+     * Gets the notification message for invited entrants.
+     *
+     * @return the invited notification message
+     */
+    public String getInvitedMessage() {
+        return invitedMessage;
+    }
+
+    // Setters (if needed)
+
     public void setGeolocate(boolean geolocate) {
         this.isGeolocate = geolocate;
     }
@@ -221,19 +288,21 @@ public class Event {
         this.eventId = eventId;
     }
 
-
-
+    // EventAddCallback interface remains unchanged
     public interface EventAddCallback {
         void onEventAdded(Event event);
     }
 
-    // Modify your addToFirestore method to include image upload
+    // Modify your addToFirestore method if necessary
     public void addToFirestore(EventAddCallback callback) {
         db.collection("events").document(this.eventId).set(this)
                 .addOnSuccessListener(aVoid -> {
                     if (callback != null) {
                         callback.onEventAdded(this);
                     }
+                })
+                .addOnFailureListener(e -> {
+                    // Handle the failure
                 });
     }
 }

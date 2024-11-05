@@ -35,11 +35,13 @@
         android:layout_height="wrap_content"
         android:hint="Event Description" />
 
+    <!-- CheckBox or Button for Geolocation -->
+    <!-- If you intended to change this to a Button, update it accordingly -->
     <CheckBox
         android:id="@+id/checkGeolocation"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Geo-Location" />
+        android:text="Geo-Location" />
 
     <TextView
         android:id="@+id/posterLabel"
@@ -65,7 +67,6 @@
         android:layout_height="wrap_content"
         android:hint="Max Entrants For Sample:" />
 
-
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -86,32 +87,33 @@
             android:orientation="vertical"
             android:layout_weight="1">
 
-
-            <CheckBox
-                android:id="@+id/checkWaitlisted"
-                android:layout_width="match_parent"
+            <!-- Replaced CheckBoxes with Buttons -->
+            <Button
+                android:id="@+id/buttonWaitlisted"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:hint="Notify Waitlisted" />
+                android:text="Notify Waitlisted" />
 
-            <CheckBox
-                android:id="@+id/checkEnrolled"
-                android:layout_width="match_parent"
+            <Button
+                android:id="@+id/buttonEnrolled"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:hint="Notify Enrolled" />
+                android:text="Notify Enrolled" />
 
-            <CheckBox
-                android:id="@+id/checkCancelled"
-                android:layout_width="match_parent"
+            <Button
+                android:id="@+id/buttonCancelled"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:hint="Notify Cancelled" />
+                android:text="Notify Cancelled" />
 
-            <CheckBox
-                android:id="@+id/checkInvited"
-                android:layout_width="match_parent"
+            <Button
+                android:id="@+id/buttonInvited"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:hint="Notify Invited" />
-        </LinearLayout>
+                android:text="Notify Invited" />
 
+        </LinearLayout> <!-- Closing tag for inner LinearLayout -->
 
-    </LinearLayout>
-</LinearLayout>
+    </LinearLayout> <!-- Closing tag for outer LinearLayout -->
+
+</LinearLayout> <!-- Closing tag for root LinearLayout -->

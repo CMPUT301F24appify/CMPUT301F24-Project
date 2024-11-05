@@ -33,7 +33,7 @@ public class EventActivity extends AppCompatActivity implements AddEventDialogFr
         db = FirebaseFirestore.getInstance();
 
         eventListView = findViewById(R.id.event_list);
-        eventAdapter = new CustomEventAdapter(this,eventList);
+        eventAdapter = new CustomEventAdapter(this, eventList);
         eventListView.setAdapter(eventAdapter);
 
         loadEventsFromFirestore();
@@ -60,7 +60,6 @@ public class EventActivity extends AppCompatActivity implements AddEventDialogFr
             intent.putExtra("maxSampleEntrants", selectedEvent.getMaxSampleEntrants());
             intent.putExtra("eventID", selectedEvent.getEventId());
 
-
             // Poster URI might be null, so check before passing
             String posterUriString = selectedEvent.getPosterUri() != null ? selectedEvent.getPosterUri() : "";
             intent.putExtra("posterUri", posterUriString);
@@ -71,22 +70,40 @@ public class EventActivity extends AppCompatActivity implements AddEventDialogFr
             intent.putExtra("notifyCancelled", selectedEvent.isNotifyCancelled());
             intent.putExtra("notifyInvited", selectedEvent.isNotifyInvited());
 
+            // Pass notification messages
+            intent.putExtra("waitlistedMessage", selectedEvent.getWaitlistedMessage());
+            intent.putExtra("enrolledMessage", selectedEvent.getEnrolledMessage());
+            intent.putExtra("cancelledMessage", selectedEvent.getCancelledMessage());
+            intent.putExtra("invitedMessage", selectedEvent.getInvitedMessage());
 
             startActivity(intent);
         });
-
     }
 
     @Override
-    public void onEventAdded(String name, String date, String facility, String registrationEndDate, String description, int maxWishEntrants, int maxSampleEntrants, String posterUri, boolean isGeolocate, boolean notifyWaitlisted, boolean notifyEnrolled, boolean notifyCancelled, boolean notifyInvited) {
+    public void onEventAdded(String name, String date, String facility, String registrationEndDate,
+                             String description, int maxWishEntrants, int maxSampleEntrants,
+                             String posterUri, boolean isGeolocate,
+                             String waitlistedMessage, String enrolledMessage,
+                             String cancelledMessage, String invitedMessage) {
+
         MyApp app = (MyApp) getApplication();
         String organizerID = app.getAndroidId();
-        Event newEvent = new Event(name, date, facility, registrationEndDate, description, maxWishEntrants, maxSampleEntrants, posterUri, isGeolocate, notifyWaitlisted, notifyEnrolled, notifyCancelled, notifyInvited, organizerID);
 
+        // Determine notification booleans based on message presence
+        boolean notifyWaitlisted = waitlistedMessage != null && !waitlistedMessage.isEmpty();
+        boolean notifyEnrolled = enrolledMessage != null && !enrolledMessage.isEmpty();
+        boolean notifyCancelled = cancelledMessage != null && !cancelledMessage.isEmpty();
+        boolean notifyInvited = invitedMessage != null && !invitedMessage.isEmpty();
 
+        // Create new Event object with notification messages
+        Event newEvent = new Event(name, date, facility, registrationEndDate, description,
+                maxWishEntrants, maxSampleEntrants, posterUri, isGeolocate,
+                notifyWaitlisted, notifyEnrolled, notifyCancelled, notifyInvited,
+                waitlistedMessage, enrolledMessage, cancelledMessage, invitedMessage,
+                organizerID);
 
-
-        // Use the new method in Event
+        // Use the addToFirestore method in Event
         newEvent.addToFirestore(event -> {
             Toast.makeText(EventActivity.this, "Event added: " + event.getName(), Toast.LENGTH_SHORT).show();
             eventList.add(event);
@@ -95,7 +112,6 @@ public class EventActivity extends AppCompatActivity implements AddEventDialogFr
     }
 
     private void loadEventsFromFirestore() {
-
         MyApp app = (MyApp) getApplication();
         String organizerID = app.getAndroidId();
 
@@ -103,7 +119,7 @@ public class EventActivity extends AppCompatActivity implements AddEventDialogFr
                 .whereEqualTo("organizerID", organizerID)
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
-//                    eventList.clear();  // Clear existing data to avoid duplicates
+                    // eventList.clear();  // Clear existing data to avoid duplicates
 
                     for (DocumentSnapshot document : queryDocumentSnapshots) {
                         // Convert Firestore document to an Event object
