@@ -3,6 +3,7 @@ package com.example.appify;
 import android.content.Intent;
 import android.os.Bundle;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -44,38 +45,40 @@ public class EventEntrantsActivity extends AppCompatActivity{
                 // Setup the adapter AFTER firebase retrieves all the data, by checking when all tasks are complete
                 int[] tasksCompleted = {0};
                 int totalTasks = task.getResult().size();
-
-                for (QueryDocumentSnapshot document : task.getResult()) {
+                    for (QueryDocumentSnapshot document : task.getResult()) {
                     // For each user in the waiting list, get their details from the "Android ID" collection
                     String userID = document.getId();
                     Object waitingListStatus = document.get("status");
 
                     // Access each entrant in the waiting list for this event.
                     db.collection("Android ID").document(userID).get()
-                                    .addOnCompleteListener(task2 ->{
-                                        if(task2.isSuccessful() && task2.getResult() != null){
-                                            DocumentSnapshot entrantData = task2.getResult();
-                                            String entrantID = userID;
-                                            String entrantName = entrantData.get("name").toString();
-                                            String entrantEmail = entrantData.get("email").toString();
-                                            String entrantWaitingListStatus = waitingListStatus.toString();
-                                            Entrant entrant = new Entrant(entrantID, entrantName, entrantEmail, entrantWaitingListStatus);
-                                            entrantList.add(entrant);
-                                        }
-                                        else {
-                                            System.out.println("Error getting AndroidID document for " + userID + ": " + task2.getException());
-                                        }
-                                        tasksCompleted[0]++;
+                            .addOnCompleteListener(task2 ->{
+                                if(task2.isSuccessful() && task2.getResult() != null){
+                                    DocumentSnapshot entrantData = task2.getResult();
+                                    String entrantID = userID;
+                                    String entrantName = entrantData.get("name").toString();
+                                    String entrantEmail = entrantData.get("email").toString();
+                                    String entrantWaitingListStatus = waitingListStatus.toString();
+                                    Entrant entrant = new Entrant(entrantID, entrantName, entrantEmail, entrantWaitingListStatus);
+                                    entrantList.add(entrant);
+                                }
+                                else {
+                                    System.out.println("Error getting AndroidID document for " + userID + ": " + task2.getException());
+                                }
+                                tasksCompleted[0]++;
 
-                                        if (tasksCompleted[0] == totalTasks){
-                                            // All tasks complete, set up adapter
-                                            System.out.println("Outside test: " + entrantList);
-                                            entrantAdapter = new CustomEntrantAdapter(this,entrantList);
-                                            entrantListView.setAdapter(entrantAdapter);
-                                        }
-                                    });
+                                if (tasksCompleted[0] == totalTasks){
+                                    // All tasks complete, set up adapter
+                                    System.out.println("Outside test: " + entrantList);
+                                    entrantAdapter = new CustomEntrantAdapter(this,entrantList);
+                                    entrantListView.setAdapter(entrantAdapter);
+                                }
+                            });
                 }
-            } else {
+
+                }
+
+            else {
                 System.out.println("Error getting documents: " + task.getException());
             }
         });

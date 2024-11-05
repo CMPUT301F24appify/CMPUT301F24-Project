@@ -22,7 +22,6 @@ public class Event {
     private String facility;
     private String registrationEndDate;
     private String description;
-    private String facility;
     private int maxWishEntrants;
     private int maxSampleEntrants;
     private String posterUri;  // Store URI as String
@@ -33,7 +32,6 @@ public class Event {
     private boolean notifyCancelled;
     private boolean notifyInvited;
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
-    private Context context;
     private String organizerID;
 
 
@@ -236,9 +234,6 @@ public class Event {
                     if (callback != null) {
                         callback.onEventAdded(this);
                     }
-                })
-                .addOnFailureListener(e -> {
-                    Toast.makeText(context, "Error adding event: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                 });
     }
 }
