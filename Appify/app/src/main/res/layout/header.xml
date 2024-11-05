@@ -2,6 +2,7 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/header"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
@@ -17,17 +18,18 @@
         app:layout_constraintTop_toTopOf="parent">
 
         <ImageView
-            android:id="@+id/imageView2"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:id="@+id/logo"
+            android:layout_width="230dp"
+            android:layout_height="85dp"
             android:layout_weight="1"
             app:srcCompat="@drawable/appify_logo" />
 
-        <ImageView
-            android:id="@+id/imageView3"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
+        <com.google.android.material.imageview.ShapeableImageView
+            android:id="@+id/profileImageViewHeader"
+            android:layout_width="85dp"
+            android:layout_height="85dp"
+            android:scaleType="fitXY"
+            app:shapeAppearanceOverlay="@style/roundedImageViewRounded"
             app:srcCompat="@drawable/default_pfp" />
     </LinearLayout>
 
@@ -47,9 +49,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:paddingLeft="5dp"
-            android:paddingTop="3dp"
-            android:paddingRight="5dp"
+            android:gravity="center_horizontal"
+            android:layout_marginTop="5dp"
             android:text="Events"
             android:textColor="@color/white" />
 
@@ -57,7 +58,8 @@
             android:id="@+id/navBarDivider1"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
+            android:gravity="center_horizontal"
+            android:layout_marginTop="5dp"
             android:text="|"
             android:textColor="@color/white" />
 
@@ -66,6 +68,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
+            android:gravity="center_horizontal"
+            android:layout_marginTop="5dp"
             android:text="Facilities"
             android:textColor="@color/white" />
 
@@ -73,7 +77,8 @@
             android:id="@+id/navBarDivider2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
+            android:gravity="center_horizontal"
+            android:layout_marginTop="5dp"
             android:text="|"
             android:textColor="@color/white" />
 
@@ -82,11 +87,13 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
+            android:gravity="center_horizontal"
+            android:layout_marginTop="5dp"
             android:text="Organize"
             android:textColor="@color/white" />
 
         <ImageView
-            android:id="@+id/imageView4"
+            android:id="@+id/header_notifications"
             android:layout_width="2dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
