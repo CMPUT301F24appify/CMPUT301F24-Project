@@ -135,19 +135,32 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/date_facility" />
 
+    <TextView
+        android:id="@+id/thank_you"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="32dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginEnd="32dp"
+        android:gravity="center_horizontal"
+        android:text="Thank you!"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/confirmation_message" />
+
 
     <Button
-        android:id="@+id/enlist_leave_button"
+        android:id="@+id/home_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
         android:layout_weight="1"
-        android:text="X"
+        android:text="Home"
         android:textColor="@color/black"
         app:backgroundTint="@color/buttons"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/confirmation_message" />
+        app:layout_constraintTop_toBottomOf="@+id/thank_you" />
 
 
     <TextView
@@ -161,7 +174,7 @@
         android:text="IMPORTANT: X"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/enlist_leave_button" />
+        app:layout_constraintTop_toBottomOf="@+id/home_button" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -32,6 +32,11 @@ public class EntrantEnlistActivity extends AppCompatActivity {
     private String androidId;
     private FirebaseFirestore db;
     private Button enlistLeaveButton;
+    private String name;
+    private String date;
+    private String registrationEndDate;
+    private String facility;
+    private boolean isGeolocate;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,16 +48,16 @@ public class EntrantEnlistActivity extends AppCompatActivity {
 
         // Retrieve event details from the intent
         Intent intent = getIntent();
-        String eventId = intent.getStringExtra("eventId");
-        String name = intent.getStringExtra("name");
-        String date = intent.getStringExtra("date");
-        String registrationEndDate = intent.getStringExtra("registrationEndDate");
-        String facility = intent.getStringExtra("facility");
+        eventId = intent.getStringExtra("eventId");
+        name = intent.getStringExtra("name");
+        date = intent.getStringExtra("date");
+        registrationEndDate = intent.getStringExtra("registrationEndDate");
+        facility = intent.getStringExtra("facility");
         String description = intent.getStringExtra("description");
         int maxWishEntrants = intent.getIntExtra("maxWishEntrants", 0);
         int maxSampleEntrants = intent.getIntExtra("maxSampleEntrants", 0);
         String posterUriString = intent.getStringExtra("posterUri");
-        boolean isGeolocate = intent.getBooleanExtra("isGeolocate", false);
+        isGeolocate = intent.getBooleanExtra("isGeolocate", false);
 
         // Find views in the layout and set data
         TextView eventName = findViewById(R.id.event_name);
@@ -76,7 +81,7 @@ public class EntrantEnlistActivity extends AppCompatActivity {
         }
 
         // Handle Enlist and Leave buttons
-        Button enlistLeaveButton = findViewById(R.id.enlist_leave_button);
+        enlistLeaveButton = findViewById(R.id.enlist_leave_button);
 
         db = FirebaseFirestore.getInstance();
         MyApp app = (MyApp) getApplication();
@@ -139,53 +144,36 @@ public class EntrantEnlistActivity extends AppCompatActivity {
         DocumentReference eventRef = db.collection("events").document(eventId);
         CollectionReference waitingListRef = eventRef.collection("waitingList");
 
-        eventRef.get().addOnSuccessListener(documentSnapshot -> {
-            if (documentSnapshot.exists()) {
-                // Retrieve maxWishEntrants and check the current count of waitingList
-                int maxWishEntrants = documentSnapshot.getLong("maxWishEntrants").intValue();
-                waitingListRef = eventRef.collection("waitingList");
+        // Add user to waiting list
+        HashMap<String, Object> waitlistData = new HashMap<>();
+        waitlistData.put("status", "enrolled");
 
-                // Check if the user is already in the waitingList
-                waitingListRef.document(androidId).get().addOnSuccessListener(docSnapshot -> {
-                    if (docSnapshot.exists()) {
-                        Toast.makeText(this, "Already in the event", Toast.LENGTH_SHORT).show();
-                    } else {
-                        // Proceed to add the user if the waiting list is not full
-                        waitingListRef.get().addOnSuccessListener(querySnapshot -> {
-                            int currentEntrants = querySnapshot.size();
+        waitingListRef.document(androidId).set(waitlistData)
+                .addOnSuccessListener(aVoid -> {
+                    // Add event to user's waitListedEvents with status "enrolled"
+                    CollectionReference userWaitListedEventsRef = db.collection("Android ID")
+                            .document(androidId)
+                            .collection("waitListedEvents");
 
-                            if (currentEntrants >= maxWishEntrants) {
-                                Toast.makeText(this, "Waiting list is full.", Toast.LENGTH_SHORT).show();
-                            } else {
-                                // Step 1: Add user to the event's waitingList subcollection with status "enrolled"
-                                HashMap<String, Object> waitlistData = new HashMap<>();
-                                waitlistData.put("status", "enrolled");
+                    HashMap<String, Object> eventStatusData = new HashMap<>();
+                    eventStatusData.put("status", "enrolled");
 
-                                waitingListRef.document(androidId).set(waitlistData) // Add status field
-                                        .addOnSuccessListener(aVoid -> {
-                                            Toast.makeText(this, "Successfully enlisted!", Toast.LENGTH_SHORT).show();
-
-                                            // Step 2: Add eventId to user's waitListedEvents subcollection with status "enrolled"
-                                            CollectionReference userWaitListedEventsRef = db.collection("Android ID")
-                                                    .document(androidId)
-                                                    .collection("waitListedEvents");
-
-                                            HashMap<String, Object> eventStatusData = new HashMap<>();
-                                            eventStatusData.put("status", "enrolled");
-
-                                            userWaitListedEventsRef.document(eventId).set(eventStatusData) // Add status field
-                                                    .addOnSuccessListener(aVoid2 -> Toast.makeText(this, "Event added to your waitlisted events.", Toast.LENGTH_SHORT).show())
-                                                    .addOnFailureListener(e -> Toast.makeText(this, "Failed to add event to your waitlisted events.", Toast.LENGTH_SHORT).show());
-                                        })
-                                        .addOnFailureListener(e -> Toast.makeText(this, "Failed to enlist in the waiting list. Try again.", Toast.LENGTH_SHORT).show());
-                            }
-                        }).addOnFailureListener(e -> Toast.makeText(this, "Error fetching waiting list data.", Toast.LENGTH_SHORT).show());
-                    }
-                }).addOnFailureListener(e -> Toast.makeText(this, "Error checking enrollment status.", Toast.LENGTH_SHORT).show());
-            } else {
-                Toast.makeText(this, "Event not found.", Toast.LENGTH_SHORT).show();
-            }
-        }).addOnFailureListener(e -> Toast.makeText(this, "Error fetching event data.", Toast.LENGTH_SHORT).show());
+                    userWaitListedEventsRef.document(eventId).set(eventStatusData)
+                            .addOnSuccessListener(aVoid2 -> {
+                                // Navigate to EnlistConfirmationActivity
+                                Intent intent = new Intent(EntrantEnlistActivity.this, EnlistConfirmationActivity.class);
+                                intent.putExtra("waitingList", "Joined");
+                                intent.putExtra("name", name);
+                                intent.putExtra("date", date);
+                                intent.putExtra("registrationEndDate", registrationEndDate);
+                                intent.putExtra("facility", facility);
+                                intent.putExtra("isGeolocate", isGeolocate);
+                                startActivity(intent);
+                                finish();
+                            })
+                            .addOnFailureListener(e -> Toast.makeText(this, "Failed to add event to your waitlisted events.", Toast.LENGTH_SHORT).show());
+                })
+                .addOnFailureListener(e -> Toast.makeText(this, "Failed to enlist in the waiting list. Try again.", Toast.LENGTH_SHORT).show());
     }
 
     /**
@@ -195,35 +183,33 @@ public class EntrantEnlistActivity extends AppCompatActivity {
      * @param eventId The unique ID of the event the user wishes to leave.
      */
     private void leaveEvent(String eventId) {
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
         DocumentReference eventRef = db.collection("events").document(eventId);
-        MyApp app = (MyApp) getApplication();
-        String androidId = app.getAndroidId();
-
-        // Step 1: Check if user is in the event's waitingList subcollection
         CollectionReference waitingListRef = eventRef.collection("waitingList");
 
-        waitingListRef.document(androidId).get().addOnSuccessListener(docSnapshot -> {
-            if (!docSnapshot.exists()) {
-                Toast.makeText(this, "Not enrolled in the waiting list", Toast.LENGTH_SHORT).show();
-            } else {
-                // Remove user from the event's waitingList subcollection
-                waitingListRef.document(androidId).delete()
-                        .addOnSuccessListener(aVoid -> {
-                            Toast.makeText(this, "Successfully left the event's waiting list.", Toast.LENGTH_SHORT).show();
+        // Remove user from waiting list
+        waitingListRef.document(androidId).delete()
+                .addOnSuccessListener(aVoid -> {
+                    // Remove event from user's waitListedEvents
+                    CollectionReference userWaitListedEventsRef = db.collection("Android ID")
+                            .document(androidId)
+                            .collection("waitListedEvents");
 
-                            // Step 2: Remove eventId from user's waitListedEvents subcollection
-                            CollectionReference userWaitListedEventsRef = db.collection("Android ID")
-                                    .document(androidId)
-                                    .collection("waitListedEvents");
-
-                            userWaitListedEventsRef.document(eventId).delete()
-                                    .addOnSuccessListener(aVoid2 -> Toast.makeText(this, "Event removed from your waitlisted events.", Toast.LENGTH_SHORT).show())
-                                    .addOnFailureListener(e -> Toast.makeText(this, "Failed to remove event from your waitlisted events.", Toast.LENGTH_SHORT).show());
-                        })
-                        .addOnFailureListener(e -> Toast.makeText(this, "Failed to leave the event's waiting list. Try again.", Toast.LENGTH_SHORT).show());
-            }
-        }).addOnFailureListener(e -> Toast.makeText(this, "Error checking enrollment status.", Toast.LENGTH_SHORT).show());
+                    userWaitListedEventsRef.document(eventId).delete()
+                            .addOnSuccessListener(aVoid2 -> {
+                                // Navigate to EnlistConfirmationActivity
+                                Intent intent = new Intent(EntrantEnlistActivity.this, EnlistConfirmationActivity.class);
+                                intent.putExtra("waitingList", "Left");
+                                intent.putExtra("name", name);
+                                intent.putExtra("date", date);
+                                intent.putExtra("registrationEndDate", registrationEndDate);
+                                intent.putExtra("facility", facility);
+                                intent.putExtra("isGeolocate", isGeolocate);
+                                startActivity(intent);
+                                finish();
+                            })
+                            .addOnFailureListener(e -> Toast.makeText(this, "Failed to remove event from your waitlisted events.", Toast.LENGTH_SHORT).show());
+                })
+                .addOnFailureListener(e -> Toast.makeText(this, "Failed to leave the event's waiting list. Try again.", Toast.LENGTH_SHORT).show());
     }
 
 }
