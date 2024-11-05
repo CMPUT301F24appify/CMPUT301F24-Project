@@ -34,7 +34,7 @@ public class Event {
 
 
     public Event(Context context, String name, String date, String registrationEndDate, String description, String facility, int maxWishEntrants,
-                 int maxSampleEntrants, String posterUri, boolean isGeolocate){
+                 int maxSampleEntrants, String posterUri, boolean isGeolocate) {
         this.name = name;
         this.date = date;
         this.registrationEndDate = registrationEndDate;
@@ -82,10 +82,6 @@ public class Event {
     public String getRegistrationEndDate() { return registrationEndDate; }
 
     public String getFacility() { return facility; }
-
-    public String getFacility() {
-        return facility;
-    }
 
     public String getDeadline() {
         return deadline;
