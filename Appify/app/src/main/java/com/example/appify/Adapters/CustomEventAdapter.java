@@ -1,4 +1,4 @@
-package com.example.appify;
+package com.example.appify.Adapters;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -8,6 +8,9 @@ import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+
+import com.example.appify.Model.Event;
+import com.example.appify.R;
 
 import java.util.List;
 

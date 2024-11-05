@@ -1,11 +1,11 @@
-package com.example.appify;
-
+package com.example.appify.Model;
 import android.content.Context;
 import android.net.Uri;
 import android.provider.Settings;
 import android.widget.Toast;
 
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
@@ -17,6 +17,7 @@ public class Event {
     private String date;
     private String facility;
     private String deadline;
+    private String registrationEndDate;
     private String description;
     private int maxWishEntrants;
     private int maxSampleEntrants;
@@ -32,11 +33,11 @@ public class Event {
     private String organizerID;
 
 
-
-
-    public Event(Context context,String  name, String date, String facility, String deadline, String description, int maxWishEntrants, int maxSampleEntrants, Uri posterUri, boolean isGeolocate, boolean notifyWaitlisted, boolean notifyEnrolled, boolean notifyCancelled, boolean notifyInvited) {
+    public Event(Context context, String name, String date, String registrationEndDate, String description, String facility, int maxWishEntrants,
+                 int maxSampleEntrants, String posterUri, boolean isGeolocate){
         this.name = name;
         this.date = date;
+        this.registrationEndDate = registrationEndDate;
         this.facility = facility;
         this.deadline = deadline;
         this.description = description;
@@ -51,13 +52,22 @@ public class Event {
         this.notifyInvited = notifyInvited;
         this.context = context;
         this.organizerID = Settings.Secure.getString(context.getApplicationContext().getContentResolver(), Settings.Secure.ANDROID_ID);
-
-        System.out.println("Device ID: " + organizerID);
-
     }
+    public static Event fromFirestore(QueryDocumentSnapshot document) {
+        String name = document.getString("name");
+        String date = document.getString("date");
+        String registrationEndDate = document.getString("registrationEndDate");
+        String description = document.getString("description");
+        String facility = document.getString("facility");
+        int maxWishEntrants = document.getLong("maxWishEntrants").intValue();
+        int maxSampleEntrants = document.getLong("maxSampleEntrants").intValue();
+        String posterUri = document.getString("posterUri");
+        boolean isGeolocate = document.getBoolean("isGeolocate") != null ? document.getBoolean("isGeolocate") : false;
 
-    public Event() {
+        Event event = new Event(name, date, registrationEndDate, description, facility, maxWishEntrants, maxSampleEntrants, posterUri, isGeolocate);
+        event.eventId = document.getId(); // Use Firestore ID if available
 
+        return event;
     }
 
     // Getters
@@ -68,6 +78,10 @@ public class Event {
     public String getDate() {
         return date;
     }
+
+    public String getRegistrationEndDate() { return registrationEndDate; }
+
+    public String getFacility() { return facility; }
 
     public String getFacility() {
         return facility;
