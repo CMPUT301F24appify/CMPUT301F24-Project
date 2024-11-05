@@ -32,7 +32,10 @@
             </intent-filter>
         </activity>
         <activity android:name=".userProfileActivity"> </activity>
+        <activity android:name=".Activities.EntrantHomePageActivity" />
+        <activity android:name=".Activities.EntrantEnlistActivity" />
 
     </application>
+
 
 </manifest>
