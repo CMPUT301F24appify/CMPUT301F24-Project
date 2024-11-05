@@ -1,5 +1,8 @@
 package com.example.appify;
 
+import static android.content.ContentValues.TAG;
+import static java.security.AccessController.getContext;
+
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.AnimatorSet;
@@ -13,18 +16,26 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import android.provider.Settings.Secure;
 
 import com.example.appify.Activities.EntrantHomePageActivity;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import java.io.Console;
+import java.util.HashMap;
+import java.util.Map;
+
 public class MainActivity extends AppCompatActivity {
     private FirebaseFirestore db;
+    private String android_id;
+    private boolean firstEntry = false;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
+        android_id = Secure.getString(getApplicationContext().getContentResolver(), Secure.ANDROID_ID);
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
@@ -88,13 +99,44 @@ public class MainActivity extends AppCompatActivity {
         firstSet.addListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(Animator animation) {
-//                 CHANGE THE 'TempActivity' TO WHATEVER ACTIVITY YOU'RE WORKING ON
+                if(checkAndAddAndroidId(android_id)){
+                    Intent intent = new Intent(MainActivity.this,editUserActivity.class);
+                    intent.putExtra("Android ID", android_id);
+                    startActivity(intent);
+                }
+                else{
+                    Intent intent = new Intent(MainActivity.this,userProfileActivity.class);
+                    intent.putExtra("Android ID", android_id);
+                    startActivity(intent);
+                }
 
-                 Intent intent = new Intent(MainActivity.this, EntrantHomePageActivity.class);
-                 startActivity(intent);
-
+//                 Intent intent = new Intent(MainActivity.this,editUserActivity.class);
+//                 intent.putExtra("Android ID", android_id);
+//                 startActivity(intent);
             }
         });
         firstSet.start();
+    }
+    private boolean checkAndAddAndroidId(String androidId) {
+        // Access the specific document by androidId
+
+        db.collection("Android ID").document(androidId)
+                .get()  // Fetch the document snapshot
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        DocumentSnapshot document = task.getResult();
+
+                        if (!document.exists()) {
+                            db.collection("Android ID").document(androidId)
+                                    .set(new HashMap<>())  // Using an empty object to avoid adding fields
+                                    .addOnSuccessListener(aVoid -> Log.d("Firestore", "Document created successfully with android_id: " + androidId))
+                                    .addOnFailureListener(e -> Log.w("Firestore", "Error creating document", e));
+                            firstEntry = true;
+                        }
+                    } else {
+                        Log.w("Firestore", "Error checking for Android ID", task.getException());
+                    }
+                });
+        return firstEntry;
     }
 }
