@@ -78,8 +78,35 @@ public class EntrantEnlistActivity extends AppCompatActivity {
         // Handle Enlist and Leave buttons
         Button enlistLeaveButton = findViewById(R.id.enlist_leave_button);
 
-        enlistLeaveButton.setOnClickListener(v -> enlistInEvent(eventId));
-        enlistLeaveButton.setOnClickListener(v -> leaveEvent(eventId));
+        db = FirebaseFirestore.getInstance();
+        MyApp app = (MyApp) getApplication();
+        androidId = app.getAndroidId();
+
+        // Check if user is already enlisted in the waiting list
+        checkUserEnrollmentStatus();
+    }
+
+    /**
+     * Checks if the user is already enlisted in the event's waiting list and updates
+     * the enlistLeaveButton text and action accordingly.
+     */
+    private void checkUserEnrollmentStatus() {
+        DocumentReference eventRef = db.collection("events").document(eventId);
+        CollectionReference waitingListRef = eventRef.collection("waitingList");
+
+        waitingListRef.document(androidId).get().addOnSuccessListener(docSnapshot -> {
+            if (docSnapshot.exists()) {
+                // User is already enlisted
+                isUserEnlisted = true;
+                enlistLeaveButton.setText("Leave");
+                enlistLeaveButton.setOnClickListener(v -> leaveEvent(eventId));
+            } else {
+                // User is not enlisted
+                isUserEnlisted = false;
+                enlistLeaveButton.setText("Enlist");
+                enlistLeaveButton.setOnClickListener(v -> enlistInEvent(eventId));
+            }
+        }).addOnFailureListener(e -> Toast.makeText(this, "Error checking enrollment status.", Toast.LENGTH_SHORT).show());
     }
 
     /**
@@ -89,10 +116,8 @@ public class EntrantEnlistActivity extends AppCompatActivity {
      * @param eventId The unique ID of the event the user wishes to join.
      */
     private void enlistInEvent(String eventId) {
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
         DocumentReference eventRef = db.collection("events").document(eventId);
-        MyApp app = (MyApp) getApplication();
-        String androidId = app.getAndroidId();
+        CollectionReference waitingListRef = eventRef.collection("waitingList");
 
         eventRef.get().addOnSuccessListener(documentSnapshot -> {
             if (documentSnapshot.exists()) {
