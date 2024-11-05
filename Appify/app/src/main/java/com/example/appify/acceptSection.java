@@ -24,9 +24,36 @@ public class acceptSection {
 
     public void acceptEvent(Event chosenEvent) {
         //General logic - grab ids of event and user. Find the user in the waiting list by id, update
-        ArrayList<User> = waitingListchosenEvent.getWaitingList();
+        ArrayList<User> waitingListUpdate = waitingListchosenEvent.getWaitingList();
+        for(int i = 0; i < waitingListUpdate.size(); i++) {
+            if(currentUser.getID() == waitingListUpdate[i].getID()) {
+                waitingListUpdate[i].updateStatus("accepted");
+            }
+        }
     }
     public void declineEvent(Context chosenEvent) {
         //General logic - grab ids of event and user. Find the user in the waiting list by id, update
+        ArrayList<User> waitingListUpdate = waitingListchosenEvent.getWaitingList();
+        for(int i = 0; i < waitingListUpdate.size(); i++) {
+            if(currentUser.getID() == waitingListUpdate[i].getID()) {
+                waitingListUpdate[i].updateStatus("rejected");
+            }
+        }
+        chosenEvent.lottery();
     }
 }
+//import java.util.Random;
+//public void lottery() {
+//  int chosenPeople = 0;
+//  while (chosenPeople < max) {
+    //for(int i = 0; i < waitingListUpdate.size(); i++) {
+    //            if(currentUser.getStatus() == "enrolled") {
+    //                Random chance = new Random();
+    //                int chanceChoose = rand.nextInt(2);
+    //                if(chanceChoose == 1) {
+    //                    //Person is chosen
+    //                    chosenPeople++;
+    //            }
+    //        }
+//  }
+//}
