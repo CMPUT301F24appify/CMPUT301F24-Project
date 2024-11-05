@@ -35,9 +35,13 @@ public class CustomEventAdapter extends ArrayAdapter<Event> {
 
         TextView eventTitle = convertView.findViewById(R.id.event_title);
         TextView eventDesc = convertView.findViewById(R.id.event_desc);
+        TextView eventRegistrationEndDate = convertView.findViewById(R.id.registration_date);
+        TextView eventStartDate = convertView.findViewById(R.id.event_date);
 
         eventTitle.setText(event.getName());
         eventDesc.setText(event.getDescription());
+        eventRegistrationEndDate.setText(event.getRegistrationEndDate());
+        eventStartDate.setText(event.getDate());
         return convertView;
     }
 }
