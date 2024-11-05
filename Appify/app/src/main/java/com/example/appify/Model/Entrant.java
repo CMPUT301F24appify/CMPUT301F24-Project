@@ -4,20 +4,27 @@ import android.util.Log;
 
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import java.util.List;
+
 public class Entrant {
     // Attributes
     private String id;
     private String name;
     private String email;
-    private String status;
+    private String phoneNumber;
+    private String profilePictureUrl;
+    private boolean notifications;
+    private List<String> eventList;
 
 
     // Constructor
-    public Entrant(String id, String name, String email, String status) {
+    public Entrant(String id, String name, String phoneNumber, String email, String profilePicture, boolean notifications) {
         this.id = id;
         this.name = name;
+        this.phoneNumber = phoneNumber;
         this.email = email;
-        this.status = status;
+        this.profilePictureUrl = profilePicture;
+        this.notifications = notifications;
     }
 
     // Getters
@@ -28,14 +35,40 @@ public class Entrant {
     public String getName() {
         return name;
     }
-
+    public String getPhoneNumber() {
+        return phoneNumber;
+    }
+    public void setPhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
+    }
     public String getEmail() {
         return email;
     }
 
-    public String getStatus() {
-        return status;
+    public String getProfilePictureUrl() {
+        return profilePictureUrl;
     }
+
+    public void setProfilePictureUrl(String profilePictureUrl) {
+        this.profilePictureUrl = profilePictureUrl;
+    }
+
+    public boolean isNotifications() {
+        return notifications;
+    }
+
+    public void setNotifications(boolean notifications) {
+        this.notifications = notifications;
+    }
+
+    public List<String> getEventList() {
+        return eventList;
+    }
+
+    public void setEventList(List<String> eventList) {
+        this.eventList = eventList;
+    }
+
 
     // Methods
 

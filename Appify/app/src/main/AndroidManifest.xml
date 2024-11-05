@@ -22,16 +22,8 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity
-            android:name=".editUserActivity"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
-        <activity android:name=".userProfileActivity"> </activity>
+        <activity android:name=".Activities.editUserActivity"> </activity>
+        <activity android:name=".Activities.userProfileActivity"> </activity>
         <activity android:name=".Activities.EntrantHomePageActivity" />
         <activity android:name=".Activities.EntrantEnlistActivity" />
 

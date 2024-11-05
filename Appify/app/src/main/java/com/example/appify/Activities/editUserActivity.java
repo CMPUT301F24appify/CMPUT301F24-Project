@@ -1,4 +1,4 @@
-package com.example.appify;
+package com.example.appify.Activities;
 
 
 import android.content.Intent;
@@ -10,15 +10,16 @@ import android.graphics.Paint;
 import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
 import android.provider.MediaStore;
-import android.util.Log;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
+
+import com.example.appify.HeaderNavigation;
+import com.example.appify.Model.Entrant;
+import com.example.appify.R;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -30,7 +31,6 @@ import com.google.firebase.storage.StorageReference;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Random;
 
 public class editUserActivity extends AppCompatActivity {
@@ -61,6 +61,9 @@ public class editUserActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.edit_user);
         android_id = getIntent().getStringExtra("Android ID");
+
+        HeaderNavigation headerNavigation = new HeaderNavigation(this);
+        headerNavigation.setupNavigation();
 
         // Fetch the EditText fields
         nameEditText = findViewById(R.id.nameEditText);

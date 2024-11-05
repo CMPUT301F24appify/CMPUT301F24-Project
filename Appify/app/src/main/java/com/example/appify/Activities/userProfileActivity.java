@@ -1,4 +1,4 @@
-package com.example.appify;
+package com.example.appify.Activities;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -6,13 +6,14 @@ import android.os.Bundle;
 
 import androidx.appcompat.app.AppCompatActivity;
 import android.content.Intent;
-import android.os.Bundle;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import com.example.appify.HeaderNavigation;
+import com.example.appify.R;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.ListenerRegistration;
-import com.google.firebase.firestore.MetadataChanges;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
@@ -33,6 +34,9 @@ public class userProfileActivity extends AppCompatActivity {
 
         // Get Android ID passed from the previous activity
         String android_id = getIntent().getStringExtra("Android ID");
+
+        HeaderNavigation headerNavigation = new HeaderNavigation(this);
+        headerNavigation.setupNavigation();
 
         // Initialize Views
         profileImageView = findViewById(R.id.profileImageView);
