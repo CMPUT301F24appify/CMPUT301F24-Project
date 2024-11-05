@@ -27,6 +27,12 @@ import java.util.List;
  */
 public class EntrantEnlistActivity extends AppCompatActivity {
 
+    private boolean isUserEnlisted = false; // Track if the user is in the waiting list
+    private String eventId;
+    private String androidId;
+    private FirebaseFirestore db;
+    private Button enlistLeaveButton;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -70,11 +76,10 @@ public class EntrantEnlistActivity extends AppCompatActivity {
         }
 
         // Handle Enlist and Leave buttons
-        Button enlistButton = findViewById(R.id.enlist_button);
-        Button leaveButton = findViewById(R.id.leave_button);
+        Button enlistLeaveButton = findViewById(R.id.enlist_leave_button);
 
-        enlistButton.setOnClickListener(v -> enlistInEvent(eventId));
-        leaveButton.setOnClickListener(v -> leaveEvent(eventId));
+        enlistLeaveButton.setOnClickListener(v -> enlistInEvent(eventId));
+        enlistLeaveButton.setOnClickListener(v -> leaveEvent(eventId));
     }
 
     /**
