@@ -151,6 +151,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             app:backgroundTint="@color/buttons"
+            android:textColor="@color/black"
             android:text="Enlist" />
 
 
@@ -166,6 +167,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
+            app:backgroundTint="@color/buttons"
+            android:textColor="@color/black"
             android:text="Leave" />
     </LinearLayout>
 
