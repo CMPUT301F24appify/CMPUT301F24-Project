@@ -1,26 +1,93 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    tools:context=".Activities.EventEntrantsActivity">
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
 
-    <SearchView
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:context=".Activities.EventEntrantsActivity">
 
-    </SearchView>
 
-    <ListView
-        android:id="@+id/entrant_list"
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="53dp"
+            android:background="@color/background">
+
+            <SearchView
+                android:id="@+id/entrant_search_bar"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="10sp"
+                android:layout_marginTop="10sp"
+                android:layout_marginRight="10sp"
+                android:layout_marginBottom="10sp"
+                android:background="@drawable/rounded_search_view">
+
+            </SearchView>
+        </FrameLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="53dp"
+            android:background="@color/navbar"
+            android:orientation="horizontal"
+            android:paddingLeft="14sp"
+            android:paddingTop="10sp"
+            android:paddingRight="14sp"
+            android:paddingBottom="10sp">
+
+            <TextView
+                android:id="@+id/entrants_header_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Entrants"
+                android:textColor="@color/black"
+                android:textSize="24sp" />
+
+            <TextView
+                android:id="@+id/entrant_status_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="right"
+                android:text="Status"
+                android:textColor="@color/black"
+                android:textSize="24sp" />
+        </LinearLayout>
+
+        <ListView
+            android:id="@+id/entrant_list"
+            android:layout_width="match_parent"
+            android:layout_height="568dp"
+            android:choiceMode="singleChoice"
+            android:listSelector="#999999">
+
+        </ListView>
+
+
+    </LinearLayout>
+
+    <Button
+        android:id="@+id/back_button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:choiceMode="singleChoice"
-        android:listSelector="#999999">
+        android:layout_marginStart="10dp"
+        android:layout_marginEnd="10dp"
+        android:backgroundTint="@color/buttons"
+        android:text="Back to Event"
+        android:textColor="@color/black"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:strokeColor="#FF8C00"
+        app:strokeWidth="1dp" />
 
-    </ListView>
-
-</LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

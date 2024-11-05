@@ -75,8 +75,7 @@ public class EventEntrantsActivity extends AppCompatActivity{
 
                                 if (tasksCompleted[0] == totalTasks){
                                     // All tasks complete, set up adapter
-                                    System.out.println("Outside test: " + entrantList);
-                                    entrantAdapter = new CustomEntrantAdapter(this,entrantList);
+                                    entrantAdapter = new CustomEntrantAdapter(this,entrantList, eventID);
                                     entrantListView.setAdapter(entrantAdapter);
                                 }
                             });
