@@ -27,16 +27,19 @@ public class AddEventDialogFragment extends DialogFragment {
 
     // State variables for buttons
     private boolean isGeolocate = false;
-    private boolean isNotifyWaitlisted = false;
-    private boolean isNotifyEnrolled = false;
-    private boolean isNotifyCancelled = false;
-    private boolean isNotifyInvited = false;
+
+    // Notification message variables
+    private String waitlistedMessage = "";
+    private String enrolledMessage = "";
+    private String cancelledMessage = "";
+    private String invitedMessage = "";
 
     public interface AddEventDialogListener {
         void onEventAdded(String name, String date, String facility, String registrationEndDate,
                           String description, int maxWishEntrants, int maxSampleEntrants,
-                          String posterUri, boolean isGeolocate, boolean notifyWaitlisted,
-                          boolean notifyEnrolled, boolean notifyCancelled, boolean notifyInvited);
+                          String posterUri, boolean isGeolocate,
+                          String waitlistedMessage, String enrolledMessage,
+                          String cancelledMessage, String invitedMessage);
     }
 
     @Override
@@ -75,30 +78,38 @@ public class AddEventDialogFragment extends DialogFragment {
         Button notifyCancelled = view.findViewById(R.id.buttonCancelled);
         Button notifyInvited = view.findViewById(R.id.buttonInvited);
 
-        // Set OnClickListeners for buttons to toggle state
+        // Set OnClickListeners for buttons
         reminderGeolocation.setOnClickListener(v -> {
             isGeolocate = !isGeolocate;
             updateButtonAppearance(reminderGeolocation, isGeolocate);
         });
 
         notifyWaitlisted.setOnClickListener(v -> {
-            isNotifyWaitlisted = !isNotifyWaitlisted;
-            updateButtonAppearance(notifyWaitlisted, isNotifyWaitlisted);
+            showNotificationInputDialog("Waitlisted Notification", waitlistedMessage, message -> {
+                waitlistedMessage = message;
+                updateButtonAppearance(notifyWaitlisted, !message.isEmpty());
+            });
         });
 
         notifyEnrolled.setOnClickListener(v -> {
-            isNotifyEnrolled = !isNotifyEnrolled;
-            updateButtonAppearance(notifyEnrolled, isNotifyEnrolled);
+            showNotificationInputDialog("Enrolled Notification", enrolledMessage, message -> {
+                enrolledMessage = message;
+                updateButtonAppearance(notifyEnrolled, !message.isEmpty());
+            });
         });
 
         notifyCancelled.setOnClickListener(v -> {
-            isNotifyCancelled = !isNotifyCancelled;
-            updateButtonAppearance(notifyCancelled, isNotifyCancelled);
+            showNotificationInputDialog("Cancelled Notification", cancelledMessage, message -> {
+                cancelledMessage = message;
+                updateButtonAppearance(notifyCancelled, !message.isEmpty());
+            });
         });
 
         notifyInvited.setOnClickListener(v -> {
-            isNotifyInvited = !isNotifyInvited;
-            updateButtonAppearance(notifyInvited, isNotifyInvited);
+            showNotificationInputDialog("Invited Notification", invitedMessage, message -> {
+                invitedMessage = message;
+                updateButtonAppearance(notifyInvited, !message.isEmpty());
+            });
         });
 
         uploadPosterButton.setOnClickListener(v -> openFileChooser());
@@ -116,8 +127,8 @@ public class AddEventDialogFragment extends DialogFragment {
                     int sample_max = parseInteger(maxSampleEntrant.getText().toString());
 
                     listener.onEventAdded(name, date, facility, registrationEndDate, description,
-                            wish_max, sample_max, posterUri, isGeolocate, isNotifyWaitlisted,
-                            isNotifyEnrolled, isNotifyCancelled, isNotifyInvited);
+                            wish_max, sample_max, posterUri, isGeolocate,
+                            waitlistedMessage, enrolledMessage, cancelledMessage, invitedMessage);
                 })
                 .setNegativeButton("CANCEL", (dialog, id) -> dialog.dismiss());
 
@@ -171,5 +182,33 @@ public class AddEventDialogFragment extends DialogFragment {
         }).addOnFailureListener(e -> {
             Toast.makeText(getContext(), "Failed to upload poster: " + e.getMessage(), Toast.LENGTH_SHORT).show();
         });
+    }
+
+    // Interface for callback after input dialog
+    private interface NotificationMessageCallback {
+        void onMessageSet(String message);
+    }
+
+    private void showNotificationInputDialog(String title, String existingMessage, NotificationMessageCallback callback) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
+        builder.setTitle(title);
+
+        // Set up the input
+        final EditText input = new EditText(requireContext());
+        input.setText(existingMessage);  // Pre-fill with existing message if any
+        builder.setView(input);
+
+        // Set up the buttons
+        builder.setPositiveButton("Confirm", (dialog, which) -> {
+            String message = input.getText().toString();
+            callback.onMessageSet(message);
+        });
+        builder.setNegativeButton("Cancel", (dialog, which) -> dialog.cancel());
+        builder.setNeutralButton("Delete", (dialog, which) -> {
+            callback.onMessageSet("");
+            Toast.makeText(getContext(), "Notification message deleted", Toast.LENGTH_SHORT).show();
+        });
+
+        builder.show();
     }
 }
