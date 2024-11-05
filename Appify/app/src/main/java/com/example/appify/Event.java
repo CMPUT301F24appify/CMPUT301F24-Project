@@ -128,12 +128,6 @@ public class Event {
     }
 
 
-//    // Override the toString() method to display the event name in the ListView
-//    @Override
-//    public String toString() {
-//        return name;
-//    }
-
 
     public interface EventAddCallback {
         void onEventAdded(Event event);
@@ -155,53 +149,4 @@ public class Event {
     }
 }
 
-//    public void addToFirestore(EventAddCallback callback) {
-//        if (posterUri != null) {
-//            // Reference to Firebase Storage
-//            StorageReference storageRef = FirebaseStorage.getInstance().getReference();
-//
-//            // Create a unique path for each image in Firebase Storage
-//            StorageReference posterRef = storageRef.child("event_posters/" + UUID.randomUUID().toString() + ".jpg");
-//
-//            // Upload the image file
-//            UploadTask uploadTask = posterRef.putFile(Uri.parse(posterUri));
-//
-//            // Add listeners to handle success or failure
-//            uploadTask.addOnSuccessListener(taskSnapshot -> {
-//                // Retrieve the download URL
-//                posterRef.getDownloadUrl().addOnSuccessListener(downloadUri -> {
-//                    // Set the download URL as the posterUri
-//                    this.posterUri = downloadUri.toString();
-//
-//                    // Save the Event data with the new posterUri to Firestore
-//                    db.collection("events")
-//                            .document(this.eventId)
-//                            .set(this)
-//                            .addOnSuccessListener(aVoid -> {
-//                                if (callback != null) {
-//                                    callback.onEventAdded(this);
-//                                }
-//                            })
-//                            .addOnFailureListener(e -> {
-//                                Toast.makeText(context, "Error adding event: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-//                            });
-//                });
-//            }).addOnFailureListener(e -> {
-//                Toast.makeText(context, "Failed to upload poster image: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-//            });
-//        } else {
-//            // If no image is selected, save event directly to Firestore
-//            db.collection("events")
-//                    .document(this.eventId)
-//                    .set(this)
-//                    .addOnSuccessListener(aVoid -> {
-//                        if (callback != null) {
-//                            callback.onEventAdded(this);
-//                        }
-//                    })
-//                    .addOnFailureListener(e -> {
-//                        Toast.makeText(context, "Error adding event: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-//                    });
-//        }
-//    }
-//}
+
