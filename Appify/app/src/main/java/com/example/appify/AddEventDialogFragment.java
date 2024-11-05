@@ -23,7 +23,7 @@ public class AddEventDialogFragment extends DialogFragment {
     private AddEventDialogListener listener;
 
     public interface AddEventDialogListener {
-        void onEventAdded(String name, String date, String facility, String deadline, String description, int maxWishEntrants, int maxSampleEntrants, Uri posterUri, boolean isGeolocate, boolean notifyWaitlisted, boolean notifyEnrolled, boolean notifyCancelled, boolean notifyInvited);
+        void onEventAdded(String name, String date, String facility, String registrationEndDate, String description, int maxWishEntrants, int maxSampleEntrants, Uri posterUri, boolean isGeolocate, boolean notifyWaitlisted, boolean notifyEnrolled, boolean notifyCancelled, boolean notifyInvited);
     }
 
     @Override
@@ -46,7 +46,7 @@ public class AddEventDialogFragment extends DialogFragment {
         EditText eventName = view.findViewById(R.id.editTextEventName);
         EditText eventDate = view.findViewById(R.id.editDate);
         EditText eventFacility = view.findViewById(R.id.editFacility);
-        EditText eventDeadline = view.findViewById(R.id.editDeadline);
+        EditText eventregistrationEndDate = view.findViewById(R.id.editRegistrationEndDate);
         EditText eventDescription = view.findViewById(R.id.editTextEventDescription);
         CheckBox reminderGeolocation = view.findViewById(R.id.checkGeolocation);
         Button uploadPosterButton = view.findViewById(R.id.buttonUploadPoster);
@@ -67,7 +67,7 @@ public class AddEventDialogFragment extends DialogFragment {
                     String name = eventName.getText().toString();
                     String date = eventDate.getText().toString();
                     String facility = eventFacility.getText().toString();
-                    String deadline = eventDeadline.getText().toString();
+                    String registrationEndDate = eventregistrationEndDate.getText().toString();
                     String description = eventDescription.getText().toString();
                     boolean isGeolocate = reminderGeolocation.isChecked();
                     boolean isNotifyWaitlisted = notifyWaitlisted.isChecked();
@@ -101,7 +101,7 @@ public class AddEventDialogFragment extends DialogFragment {
                     }
 
                     // Pass data to MainActivity via the listener
-                    listener.onEventAdded(name, date, facility, deadline, description, wish_max, sample_max, posterUri, isGeolocate, isNotifyWaitlisted, isNotifyEnrolled, isNotifyCancelled, isNotifyInvited);
+                    listener.onEventAdded(name, date, facility, registrationEndDate, description, wish_max, sample_max, posterUri, isGeolocate, isNotifyWaitlisted, isNotifyEnrolled, isNotifyCancelled, isNotifyInvited);
 
                     if (posterUri != null) {
                         Toast.makeText(getContext(), "Poster selected: " + posterUri.getPath(), Toast.LENGTH_SHORT).show();

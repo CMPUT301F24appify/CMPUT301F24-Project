@@ -3,6 +3,7 @@ package com.example.appify;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
@@ -71,7 +72,7 @@ public class EventActivity extends AppCompatActivity implements AddEventDialogFr
             intent.putExtra("name", selectedEvent.getName() != null ? selectedEvent.getName() : "N/A");
             intent.putExtra("date", selectedEvent.getDate() != null ? selectedEvent.getDate() : "N/A");
             intent.putExtra("facility", selectedEvent.getFacility() != null ? selectedEvent.getFacility() : "N/A");
-            intent.putExtra("deadline", selectedEvent.getDeadline() != null ? selectedEvent.getDeadline() : "N/A");
+            intent.putExtra("registrationEndDate", selectedEvent.getRegistrationEndDate() != null ? selectedEvent.getRegistrationEndDate() : "N/A");
             intent.putExtra("description", selectedEvent.getDescription() != null ? selectedEvent.getDescription() : "N/A");
             intent.putExtra("maxWishEntrants", selectedEvent.getMaxWishEntrants());
             intent.putExtra("maxSampleEntrants", selectedEvent.getMaxSampleEntrants());
@@ -93,8 +94,8 @@ public class EventActivity extends AppCompatActivity implements AddEventDialogFr
     }
 
     @Override
-    public void onEventAdded(String name, String date, String facility, String deadline, String description, int maxWishEntrants, int maxSampleEntrants, Uri posterUri, boolean isGeolocate, boolean notifyWaitlisted, boolean notifyEnrolled, boolean notifyCancelled, boolean notifyInvited) {
-        Event newEvent = new Event(this,name, date, facility, deadline, description, maxWishEntrants, maxSampleEntrants, posterUri, isGeolocate, notifyWaitlisted, notifyEnrolled, notifyCancelled, notifyInvited);
+    public void onEventAdded(String name, String date, String facility, String registrationEndDate, String description, int maxWishEntrants, int maxSampleEntrants, Uri posterUri, boolean isGeolocate, boolean notifyWaitlisted, boolean notifyEnrolled, boolean notifyCancelled, boolean notifyInvited) {
+        Event newEvent = new Event(this,name, date, facility, registrationEndDate, description, maxWishEntrants, maxSampleEntrants, posterUri, isGeolocate, notifyWaitlisted, notifyEnrolled, notifyCancelled, notifyInvited);
 
 
 
@@ -121,10 +122,14 @@ public class EventActivity extends AppCompatActivity implements AddEventDialogFr
 
 
     private void loadEventsFromFirestore() {
+
+        String android_id = Settings.Secure.getString(getApplicationContext().getContentResolver(), Settings.Secure.ANDROID_ID);
+
         db.collection("events")
+                .whereEqualTo("organizerID", android_id)
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
-                    eventList.clear();  // Clear existing data to avoid duplicates
+//                    eventList.clear();  // Clear existing data to avoid duplicates
 
                     for (DocumentSnapshot document : queryDocumentSnapshots) {
                         // Convert Firestore document to an Event object

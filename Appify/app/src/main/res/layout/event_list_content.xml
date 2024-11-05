@@ -36,10 +36,10 @@
             android:textSize="14sp" />
 
         <TextView
-            android:id="@+id/event_deadline"
+            android:id="@+id/event_registrationEndDate"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="deadline"
+            android:text="registrationEndDate"
             android:textColor="#888888"
             android:textSize="14sp" />
     </LinearLayout>

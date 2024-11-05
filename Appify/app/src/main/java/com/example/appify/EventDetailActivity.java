@@ -27,7 +27,7 @@ public class EventDetailActivity extends AppCompatActivity {
         String name = intent.getStringExtra("name");
         String date = intent.getStringExtra("date");
         String facility = intent.getStringExtra("facility");
-        String deadline = intent.getStringExtra("deadline");
+        String registrationEndDate = intent.getStringExtra("registrationEndDate");
         String description = intent.getStringExtra("description");
         int maxWishEntrants = intent.getIntExtra("maxWishEntrants", 0);
         int maxSampleEntrants = intent.getIntExtra("maxSampleEntrants", 0);
@@ -40,7 +40,7 @@ public class EventDetailActivity extends AppCompatActivity {
         TextView nameTextView = findViewById(R.id.textViewName);
         TextView dateTextView = findViewById(R.id.textViewDate);
         TextView facilityTextView = findViewById(R.id.textViewFacility);
-        TextView deadlineTextView = findViewById(R.id.textViewDeadline);
+        TextView registrationEndDateTextView = findViewById(R.id.textViewRegistrationEndDate);
         TextView descriptionTextView = findViewById(R.id.textViewDescription);
         TextView maxWishTextView = findViewById(R.id.textViewMaxWishEntrants);
         TextView maxSampleTextView = findViewById(R.id.textViewMaxSampleEntrants);
@@ -50,7 +50,7 @@ public class EventDetailActivity extends AppCompatActivity {
         nameTextView.setText(name);
         dateTextView.setText(date);
         facilityTextView.setText(facility);
-        deadlineTextView.setText(deadline);
+        registrationEndDateTextView.setText(registrationEndDate);
         descriptionTextView.setText(description);
         maxWishTextView.setText("Max Wish Entrants: " + maxWishEntrants);
         maxSampleTextView.setText("Max Sample Entrants: " + maxSampleEntrants);

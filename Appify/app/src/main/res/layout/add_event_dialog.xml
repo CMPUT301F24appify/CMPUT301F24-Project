@@ -24,10 +24,10 @@
         android:hint="Facility" />
 
     <EditText
-        android:id="@+id/editDeadline"
+        android:id="@+id/editRegistrationEndDate"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Deadline" />
+        android:hint="RegistrationEndDate" />
 
     <EditText
         android:id="@+id/editTextEventDescription"

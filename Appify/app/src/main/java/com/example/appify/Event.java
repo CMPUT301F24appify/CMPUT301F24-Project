@@ -16,7 +16,7 @@ public class Event {
     private String name;
     private String date;
     private String facility;
-    private String deadline;
+    private String registrationEndDate;
     private String description;
     private int maxWishEntrants;
     private int maxSampleEntrants;
@@ -34,11 +34,11 @@ public class Event {
 
 
 
-    public Event(Context context,String  name, String date, String facility, String deadline, String description, int maxWishEntrants, int maxSampleEntrants, Uri posterUri, boolean isGeolocate, boolean notifyWaitlisted, boolean notifyEnrolled, boolean notifyCancelled, boolean notifyInvited) {
+    public Event(Context context,String  name, String date, String facility, String registrationEndDate, String description, int maxWishEntrants, int maxSampleEntrants, Uri posterUri, boolean isGeolocate, boolean notifyWaitlisted, boolean notifyEnrolled, boolean notifyCancelled, boolean notifyInvited) {
         this.name = name;
         this.date = date;
         this.facility = facility;
-        this.deadline = deadline;
+        this.registrationEndDate = registrationEndDate;
         this.description = description;
         this.maxWishEntrants = maxWishEntrants;
         this.maxSampleEntrants = maxSampleEntrants;
@@ -73,8 +73,8 @@ public class Event {
         return facility;
     }
 
-    public String getDeadline() {
-        return deadline;
+    public String getRegistrationEndDate() {
+        return registrationEndDate;
     }
 
     public String getDescription() {
