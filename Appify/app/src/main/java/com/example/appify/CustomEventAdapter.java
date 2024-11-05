@@ -31,10 +31,11 @@ public class CustomEventAdapter extends ArrayAdapter<Event> {
         Event event = eventList.get(position);
 
         TextView eventTitle = convertView.findViewById(R.id.event_title);
-        TextView eventDesc = convertView.findViewById(R.id.entrant_status_text);
+        TextView eventFacility = convertView.findViewById(R.id.event_facility);
+        TextView eventDate = convertView.findViewById(R.id.event_date);
+        TextView eventDeadline = convertView.findViewById(R.id.event_deadline);
 
         eventTitle.setText(event.getName());
-        eventDesc.setText(event.getDescription());
         return convertView;
     }
 }

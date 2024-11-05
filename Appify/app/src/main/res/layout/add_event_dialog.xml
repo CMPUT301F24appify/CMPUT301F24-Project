@@ -12,10 +12,22 @@
         android:hint="Event Name" />
 
     <EditText
+        android:id="@+id/editDate"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Date" />
+
+    <EditText
         android:id="@+id/editFacility"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="Facility" />
+
+    <EditText
+        android:id="@+id/editDeadline"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Deadline" />
 
     <EditText
         android:id="@+id/editTextEventDescription"
@@ -54,4 +66,52 @@
         android:hint="Max Entrants For Sample:" />
 
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingTop="16dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Notifications"
+            android:textSize="18sp"
+            android:paddingEnd="16dp"
+            android:textStyle="bold" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_weight="1">
+
+
+            <CheckBox
+                android:id="@+id/checkWaitlisted"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Notify Waitlisted" />
+
+            <CheckBox
+                android:id="@+id/checkEnrolled"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Notify Enrolled" />
+
+            <CheckBox
+                android:id="@+id/checkCancelled"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Notify Cancelled" />
+
+            <CheckBox
+                android:id="@+id/checkInvited"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Notify Invited" />
+        </LinearLayout>
+
+
+    </LinearLayout>
 </LinearLayout>

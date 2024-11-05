@@ -20,10 +20,26 @@
             android:textSize="18sp" />
 
         <TextView
-            android:id="@+id/entrant_status_text"
+            android:id="@+id/event_facility"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="description"
+            android:text="facility"
+            android:textColor="#888888"
+            android:textSize="14sp" />
+
+        <TextView
+            android:id="@+id/event_date"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="date"
+            android:textColor="#888888"
+            android:textSize="14sp" />
+
+        <TextView
+            android:id="@+id/event_deadline"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="deadline"
             android:textColor="#888888"
             android:textSize="14sp" />
     </LinearLayout>
