@@ -11,6 +11,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.example.appify.HeaderNavigation;
+import com.example.appify.MyApp;
 import com.example.appify.R;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.ListenerRegistration;
@@ -33,8 +34,9 @@ public class userProfileActivity extends AppCompatActivity {
         db = FirebaseFirestore.getInstance();
 
         // Get Android ID passed from the previous activity
-        String android_id = getIntent().getStringExtra("Android ID");
-
+//        String android_id = getIntent().getStringExtra("Android ID");
+        MyApp app = (MyApp) getApplication();
+        String android_id = app.getAndroidId();
         HeaderNavigation headerNavigation = new HeaderNavigation(this);
         headerNavigation.setupNavigation();
 
