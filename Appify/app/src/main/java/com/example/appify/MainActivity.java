@@ -21,6 +21,12 @@ import com.example.appify.Activities.userProfileActivity;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+/**
+ * Main activity that initiates the application and directs users based on their profile status.
+ * Displays an animated logo on startup, retrieves the device's unique Android ID,
+ * and checks if the user profile exists in Firestore.
+ * Navigates to either editUserActivity (for new users) or userProfileActivity (for existing users).
+ */
 public class MainActivity extends AppCompatActivity {
     private FirebaseFirestore db;
     private String android_id;
@@ -28,8 +34,13 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
+        /**
+         * Called when the activity is first created. Sets up UI, retrieves the Android ID,
+         * initializes Firebase, and starts the startup animation.
+         *
+         * @param savedInstanceState Saved instance data for restoring state if applicable.
+         */
         super.onCreate(savedInstanceState);
-        // EdgeToEdge.enable(this); // Deprecated: Removed for modern implementations
         setContentView(R.layout.activity_main);
 
         // Retrieve the unique Android ID
@@ -55,6 +66,10 @@ public class MainActivity extends AppCompatActivity {
         startUpAnimation();
     }
 
+    /**
+     * Initiates an animated sequence for the Appify logo components on the main screen.
+     * Once the animation completes, checks user status via {@link #checkAndNavigate(String)}.
+     */
     void startUpAnimation(){
 
         // Animate the top bar of the Appify Logo
