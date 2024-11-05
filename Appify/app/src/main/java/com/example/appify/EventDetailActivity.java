@@ -70,8 +70,8 @@ public class EventDetailActivity extends AppCompatActivity {
 
 
         // Display the image if the URI is valid
-        if (posterUri != null && !posterUri.toString().isEmpty()) {
-            // Use Glide to load the image from the Firebase Storage URL
+        if (posterUri != null) {
+            // Use Glide to load the image from the Firebase URL
             Glide.with(this).load(posterUri).into(posterImageView);
         } else {
 //            posterImageView.setImageResource(R.drawable.placeholder_image);  // Set a placeholder if no image is available

@@ -94,7 +94,7 @@ public class EventActivity extends AppCompatActivity implements AddEventDialogFr
     }
 
     @Override
-    public void onEventAdded(String name, String date, String facility, String registrationEndDate, String description, int maxWishEntrants, int maxSampleEntrants, Uri posterUri, boolean isGeolocate, boolean notifyWaitlisted, boolean notifyEnrolled, boolean notifyCancelled, boolean notifyInvited) {
+    public void onEventAdded(String name, String date, String facility, String registrationEndDate, String description, int maxWishEntrants, int maxSampleEntrants, String posterUri, boolean isGeolocate, boolean notifyWaitlisted, boolean notifyEnrolled, boolean notifyCancelled, boolean notifyInvited) {
         Event newEvent = new Event(this,name, date, facility, registrationEndDate, description, maxWishEntrants, maxSampleEntrants, posterUri, isGeolocate, notifyWaitlisted, notifyEnrolled, notifyCancelled, notifyInvited);
 
 
