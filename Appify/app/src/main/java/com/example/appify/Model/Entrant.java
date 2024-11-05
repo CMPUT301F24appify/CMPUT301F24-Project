@@ -1,8 +1,11 @@
 package com.example.appify.Model;
 
+import android.content.Context;
 import android.util.Log;
 
 import com.google.firebase.firestore.FirebaseFirestore;
+
+import java.util.ArrayList;
 
 public class Entrant {
     // Attributes
@@ -64,5 +67,33 @@ public class Entrant {
                     Log.w("Entrant", "Error leaving waiting list", e);
                 });
     }
+    public void acceptEvent(FirebaseFirestore db, String eventID) {
+        //General logic - grab ids of event and user. Find the user in the waiting list by id, update
+        db.collection("events").document(eventID)
+                .collection("waitingList").document(this.id)
+                .update("status", "accepted") // Update the "status" field to the new status
+                .addOnSuccessListener(aVoid -> {
+                    Log.d("Entrant", "Status updated successfully for entrant " + this.id);
+                })
+                .addOnFailureListener(e -> {
+                    Log.w("Entrant", "Error updating status for entrant " + this.id, e);
+                });
+    }
+    public void declineEvent(FirebaseFirestore db, String eventID, Event event) {
+        // Update Firestore to mark the entrant's status as "declined"
+        db.collection("events").document(eventID)
+                .collection("waitingList").document(this.id)
+                .update("status", "declined")
+                .addOnSuccessListener(aVoid -> {
+                    Log.d("Entrant", "Status updated to 'declined' for entrant " + this.id);
+
+                    // Trigger lottery rerun to select a replacement entrant
+                    event.lottery(db, eventID);
+                })
+                .addOnFailureListener(e -> {
+                    Log.w("Entrant", "Error updating status for entrant " + this.id, e);
+                });
+    }
 }
+
 

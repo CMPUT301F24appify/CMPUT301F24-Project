@@ -1,11 +1,14 @@
 package com.example.appify.Model;
 
 import android.content.Context;
+import android.util.Log;
 
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
+import java.util.ArrayList;
 import java.util.UUID;
+import java.util.Random;
 
 public class Event {
     private String name;
@@ -53,6 +56,63 @@ public class Event {
 
         return event;
     }
+    
+    public ArrayList<Entrant> getWaitingList() {
+        ArrayList<Entrant> waitingList = new ArrayList<>();
+
+        db.collection("events").document(this.eventId)
+                .collection("waitingList")
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
+                        String id = document.getString("id");
+                        String name = document.getString("name");
+                        String email = document.getString("email");
+                        String status = document.getString("status");
+
+                        Entrant entrant = new Entrant(id, name, email, status);
+                        waitingList.add(entrant);
+                    }
+                    Log.d("Event", "Waiting list retrieved successfully!");
+                })
+                .addOnFailureListener(e -> {
+                    Log.w("Event", "Error retrieving waiting list", e);
+                });
+
+        return waitingList;
+    }
+
+    public void lottery(FirebaseFirestore db, String eventID) {
+        int chosenPeople = 0;
+        ArrayList<Entrant> waitingListUpdate = this.getWaitingList();
+        Random chance = new Random();
+
+        while (chosenPeople < maxWishEntrants) {
+            for (Entrant entrant : waitingListUpdate) {
+                if ("enrolled".equals(entrant.getStatus())) {
+                    int chanceChoose = chance.nextInt(2); // 50% chance
+                    if (chanceChoose == 1) {
+                        // Person is chosen, update their status to "invited" directly in Firestore
+                        db.collection("events").document(eventID)
+                                .collection("waitingList").document(entrant.getId())
+                                .update("status", "invited")
+                                .addOnSuccessListener(aVoid -> {
+                                    Log.d("Lottery", "Entrant " + entrant.getId() + " invited successfully.");
+                                })
+                                .addOnFailureListener(e -> {
+                                    Log.w("Lottery", "Error inviting entrant " + entrant.getId(), e);
+                                });
+
+                        chosenPeople++;
+                        if (chosenPeople >= maxWishEntrants) {
+                            return; // Exit the method once the max number of entrants is invited
+                        }
+                    }
+                }
+            }
+        }
+    }
+
 
     // Getters
     public String getName() {
