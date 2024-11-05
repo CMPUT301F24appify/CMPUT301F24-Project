@@ -47,6 +47,7 @@ public class EntrantHomePageActivity extends AppCompatActivity {
 
         // Load Events from Firebase
         loadEventsFromFirestore();
+        String android_id = getIntent().getStringExtra("Android ID");
 
         // OnClickListener for the Events in the ListView
         eventListView.setOnItemClickListener((AdapterView<?> parent, View view, int position, long id) -> {

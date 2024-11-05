@@ -36,6 +36,10 @@ public class MainActivity extends AppCompatActivity {
         android_id = Secure.getString(getContentResolver(), Secure.ANDROID_ID);
         Log.d("MainActivity", "Android ID: " + android_id);
 
+        // Set Android ID in the global application class
+        MyApp app = (MyApp) getApplication();
+        app.setAndroidId(android_id);
+
         // Adjust padding based on system bars (optional, depending on your UI design)
         View mainView = findViewById(R.id.main);
         ViewCompat.setOnApplyWindowInsetsListener(mainView, (v, insets) -> {
