@@ -27,9 +27,9 @@
         <activity android:name=".Activities.userProfileActivity"> </activity>
         <activity android:name=".Activities.EntrantHomePageActivity" />
         <activity android:name=".Activities.EntrantEnlistActivity" />
-        <activity android:name=".EventEntrantsActivity" />
-        <activity android:name=".EventDetailActivity" />
-        <activity android:name=".EventActivity" />
+        <activity android:name=".Activities.EventEntrantsActivity" />
+        <activity android:name=".Activities.EventDetailActivity" />
+        <activity android:name=".Activities.EventActivity" />
     </application>
 
 </manifest>

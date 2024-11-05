@@ -1,4 +1,4 @@
-package com.example.appify;
+package com.example.appify.Adapters;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -8,6 +8,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.appify.Model.Event;
+import com.example.appify.R;
 
 import java.util.List;
 

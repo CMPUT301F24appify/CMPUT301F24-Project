@@ -1,12 +1,14 @@
-package com.example.appify;
+package com.example.appify.Activities;
 
 import android.content.Intent;
 import android.os.Bundle;
 import android.widget.ListView;
-import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.appify.Adapters.CustomEntrantAdapter;
+import com.example.appify.Model.Entrant;
+import com.example.appify.R;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -58,8 +60,12 @@ public class EventEntrantsActivity extends AppCompatActivity{
                                     String entrantID = userID;
                                     String entrantName = entrantData.get("name").toString();
                                     String entrantEmail = entrantData.get("email").toString();
-                                    String entrantWaitingListStatus = waitingListStatus.toString();
-                                    Entrant entrant = new Entrant(entrantID, entrantName, entrantEmail, entrantWaitingListStatus);
+                                    String phoneNumber = entrantData.get("phoneNumber").toString();
+                                    String email = entrantData.get("email").toString();
+                                    String entrantProfilePic = entrantData.get("profilePictureUrl").toString();
+                                    boolean notifications = entrantData.getBoolean("notifications");
+
+                                    Entrant entrant = new Entrant(entrantID, entrantName, phoneNumber, entrantEmail, entrantProfilePic, notifications);
                                     entrantList.add(entrant);
                                 }
                                 else {

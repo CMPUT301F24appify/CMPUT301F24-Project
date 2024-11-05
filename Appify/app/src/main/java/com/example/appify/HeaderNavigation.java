@@ -1,19 +1,13 @@
 package com.example.appify;
 
 import android.app.Activity;
-import android.content.ContentResolver;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.media.Image;
-import android.provider.Settings;
 import android.widget.TextView;
 import android.widget.ImageView;
 
 import com.example.appify.Activities.EntrantHomePageActivity;
+import com.example.appify.Activities.EventActivity;
 import com.example.appify.Activities.userProfileActivity;
-import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.StorageReference;
 
 public class HeaderNavigation {
     private Activity activity;

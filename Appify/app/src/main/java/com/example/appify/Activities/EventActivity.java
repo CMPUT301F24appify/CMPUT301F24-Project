@@ -1,10 +1,7 @@
-package com.example.appify;
+package com.example.appify.Activities;
 
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
-import android.provider.Settings;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.Toast;
@@ -12,15 +9,14 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.appify.Adapters.CustomEventAdapter;
+import com.example.appify.AddEventDialogFragment;
 import com.example.appify.Model.Event;
-import com.google.firebase.firestore.CollectionReference;
+import com.example.appify.MyApp;
+import com.example.appify.R;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 public class EventActivity extends AppCompatActivity implements AddEventDialogFragment.AddEventDialogListener {
     private FirebaseFirestore db;
