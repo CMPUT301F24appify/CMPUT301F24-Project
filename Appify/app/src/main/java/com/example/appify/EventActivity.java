@@ -108,6 +108,8 @@ public class EventActivity extends AppCompatActivity implements AddEventDialogFr
 //            eventList.add(event);
 //            eventAdapter.notifyDataSetChanged();
 //        });
+
+
 //        String eventID = newEvent.getEventId();
 //        db.collection("events")
 //                .document(eventID)
