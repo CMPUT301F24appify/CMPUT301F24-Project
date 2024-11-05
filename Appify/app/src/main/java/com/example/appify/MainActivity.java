@@ -6,6 +6,7 @@ import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.content.Intent;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -37,7 +38,6 @@ public class MainActivity extends AppCompatActivity {
             return insets;
         });
         db = FirebaseFirestore.getInstance();
-
         startUpAnimation();
     }
 
