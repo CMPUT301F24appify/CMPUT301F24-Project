@@ -94,19 +94,39 @@ public class EntrantEnlistActivity extends AppCompatActivity {
         DocumentReference eventRef = db.collection("events").document(eventId);
         CollectionReference waitingListRef = eventRef.collection("waitingList");
 
-        waitingListRef.document(androidId).get().addOnSuccessListener(docSnapshot -> {
-            if (docSnapshot.exists()) {
-                // User is already enlisted
-                isUserEnlisted = true;
-                enlistLeaveButton.setText("Leave");
-                enlistLeaveButton.setOnClickListener(v -> leaveEvent(eventId));
+        // Check the current status of the waiting list
+        eventRef.get().addOnSuccessListener(documentSnapshot -> {
+            if (documentSnapshot.exists()) {
+                int maxWishEntrants = documentSnapshot.getLong("maxWishEntrants").intValue();
+
+                waitingListRef.get().addOnSuccessListener(querySnapshot -> {
+                    int currentEntrants = querySnapshot.size();
+
+                    if (currentEntrants >= maxWishEntrants) {
+                        // Waiting list is full
+                        enlistLeaveButton.setText("Full");
+                        enlistLeaveButton.setOnClickListener(null); // Disable button
+                    } else {
+                        // Check if the user is already enlisted
+                        waitingListRef.document(androidId).get().addOnSuccessListener(docSnapshot -> {
+                            if (docSnapshot.exists()) {
+                                // User is already enlisted
+                                isUserEnlisted = true;
+                                enlistLeaveButton.setText("Leave");
+                                enlistLeaveButton.setOnClickListener(v -> leaveEvent(eventId));
+                            } else {
+                                // User is not enlisted
+                                isUserEnlisted = false;
+                                enlistLeaveButton.setText("Enlist");
+                                enlistLeaveButton.setOnClickListener(v -> enlistInEvent(eventId));
+                            }
+                        }).addOnFailureListener(e -> Toast.makeText(this, "Error checking enrollment status.", Toast.LENGTH_SHORT).show());
+                    }
+                }).addOnFailureListener(e -> Toast.makeText(this, "Error fetching waiting list data.", Toast.LENGTH_SHORT).show());
             } else {
-                // User is not enlisted
-                isUserEnlisted = false;
-                enlistLeaveButton.setText("Enlist");
-                enlistLeaveButton.setOnClickListener(v -> enlistInEvent(eventId));
+                Toast.makeText(this, "Event not found.", Toast.LENGTH_SHORT).show();
             }
-        }).addOnFailureListener(e -> Toast.makeText(this, "Error checking enrollment status.", Toast.LENGTH_SHORT).show());
+        }).addOnFailureListener(e -> Toast.makeText(this, "Error fetching event data.", Toast.LENGTH_SHORT).show());
     }
 
     /**
@@ -123,7 +143,7 @@ public class EntrantEnlistActivity extends AppCompatActivity {
             if (documentSnapshot.exists()) {
                 // Retrieve maxWishEntrants and check the current count of waitingList
                 int maxWishEntrants = documentSnapshot.getLong("maxWishEntrants").intValue();
-                CollectionReference waitingListRef = eventRef.collection("waitingList");
+                waitingListRef = eventRef.collection("waitingList");
 
                 // Check if the user is already in the waitingList
                 waitingListRef.document(androidId).get().addOnSuccessListener(docSnapshot -> {
