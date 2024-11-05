@@ -3,6 +3,7 @@ package com.example.appify;
 
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -17,6 +18,8 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.Toast;
+
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
@@ -70,7 +73,7 @@ public class editUserActivity extends AppCompatActivity {
         notifications = findViewById(R.id.notificationsCheckBox);
 
         db = FirebaseFirestore.getInstance();
-        populateTextBoxes(android_id);
+        populateFields(android_id);
         uploadButton.setOnClickListener(v -> openFileChooser());
 
         removeButton.setOnClickListener(v -> {
@@ -83,20 +86,18 @@ public class editUserActivity extends AppCompatActivity {
             String phoneNumber = phoneEditText.getText().toString();
             String email = emailEditText.getText().toString();
 
-            if (imageUri == null) {
-                // Generate a profile picture with the first letter of the user's name
-                String firstName = name.trim();
-                if (!firstName.isEmpty()) {
-                    String firstLetter = String.valueOf(firstName.charAt(0)).toUpperCase();
+            if (name.isEmpty() || email.isEmpty()) {
+                Toast.makeText(editUserActivity.this, "Please fill in both Name and Email Fields", Toast.LENGTH_SHORT).show();
+            } else {
+                // Generate profile picture
+                if (imageUri == null) {
+                    String firstLetter = String.valueOf(name.charAt(0)).toUpperCase();
                     Bitmap profilePicture = generateProfilePicture(firstLetter);
-                    profileImageView.setImageBitmap(profilePicture);  // Set the generated image
+                    profileImageView.setImageBitmap(profilePicture);
                 }
+                //Submit Data and open other Activity
+                sendEntrantData(android_id, name, phoneNumber, email);
             }
-            sendEntrantData(android_id,name,phoneNumber,email);
-//            Intent intent = new Intent(editUserActivity.this,userProfileActivity.class);
-//            intent.putExtra("Android ID", android_id);
-//            intent.putExtra("Profile Picture Byte", profilePictureByte);
-//            startActivity(intent);
 
         });
     }
@@ -168,12 +169,11 @@ public class editUserActivity extends AppCompatActivity {
                                 // Successfully saved data to Firestore
                                 Intent intent = new Intent(editUserActivity.this, userProfileActivity.class);
                                 intent.putExtra("Android ID", android_id);
-                                intent.putExtra("Profile Picture", profilePictureByte);
                                 startActivity(intent);
                             });
                 }));
     }
-    private void populateTextBoxes(String android_id){
+    private void populateFields(String android_id){
         db.collection("Android ID").document(android_id).get()
                 .addOnSuccessListener(documentSnapshot -> {
                     if (documentSnapshot.exists()) {
@@ -187,6 +187,8 @@ public class editUserActivity extends AppCompatActivity {
                         nameEditText.setText(name);
                         phoneEditText.setText(phone);
                         emailEditText.setText(email);
+                        notifications.setChecked(documentSnapshot.getBoolean("notifications"));
+                        loadProfilePicture(android_id);
                     }
                 });
     }
@@ -194,5 +196,17 @@ public class editUserActivity extends AppCompatActivity {
         imageView.setDrawingCacheEnabled(true);
         imageView.buildDrawingCache();
         return Bitmap.createBitmap(imageView.getDrawingCache());
+    }
+    private void loadProfilePicture(String android_id) {
+        FirebaseStorage storage = FirebaseStorage.getInstance();
+        StorageReference storageRef = storage.getReference().child("profile_images/" + android_id + ".jpg");
+
+        long size = 1024 * 1024;
+        storageRef.getBytes(size)
+                .addOnSuccessListener(bytes -> {
+                    // Convert the byte array to a Bitmap
+                    Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+                    profileImageView.setImageBitmap(bitmap);
+                });
     }
 }
