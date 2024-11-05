@@ -2,6 +2,7 @@ package com.example.appify.Activities;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.widget.Button;
 import android.widget.ListView;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -88,6 +89,10 @@ public class EventEntrantsActivity extends AppCompatActivity{
             }
         });
 
+        Button backButton = findViewById(R.id.back_button);
+        backButton.setOnClickListener(v -> {
+            finish();
+        });
 
     }
 }
