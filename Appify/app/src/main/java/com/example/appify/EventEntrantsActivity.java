@@ -8,6 +8,7 @@ import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
@@ -44,6 +45,19 @@ public class EventEntrantsActivity extends AppCompatActivity{
                     // Access each document in the waitingList
                     String userID = document.getId();
                     Object waitingListStatus = document.getData();
+
+                    db.collection("Android ID").document(userID).get()
+                                    .addOnCompleteListener(task2 ->{
+                                        if(task2.isSuccessful() && task2.getResult() != null){
+                                            DocumentSnapshot entrantData = task2.getResult();
+                                            System.out.println("AndroidID Data for " + userID + ": " + entrantData.get("name"));
+                                            userIDs.add(userID);
+                                        }
+                                        else {
+                                            System.out.println("Error getting AndroidID document for " + userID + ": " + task2.getException());
+                                        }
+                                    });
+
                     userIDs.add(userID);
                     waitingListStatuses.add(document.getData());
                 }
