@@ -19,6 +19,11 @@ import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
 
+/**
+ * The EntrantHomePageActivity class displays a list of events available to entrants.
+ * It fetches event data from Firestore, populates a ListView using a custom adapter,
+ * and handles user interactions such as clicking on an event to view details.
+ */
 public class EntrantHomePageActivity extends AppCompatActivity {
     // Variables
     private FirebaseFirestore db;
@@ -27,7 +32,13 @@ public class EntrantHomePageActivity extends AppCompatActivity {
     ArrayList<Event> eventList;
 
 
-
+    /**
+     * Called when the activity is starting. Initializes UI components and loads event data.
+     *
+     * @param savedInstanceState If the activity is being re-initialized after previously being
+     *                           shut down, then this Bundle contains the data it most recently supplied
+     *                           in onSaveInstanceState(Bundle). Note: Otherwise it is null.
+     */
     @Override
     protected void  onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
@@ -47,6 +58,7 @@ public class EntrantHomePageActivity extends AppCompatActivity {
 
         // Load Events from Firebase
         loadEventsFromFirestore();
+        String android_id = getIntent().getStringExtra("Android ID");
 
         // OnClickListener for the Events in the ListView
         eventListView.setOnItemClickListener((AdapterView<?> parent, View view, int position, long id) -> {
@@ -69,6 +81,11 @@ public class EntrantHomePageActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Loads events from the Firestore database and updates the ListView.
+     * Retrieves documents from the "events" collection, creates {@link Event} objects,
+     * and notifies the adapter to refresh the ListView.
+     */
     private void loadEventsFromFirestore() {
         CollectionReference eventsRef = db.collection("events");
 

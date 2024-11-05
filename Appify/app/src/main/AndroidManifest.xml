@@ -4,6 +4,7 @@
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
 
     <application
+        android:name=".MyApp"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
@@ -22,18 +23,11 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity
-            android:name=".editUserActivity"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
-        <activity android:name=".userProfileActivity"> </activity>
+        <activity android:name=".Activities.editUserActivity"> </activity>
+        <activity android:name=".Activities.userProfileActivity"> </activity>
         <activity android:name=".Activities.EntrantHomePageActivity" />
         <activity android:name=".Activities.EntrantEnlistActivity" />
+        <activity android:name=".Activities.EnlistConfirmationActivity" />
 
     </application>
 

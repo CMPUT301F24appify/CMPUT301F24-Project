@@ -1,11 +1,19 @@
 package com.example.appify;
 
 import android.app.Activity;
+import android.content.ContentResolver;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.media.Image;
+import android.provider.Settings;
 import android.widget.TextView;
 import android.widget.ImageView;
 
 import com.example.appify.Activities.EntrantHomePageActivity;
+import com.example.appify.Activities.userProfileActivity;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
 public class HeaderNavigation {
     private Activity activity;
@@ -40,6 +48,19 @@ public class HeaderNavigation {
         if (notificationBell != null) {
             notificationBell.setOnClickListener(v -> navigateToNotifications());
         }
+
+        // Entrant Home
+        ImageView appifyLogo = activity.findViewById(R.id.logo);
+        if (appifyLogo != null) {
+            appifyLogo.setOnClickListener(v -> navigateToEvents());
+        }
+
+        // Profile Picture
+        ImageView profilePicture = activity.findViewById(R.id.profileImageViewHeader);
+        if (profilePicture != null) {
+            profilePicture.setOnClickListener(v -> navigateToProfile());
+        }
+
     }
 
     // Navigation methods for each destination
@@ -61,6 +82,11 @@ public class HeaderNavigation {
     private void navigateToNotifications() {
 //        Intent intent = new Intent(activity, NotificationsActivity.class);
 //        activity.startActivity(intent);
+    }
+
+    private void navigateToProfile() {
+        Intent intent = new Intent(activity, userProfileActivity.class);
+        activity.startActivity(intent);
     }
 
 }
