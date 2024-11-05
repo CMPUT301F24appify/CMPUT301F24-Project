@@ -98,14 +98,13 @@ public class EventActivity extends AppCompatActivity implements AddEventDialogFr
         });
     }
 
-
-
     private void loadEventsFromFirestore() {
 
-        String android_id = Settings.Secure.getString(getApplicationContext().getContentResolver(), Settings.Secure.ANDROID_ID);
+        MyApp app = (MyApp) getApplication();
+        String organizerID = app.getAndroidId();
 
         db.collection("events")
-                .whereEqualTo("organizerID", android_id)
+                .whereEqualTo("organizerID", organizerID)
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
 //                    eventList.clear();  // Clear existing data to avoid duplicates

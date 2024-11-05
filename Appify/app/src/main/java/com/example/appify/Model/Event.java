@@ -47,6 +47,7 @@ public class Event {
         this.notifyEnrolled = notifyEnrolled;
         this.notifyCancelled = notifyCancelled;
         this.notifyInvited = notifyInvited;
+        this.organizerID= organizerID;
 //        this.context = context;
 //        this.organizerID = Settings.Secure.getString(context.getApplicationContext().getContentResolver(), Settings.Secure.ANDROID_ID);
     }
