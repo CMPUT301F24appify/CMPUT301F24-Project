@@ -23,7 +23,7 @@ public class AddEventDialogFragment extends DialogFragment {
     private AddEventDialogListener listener;
 
     public interface AddEventDialogListener {
-        void onEventAdded(String name, String date, String description, int maxWishEntrants, int maxSampleEntrants, Uri posterUri, boolean isGeolocate);
+        void onEventAdded(String name, String date, String facility, String deadline, String description, int maxWishEntrants, int maxSampleEntrants, Uri posterUri, boolean isGeolocate, boolean notifyWaitlisted, boolean notifyEnrolled, boolean notifyCancelled, boolean notifyInvited);
     }
 
     @Override
@@ -44,12 +44,18 @@ public class AddEventDialogFragment extends DialogFragment {
         View view = inflater.inflate(R.layout.add_event_dialog, null);
 
         EditText eventName = view.findViewById(R.id.editTextEventName);
-        EditText eventDate = view.findViewById(R.id.editFacility);
+        EditText eventDate = view.findViewById(R.id.editDate);
+        EditText eventFacility = view.findViewById(R.id.editFacility);
+        EditText eventDeadline = view.findViewById(R.id.editDeadline);
         EditText eventDescription = view.findViewById(R.id.editTextEventDescription);
         CheckBox reminderGeolocation = view.findViewById(R.id.checkGeolocation);
         Button uploadPosterButton = view.findViewById(R.id.buttonUploadPoster);
         EditText maxWishEntrant = view.findViewById(R.id.maxNumberWishList);
         EditText maxSampleEntrant = view.findViewById(R.id.maxNumberSample);
+        CheckBox notifyWaitlisted = view.findViewById(R.id.checkWaitlisted);
+        CheckBox notifyEnrolled = view.findViewById(R.id.checkEnrolled);
+        CheckBox notifyCancelled = view.findViewById(R.id.checkCancelled);
+        CheckBox notifyInvited = view.findViewById(R.id.checkInvited);
 
 
         uploadPosterButton.setOnClickListener(v -> openFileChooser());
@@ -60,8 +66,15 @@ public class AddEventDialogFragment extends DialogFragment {
                     // Get event details from the input fields
                     String name = eventName.getText().toString();
                     String date = eventDate.getText().toString();
+                    String facility = eventFacility.getText().toString();
+                    String deadline = eventDeadline.getText().toString();
                     String description = eventDescription.getText().toString();
                     boolean isGeolocate = reminderGeolocation.isChecked();
+                    boolean isNotifyWaitlisted = notifyWaitlisted.isChecked();
+                    boolean isNotifyEnrolled = notifyEnrolled.isChecked();
+                    boolean isNotifyCancelled = notifyCancelled.isChecked();
+                    boolean isNotifyInvited = notifyInvited.isChecked();
+
 
                     String maxEntrantWishText = maxWishEntrant.getText().toString();
                     int wish_max = 0; // Default value if no valid input
@@ -88,7 +101,7 @@ public class AddEventDialogFragment extends DialogFragment {
                     }
 
                     // Pass data to MainActivity via the listener
-                    listener.onEventAdded(name, date, description, wish_max, sample_max, posterUri, isGeolocate);
+                    listener.onEventAdded(name, date, facility, deadline, description, wish_max, sample_max, posterUri, isGeolocate, isNotifyWaitlisted, isNotifyEnrolled, isNotifyCancelled, isNotifyInvited);
 
                     if (posterUri != null) {
                         Toast.makeText(getContext(), "Poster selected: " + posterUri.getPath(), Toast.LENGTH_SHORT).show();

@@ -10,6 +10,8 @@ import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.bumptech.glide.Glide;
+
 public class EventDetailActivity extends AppCompatActivity {
 
     @Override
@@ -17,10 +19,15 @@ public class EventDetailActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_event_detail);
 
+
+
+
         // Retrieve data from the Intent
         Intent intent = getIntent();
         String name = intent.getStringExtra("name");
         String date = intent.getStringExtra("date");
+        String facility = intent.getStringExtra("facility");
+        String deadline = intent.getStringExtra("deadline");
         String description = intent.getStringExtra("description");
         int maxWishEntrants = intent.getIntExtra("maxWishEntrants", 0);
         int maxSampleEntrants = intent.getIntExtra("maxSampleEntrants", 0);
@@ -32,6 +39,8 @@ public class EventDetailActivity extends AppCompatActivity {
         // Bind data to views
         TextView nameTextView = findViewById(R.id.textViewName);
         TextView dateTextView = findViewById(R.id.textViewDate);
+        TextView facilityTextView = findViewById(R.id.textViewFacility);
+        TextView deadlineTextView = findViewById(R.id.textViewDeadline);
         TextView descriptionTextView = findViewById(R.id.textViewDescription);
         TextView maxWishTextView = findViewById(R.id.textViewMaxWishEntrants);
         TextView maxSampleTextView = findViewById(R.id.textViewMaxSampleEntrants);
@@ -40,6 +49,8 @@ public class EventDetailActivity extends AppCompatActivity {
 
         nameTextView.setText(name);
         dateTextView.setText(date);
+        facilityTextView.setText(facility);
+        deadlineTextView.setText(deadline);
         descriptionTextView.setText(description);
         maxWishTextView.setText("Max Wish Entrants: " + maxWishEntrants);
         maxSampleTextView.setText("Max Sample Entrants: " + maxSampleEntrants);
@@ -59,10 +70,11 @@ public class EventDetailActivity extends AppCompatActivity {
 
 
         // Display the image if the URI is valid
-        if (posterUri != null) {
-            posterImageView.setImageURI(posterUri);
+        if (posterUri != null && !posterUri.toString().isEmpty()) {
+            // Use Glide to load the image from the Firebase Storage URL
+            Glide.with(this).load(posterUri).into(posterImageView);
         } else {
-            return; // Placeholder if no image
+//            posterImageView.setImageResource(R.drawable.placeholder_image);  // Set a placeholder if no image is available
         }
     }
 }
