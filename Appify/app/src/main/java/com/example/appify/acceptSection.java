@@ -10,14 +10,14 @@ import java.util.ArrayList;
 
 public class acceptSection {
     private FirebaseFirestore db;
-    private User currentUser;
+    private Entrant currentUser;
     private ArrayList<Event> userEvents;
 
 
     //registered events is an array of the events the user registered for.
     //user is user
     //Replace with appropriate classes during integration
-    public acceptSection(User user) {
+    public acceptSection(Entrant user) {
         currentUser = user;
         userEvents = user.getEvents();
     }
@@ -26,7 +26,7 @@ public class acceptSection {
         //General logic - grab ids of event and user. Find the user in the waiting list by id, update
         ArrayList<User> waitingListUpdate = waitingListchosenEvent.getWaitingList();
         for(int i = 0; i < waitingListUpdate.size(); i++) {
-            if(currentUser.getID() == waitingListUpdate[i].getID()) {
+            if(currentUser.getId() == waitingListUpdate[i].getID()) {
                 waitingListUpdate[i].updateStatus("accepted");
             }
         }
@@ -35,7 +35,7 @@ public class acceptSection {
         //General logic - grab ids of event and user. Find the user in the waiting list by id, update
         ArrayList<User> waitingListUpdate = waitingListchosenEvent.getWaitingList();
         for(int i = 0; i < waitingListUpdate.size(); i++) {
-            if(currentUser.getID() == waitingListUpdate[i].getID()) {
+            if(currentUser.getId() == waitingListUpdate[i].getID()) {
                 waitingListUpdate[i].updateStatus("rejected");
             }
         }
