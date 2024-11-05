@@ -27,12 +27,7 @@ public class EventActivity extends AppCompatActivity implements AddEventDialogFr
     private static final int REQUEST_READ_EXTERNAL_STORAGE = 1;
     ListView eventListView;
     CustomEventAdapter eventAdapter;
-    ArrayList<Event> eventList;
-
-    // Sample events
-    Event event1;
-    Event event2;
-    Event event3;
+    ArrayList<Event> eventList = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,19 +37,8 @@ public class EventActivity extends AppCompatActivity implements AddEventDialogFr
         db = FirebaseFirestore.getInstance();
 
         eventListView = findViewById(R.id.event_list);
-
-        // Sample events
-//        event1 = new Event(this,"Event 1", "Oct 12", "1", "2 days", "Here is the event description", 20, 5, null, false, false, false , false, false);
-//        event2 = new Event(this,"Event 2", "Nov 23", "2", "3 days", "Some description", 200, 50, null, true, false, false, false, false);
-//        event3 = new Event(this,"Event 3", "Jan 01", "3", "4 days", "blha blah blha", 3, 1, null, true, false, false, false, false);
-
-
-//        Event []events = {event1,event2, event3};
-
-//        eventList = new ArrayList<>();
-//        eventList.addAll(Arrays.asList(events));
-//        eventAdapter = new CustomEventAdapter(this,eventList);
-//        eventListView.setAdapter(eventAdapter);
+        eventAdapter = new CustomEventAdapter(this,eventList);
+        eventListView.setAdapter(eventAdapter);
 
         loadEventsFromFirestore();
 
@@ -99,7 +83,10 @@ public class EventActivity extends AppCompatActivity implements AddEventDialogFr
 
     @Override
     public void onEventAdded(String name, String date, String facility, String registrationEndDate, String description, int maxWishEntrants, int maxSampleEntrants, String posterUri, boolean isGeolocate, boolean notifyWaitlisted, boolean notifyEnrolled, boolean notifyCancelled, boolean notifyInvited) {
-        Event newEvent = new Event(this,name, date, facility, registrationEndDate, description, maxWishEntrants, maxSampleEntrants, posterUri, isGeolocate, notifyWaitlisted, notifyEnrolled, notifyCancelled, notifyInvited);
+        MyApp app = (MyApp) getApplication();
+        String organizerID = app.getAndroidId();
+        Event newEvent = new Event(name, date, facility, registrationEndDate, description, maxWishEntrants, maxSampleEntrants, posterUri, isGeolocate, notifyWaitlisted, notifyEnrolled, notifyCancelled, notifyInvited, organizerID);
+
 
 
 
@@ -109,18 +96,6 @@ public class EventActivity extends AppCompatActivity implements AddEventDialogFr
             eventList.add(event);
             eventAdapter.notifyDataSetChanged();
         });
-//        String eventID = newEvent.getEventId();
-//        db.collection("events")
-//                .document(eventID)
-//                .set(newEvent)
-//                .addOnSuccessListener(aVoid -> {
-//                    Toast.makeText(EventActivity.this, "Event added: " + name, Toast.LENGTH_SHORT).show();
-//                    eventList.add(newEvent);
-//                    eventAdapter.notifyDataSetChanged();
-//                })
-//                .addOnFailureListener(e -> {
-//                    Toast.makeText(EventActivity.this, "Error adding event: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-//                });
     }
 
 

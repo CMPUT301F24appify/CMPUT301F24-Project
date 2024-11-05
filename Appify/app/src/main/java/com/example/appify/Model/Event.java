@@ -32,7 +32,7 @@ public class Event {
     private String organizerID;
 
 
-    public Event(Context context, String name, String date, String facility, String registrationEndDate, String description, int maxWishEntrants, int maxSampleEntrants, String posterUri, boolean isGeolocate, boolean notifyWaitlisted, boolean notifyEnrolled, boolean notifyCancelled, boolean notifyInvited) {
+    public Event(String name, String date, String facility, String registrationEndDate, String description, int maxWishEntrants, int maxSampleEntrants, String posterUri, boolean isGeolocate, boolean notifyWaitlisted, boolean notifyEnrolled, boolean notifyCancelled, boolean notifyInvited, String organizerID) {
         this.name = name;
         this.date = date;
         this.facility = facility;
@@ -50,6 +50,10 @@ public class Event {
 //        this.context = context;
 //        this.organizerID = Settings.Secure.getString(context.getApplicationContext().getContentResolver(), Settings.Secure.ANDROID_ID);
     }
+    // No-argument constructor (required for Firebase)
+    public Event() {
+    }
+
     public static Event fromFirestore(QueryDocumentSnapshot document) {
         String name = document.getString("name");
         String date = document.getString("date");
@@ -60,12 +64,14 @@ public class Event {
         int maxSampleEntrants = document.getLong("maxSampleEntrants").intValue();
         String posterUri = document.getString("posterUri");
         boolean isGeolocate = document.getBoolean("isGeolocate") != null ? document.getBoolean("isGeolocate") : false;
-        boolean notifyWaitlisted = document.getBoolean("notifyWaitlisted");
-        boolean notifyEnrolled = document.getBoolean("notifyEnrolled");
-        boolean notifyCancelled = document.getBoolean("notifyCancelled");
-        boolean notifyInvited = document.getBoolean("notifyInvited");
+        boolean notifyWaitlisted = document.getBoolean("notifyWaitlisted") != null ? document.getBoolean("notifyWaitlisted") : false;
+        boolean notifyEnrolled = document.getBoolean("notifyEnrolled") != null ? document.getBoolean("notifyEnrolled") : false;
+        boolean notifyCancelled = document.getBoolean("notifyCancelled") != null ? document.getBoolean("notifyCancelled") : false;
+        boolean notifyInvited = document.getBoolean("notifyInvited") != null ? document.getBoolean("notifyInvited") : false;
+        String organizerID = document.getString("organizerID");
 
-        Event event = new Event(name, date, registrationEndDate, description, facility, maxWishEntrants, maxSampleEntrants, posterUri, isGeolocate, notifyWaitlisted, notifyEnrolled, notifyCancelled,notifyInvited);
+
+        Event event = new Event(name, date, registrationEndDate, description, facility, maxWishEntrants, maxSampleEntrants, posterUri, isGeolocate, notifyWaitlisted, notifyEnrolled, notifyCancelled,notifyInvited, organizerID);
         event.eventId = document.getId(); // Use Firestore ID if available
 
         return event;

@@ -75,8 +75,8 @@ public class HeaderNavigation {
     }
 
     private void navigateToOrganize() {
-//        Intent intent = new Intent(activity, OrganizeActivity.class);
-//        activity.startActivity(intent);
+        Intent intent = new Intent(activity, EventActivity.class);
+        activity.startActivity(intent);
     }
 
     private void navigateToNotifications() {
