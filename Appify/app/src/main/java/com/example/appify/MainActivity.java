@@ -6,16 +6,22 @@ import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.content.Intent;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import android.provider.Settings.Secure;
 
+import com.google.firebase.firestore.CollectionReference;
 import com.example.appify.Activities.editUserActivity;
 import com.example.appify.Activities.userProfileActivity;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -41,6 +47,7 @@ public class MainActivity extends AppCompatActivity {
          * @param savedInstanceState Saved instance data for restoring state if applicable.
          */
         super.onCreate(savedInstanceState);
+        EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
 
         // Retrieve the unique Android ID
@@ -81,6 +88,7 @@ public class MainActivity extends AppCompatActivity {
                 topBar.getTranslationY(),
                 topBar_endY);
         tY_topBar.setDuration(2000);
+        topBar.setTranslationY(topBar_endY);
 
         // Animate the bottom bar of the Appify Logo
         View bottomBar = findViewById(R.id.bottom_bar);
@@ -91,6 +99,7 @@ public class MainActivity extends AppCompatActivity {
                 bottomBar.getTranslationY(),
                 bottomBar_endY);
         tY_bottomBar.setDuration(2000);
+        bottomBar.setTranslationY(bottomBar_endY);
 
         // Animate the APP text of the Appify Logo
         View appText = findViewById(R.id.app_text);
@@ -101,6 +110,7 @@ public class MainActivity extends AppCompatActivity {
                 appText.getTranslationX(),
                 appText_endX);
         tX_appText.setDuration(2000);
+        appText.setTranslationX(appText_endX);
 
         // Animate the IFY text of the Appify Logo
         View ifyText = findViewById(R.id.ify_text);
@@ -111,12 +121,13 @@ public class MainActivity extends AppCompatActivity {
                 ifyText.getTranslationX(),
                 ifyText_endX);
         tX_ifyText.setDuration(2000);
+        ifyText.setTranslationX(ifyText_endX);
 
         // Combine all animations
         AnimatorSet firstSet = new AnimatorSet();
         firstSet.playTogether(tY_topBar, tY_bottomBar, tX_appText, tX_ifyText);
 
-        // Listener to handle actions after animation ends
+        // When the animation ends, switch the view after a short delay.
         firstSet.addListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(Animator animation) {
