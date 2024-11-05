@@ -20,6 +20,11 @@ import com.example.appify.R;
 import java.util.HashMap;
 import java.util.List;
 
+/**
+ * The EntrantEnlistActivity class provides the UI and functionality for users
+ * to enlist in or leave an event’s waiting list. It displays event details and
+ * includes enlist and leave buttons.
+ */
 public class EntrantEnlistActivity extends AppCompatActivity {
 
     @Override
@@ -57,6 +62,7 @@ public class EntrantEnlistActivity extends AppCompatActivity {
         eventRegistrationEnd.setText(registrationEndDate);
         eventFacility.setText(facility);
 
+        // Show Geolocation Requirement
         if (isGeolocate) {
             eventGeolocate.setText("IMPORTANT: Registering for this event REQUIRES geolocation.");
         } else {
@@ -71,6 +77,12 @@ public class EntrantEnlistActivity extends AppCompatActivity {
         leaveButton.setOnClickListener(v -> leaveEvent(eventId));
     }
 
+    /**
+     * Enlists the current user in the specified event’s waiting list.
+     * It checks if the user is already enlisted and verifies if the waiting list has capacity.
+     *
+     * @param eventId The unique ID of the event the user wishes to join.
+     */
     private void enlistInEvent(String eventId) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         DocumentReference eventRef = db.collection("events").document(eventId);
@@ -83,59 +95,85 @@ public class EntrantEnlistActivity extends AppCompatActivity {
                 int maxWishEntrants = documentSnapshot.getLong("maxWishEntrants").intValue();
                 CollectionReference waitingListRef = eventRef.collection("waitingList");
 
-                // Check the count of documents in the waitingList collection
-                waitingListRef.get().addOnSuccessListener(querySnapshot -> {
-                    int currentEntrants = querySnapshot.size();
-
-                    if (currentEntrants >= maxWishEntrants) {
-                        Toast.makeText(this, "Waiting list is full.", Toast.LENGTH_SHORT).show();
+                // Check if the user is already in the waitingList
+                waitingListRef.document(androidId).get().addOnSuccessListener(docSnapshot -> {
+                    if (docSnapshot.exists()) {
+                        Toast.makeText(this, "Already in the event", Toast.LENGTH_SHORT).show();
                     } else {
-                        // Step 1: Add user to the event's waitingList subcollection
-                        waitingListRef.document(androidId).set(new HashMap<>()) // Use HashMap to create an empty document
-                                .addOnSuccessListener(aVoid -> {
-                                    Toast.makeText(this, "Successfully enlisted!", Toast.LENGTH_SHORT).show();
+                        // Proceed to add the user if the waiting list is not full
+                        waitingListRef.get().addOnSuccessListener(querySnapshot -> {
+                            int currentEntrants = querySnapshot.size();
 
-                                    // Step 2: Add eventId to user's waitListedEvents subcollection
-                                    CollectionReference userWaitListedEventsRef = db.collection("Android ID")
-                                            .document(androidId)
-                                            .collection("waitListedEvents");
-                                    userWaitListedEventsRef.document(eventId).set(new HashMap<>()) // Use HashMap for an empty document
-                                            .addOnSuccessListener(aVoid2 -> Toast.makeText(this, "Event added to your waitlisted events.", Toast.LENGTH_SHORT).show())
-                                            .addOnFailureListener(e -> Toast.makeText(this, "Failed to add event to your waitlisted events.", Toast.LENGTH_SHORT).show());
-                                })
-                                .addOnFailureListener(e -> Toast.makeText(this, "Failed to enlist in the waiting list. Try again.", Toast.LENGTH_SHORT).show());
+                            if (currentEntrants >= maxWishEntrants) {
+                                Toast.makeText(this, "Waiting list is full.", Toast.LENGTH_SHORT).show();
+                            } else {
+                                // Step 1: Add user to the event's waitingList subcollection with status "enrolled"
+                                HashMap<String, Object> waitlistData = new HashMap<>();
+                                waitlistData.put("status", "enrolled");
+
+                                waitingListRef.document(androidId).set(waitlistData) // Add status field
+                                        .addOnSuccessListener(aVoid -> {
+                                            Toast.makeText(this, "Successfully enlisted!", Toast.LENGTH_SHORT).show();
+
+                                            // Step 2: Add eventId to user's waitListedEvents subcollection with status "enrolled"
+                                            CollectionReference userWaitListedEventsRef = db.collection("Android ID")
+                                                    .document(androidId)
+                                                    .collection("waitListedEvents");
+
+                                            HashMap<String, Object> eventStatusData = new HashMap<>();
+                                            eventStatusData.put("status", "enrolled");
+
+                                            userWaitListedEventsRef.document(eventId).set(eventStatusData) // Add status field
+                                                    .addOnSuccessListener(aVoid2 -> Toast.makeText(this, "Event added to your waitlisted events.", Toast.LENGTH_SHORT).show())
+                                                    .addOnFailureListener(e -> Toast.makeText(this, "Failed to add event to your waitlisted events.", Toast.LENGTH_SHORT).show());
+                                        })
+                                        .addOnFailureListener(e -> Toast.makeText(this, "Failed to enlist in the waiting list. Try again.", Toast.LENGTH_SHORT).show());
+                            }
+                        }).addOnFailureListener(e -> Toast.makeText(this, "Error fetching waiting list data.", Toast.LENGTH_SHORT).show());
                     }
-                }).addOnFailureListener(e -> Toast.makeText(this, "Error fetching waiting list data.", Toast.LENGTH_SHORT).show());
+                }).addOnFailureListener(e -> Toast.makeText(this, "Error checking enrollment status.", Toast.LENGTH_SHORT).show());
             } else {
                 Toast.makeText(this, "Event not found.", Toast.LENGTH_SHORT).show();
             }
         }).addOnFailureListener(e -> Toast.makeText(this, "Error fetching event data.", Toast.LENGTH_SHORT).show());
     }
 
-
+    /**
+     * Removes the current user from the specified event’s waiting list.
+     * It checks if the user is already enlisted before attempting removal.
+     *
+     * @param eventId The unique ID of the event the user wishes to leave.
+     */
     private void leaveEvent(String eventId) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         DocumentReference eventRef = db.collection("events").document(eventId);
         MyApp app = (MyApp) getApplication();
         String androidId = app.getAndroidId();
 
-        // Step 1: Remove user from the event's waitingList subcollection
+        // Step 1: Check if user is in the event's waitingList subcollection
         CollectionReference waitingListRef = eventRef.collection("waitingList");
 
-        waitingListRef.document(androidId).delete()
-                .addOnSuccessListener(aVoid -> {
-                    Toast.makeText(this, "Successfully left the event's waiting list.", Toast.LENGTH_SHORT).show();
+        waitingListRef.document(androidId).get().addOnSuccessListener(docSnapshot -> {
+            if (!docSnapshot.exists()) {
+                Toast.makeText(this, "Not enrolled in the waiting list", Toast.LENGTH_SHORT).show();
+            } else {
+                // Remove user from the event's waitingList subcollection
+                waitingListRef.document(androidId).delete()
+                        .addOnSuccessListener(aVoid -> {
+                            Toast.makeText(this, "Successfully left the event's waiting list.", Toast.LENGTH_SHORT).show();
 
-                    // Step 2: Remove eventId from user's waitListedEvents subcollection
-                    CollectionReference userWaitListedEventsRef = db.collection("Android ID")
-                            .document(androidId)
-                            .collection("waitListedEvents");
+                            // Step 2: Remove eventId from user's waitListedEvents subcollection
+                            CollectionReference userWaitListedEventsRef = db.collection("Android ID")
+                                    .document(androidId)
+                                    .collection("waitListedEvents");
 
-                    userWaitListedEventsRef.document(eventId).delete()
-                            .addOnSuccessListener(aVoid2 -> Toast.makeText(this, "Event removed from your waitlisted events.", Toast.LENGTH_SHORT).show())
-                            .addOnFailureListener(e -> Toast.makeText(this, "Failed to remove event from your waitlisted events.", Toast.LENGTH_SHORT).show());
-                })
-                .addOnFailureListener(e -> Toast.makeText(this, "Failed to leave the event's waiting list. Try again.", Toast.LENGTH_SHORT).show());
+                            userWaitListedEventsRef.document(eventId).delete()
+                                    .addOnSuccessListener(aVoid2 -> Toast.makeText(this, "Event removed from your waitlisted events.", Toast.LENGTH_SHORT).show())
+                                    .addOnFailureListener(e -> Toast.makeText(this, "Failed to remove event from your waitlisted events.", Toast.LENGTH_SHORT).show());
+                        })
+                        .addOnFailureListener(e -> Toast.makeText(this, "Failed to leave the event's waiting list. Try again.", Toast.LENGTH_SHORT).show());
+            }
+        }).addOnFailureListener(e -> Toast.makeText(this, "Error checking enrollment status.", Toast.LENGTH_SHORT).show());
     }
 
 }
