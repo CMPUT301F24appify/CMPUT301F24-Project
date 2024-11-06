@@ -2,7 +2,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+
     <application
+        android:name=".MyApp"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
@@ -21,31 +23,16 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name=".Activities.editUserActivity"> </activity>
+        <activity android:name=".Activities.userProfileActivity"> </activity>
+        <activity android:name=".Activities.EntrantHomePageActivity" />
+        <activity android:name=".Activities.EntrantEnlistActivity" />
+        <activity android:name=".Activities.EventEntrantsActivity" />
+        <activity android:name=".Activities.EventDetailActivity" />
+        <activity android:name=".Activities.EventActivity" />
+        <activity android:name=".Activities.EnlistConfirmationActivity" />
 
-        <activity
-            android:name=".EventDetailActivity"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
-
-        <activity
-        android:name=".TempActivity"
-        android:exported="true">
-        <intent-filter>
-            <action android:name="android.intent.action.VIEW" />
-
-            <category android:name="android.intent.category.LAUNCHER" />
-        </intent-filter>
-    </activity>
-        <meta-data
-            android:name="preloaded_fonts"
-            android:resource="@array/preloaded_fonts" />
-
-        <activity android:name=".EventActivity" />
     </application>
+
 
 </manifest>

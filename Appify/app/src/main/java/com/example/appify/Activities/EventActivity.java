@@ -1,16 +1,22 @@
-package com.example.appify;
+package com.example.appify.Activities;
 
 import android.content.Intent;
-import android.net.Uri;
+import android.graphics.Color;
+import android.graphics.Typeface;
 import android.os.Bundle;
-import android.provider.Settings;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.appify.Adapters.CustomEventAdapter;
+import com.example.appify.AddEventDialogFragment;
+import com.example.appify.HeaderNavigation;
+import com.example.appify.Model.Event;
+import com.example.appify.MyApp;
+import com.example.appify.R;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
@@ -25,33 +31,24 @@ public class EventActivity extends AppCompatActivity implements AddEventDialogFr
     CustomEventAdapter eventAdapter;
     ArrayList<Event> eventList = new ArrayList<>();
 
-    // Sample events
-    Event event1;
-    Event event2;
-    Event event3;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.event);
 
+
+        // HeaderNavigation
+        HeaderNavigation headerNavigation = new HeaderNavigation(this);
+        headerNavigation.setupNavigation();
+        TextView organizeText = findViewById(R.id.organizeText_navBar);
+        organizeText.setTextColor(Color.parseColor("#800080"));
+        organizeText.setTypeface(organizeText.getTypeface(), Typeface.BOLD);
+
+
         db = FirebaseFirestore.getInstance();
 
         eventListView = findViewById(R.id.event_list);
-
-        // Sample events
-//        event1 = new Event(this,"Event 1", "Oct 12", "1", "2 days", "Here is the event description", 20, 5, null, false, false, false , false, false);
-//        event2 = new Event(this,"Event 2", "Nov 23", "2", "3 days", "Some description", 200, 50, null, true, false, false, false, false);
-//        event3 = new Event(this,"Event 3", "Jan 01", "3", "4 days", "blha blah blha", 3, 1, null, true, false, false, false, false);
-//
-//
-//        Event []events = {event1,event2, event3};
-//
-//        System.out.println("test1");
-//        eventList = new ArrayList<>();
-//        eventList.addAll(Arrays.asList(events));
-//        System.out.println("test2");
-        eventAdapter = new CustomEventAdapter(this,eventList);
+        eventAdapter = new CustomEventAdapter(this, eventList);
         eventListView.setAdapter(eventAdapter);
 
         loadEventsFromFirestore();
@@ -76,6 +73,7 @@ public class EventActivity extends AppCompatActivity implements AddEventDialogFr
             intent.putExtra("description", selectedEvent.getDescription() != null ? selectedEvent.getDescription() : "N/A");
             intent.putExtra("maxWishEntrants", selectedEvent.getMaxWishEntrants());
             intent.putExtra("maxSampleEntrants", selectedEvent.getMaxSampleEntrants());
+            intent.putExtra("eventID", selectedEvent.getEventId());
 
             // Poster URI might be null, so check before passing
             String posterUriString = selectedEvent.getPosterUri() != null ? selectedEvent.getPosterUri() : "";
@@ -87,49 +85,56 @@ public class EventActivity extends AppCompatActivity implements AddEventDialogFr
             intent.putExtra("notifyCancelled", selectedEvent.isNotifyCancelled());
             intent.putExtra("notifyInvited", selectedEvent.isNotifyInvited());
 
+            // Pass notification messages
+            intent.putExtra("waitlistedMessage", selectedEvent.getWaitlistedMessage());
+            intent.putExtra("enrolledMessage", selectedEvent.getEnrolledMessage());
+            intent.putExtra("cancelledMessage", selectedEvent.getCancelledMessage());
+            intent.putExtra("invitedMessage", selectedEvent.getInvitedMessage());
 
             startActivity(intent);
         });
-
     }
 
     @Override
-    public void onEventAdded(String name, String date, String facility, String registrationEndDate, String description, int maxWishEntrants, int maxSampleEntrants, String posterUri, boolean isGeolocate, boolean notifyWaitlisted, boolean notifyEnrolled, boolean notifyCancelled, boolean notifyInvited) {
-        Event newEvent = new Event(this,name, date, facility, registrationEndDate, description, maxWishEntrants, maxSampleEntrants, posterUri, isGeolocate, notifyWaitlisted, notifyEnrolled, notifyCancelled, notifyInvited);
+    public void onEventAdded(String name, String date, String facility, String registrationEndDate,
+                             String description, int maxWishEntrants, int maxSampleEntrants,
+                             String posterUri, boolean isGeolocate,
+                             String waitlistedMessage, String enrolledMessage,
+                             String cancelledMessage, String invitedMessage) {
 
+        MyApp app = (MyApp) getApplication();
+        String organizerID = app.getAndroidId();
 
+        // Determine notification booleans based on message presence
+        boolean notifyWaitlisted = waitlistedMessage != null && !waitlistedMessage.isEmpty();
+        boolean notifyEnrolled = enrolledMessage != null && !enrolledMessage.isEmpty();
+        boolean notifyCancelled = cancelledMessage != null && !cancelledMessage.isEmpty();
+        boolean notifyInvited = invitedMessage != null && !invitedMessage.isEmpty();
 
-//        // Use the new method in Event
-//        newEvent.addToFirestore(event -> {
-//            Toast.makeText(EventActivity.this, "Event added: " + event.getName(), Toast.LENGTH_SHORT).show();
-//            eventList.add(event);
-//            eventAdapter.notifyDataSetChanged();
-//        });
-        String eventID = newEvent.getEventId();
-        db.collection("events")
-                .document(eventID)
-                .set(newEvent)
-                .addOnSuccessListener(aVoid -> {
-                    Toast.makeText(EventActivity.this, "Event added: " + name, Toast.LENGTH_SHORT).show();
-                    eventList.add(newEvent);
-                    eventAdapter.notifyDataSetChanged();
-                })
-                .addOnFailureListener(e -> {
-                    Toast.makeText(EventActivity.this, "Error adding event: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                });
+        // Create new Event object with notification messages
+        Event newEvent = new Event(name, date, facility, registrationEndDate, description,
+                maxWishEntrants, maxSampleEntrants, posterUri, isGeolocate,
+                notifyWaitlisted, notifyEnrolled, notifyCancelled, notifyInvited,
+                waitlistedMessage, enrolledMessage, cancelledMessage, invitedMessage,
+                organizerID);
+
+        // Use the addToFirestore method in Event
+        newEvent.addToFirestore(event -> {
+            Toast.makeText(EventActivity.this, "Event added: " + event.getName(), Toast.LENGTH_SHORT).show();
+            eventList.add(event);
+            eventAdapter.notifyDataSetChanged();
+        });
     }
 
-
-
     private void loadEventsFromFirestore() {
-
-        String android_id = Settings.Secure.getString(getApplicationContext().getContentResolver(), Settings.Secure.ANDROID_ID);
+        MyApp app = (MyApp) getApplication();
+        String organizerID = app.getAndroidId();
 
         db.collection("events")
-                .whereEqualTo("organizerID", android_id)
+                .whereEqualTo("organizerID", organizerID)
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
-//                    eventList.clear();  // Clear existing data to avoid duplicates
+                    // eventList.clear();  // Clear existing data to avoid duplicates
 
                     for (DocumentSnapshot document : queryDocumentSnapshots) {
                         // Convert Firestore document to an Event object
