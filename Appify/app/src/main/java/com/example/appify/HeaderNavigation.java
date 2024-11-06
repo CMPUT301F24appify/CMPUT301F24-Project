@@ -1,19 +1,14 @@
 package com.example.appify;
 
 import android.app.Activity;
-import android.content.ContentResolver;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.media.Image;
-import android.provider.Settings;
+import android.graphics.Color;
 import android.widget.TextView;
 import android.widget.ImageView;
 
 import com.example.appify.Activities.EntrantHomePageActivity;
+import com.example.appify.Activities.EventActivity;
 import com.example.appify.Activities.userProfileActivity;
-import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.StorageReference;
 
 public class HeaderNavigation {
     private Activity activity;
@@ -40,7 +35,10 @@ public class HeaderNavigation {
         // Organize
         TextView organizeText = activity.findViewById(R.id.organizeText_navBar);
         if (organizeText != null) {
-            organizeText.setOnClickListener(v -> navigateToOrganize());
+
+            organizeText.setOnClickListener(v -> {
+                navigateToOrganize();
+            });
         }
 
         // Notifications
@@ -76,8 +74,8 @@ public class HeaderNavigation {
     }
 
     private void navigateToOrganize() {
-//        Intent intent = new Intent(activity, OrganizeActivity.class);
-//        activity.startActivity(intent);
+        Intent intent = new Intent(activity, EventActivity.class);
+        activity.startActivity(intent);
     }
 
     private void navigateToNotifications() {

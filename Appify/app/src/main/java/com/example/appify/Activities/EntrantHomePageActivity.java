@@ -1,11 +1,14 @@
 package com.example.appify.Activities;
 
 import android.content.Intent;
+import android.graphics.Color;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -57,6 +60,9 @@ public class EntrantHomePageActivity extends AppCompatActivity {
         // HeaderNavigation
         HeaderNavigation headerNavigation = new HeaderNavigation(this);
         headerNavigation.setupNavigation();
+        TextView eventsText = findViewById(R.id.eventsText_navBar);
+        eventsText.setTextColor(Color.parseColor("#800080"));
+        eventsText.setTypeface(eventsText.getTypeface(), Typeface.BOLD);
 
         // Load Events from Firebase
         loadEventsFromFirestore();

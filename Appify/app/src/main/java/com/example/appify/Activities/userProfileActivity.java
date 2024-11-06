@@ -33,9 +33,6 @@ public class userProfileActivity extends AppCompatActivity {
         setContentView(R.layout.user_profile);
         db = FirebaseFirestore.getInstance();
 
-        // Get Android ID passed from the previous activity
-        //String android_id = getIntent().getStringExtra("Android ID");
-
         HeaderNavigation headerNavigation = new HeaderNavigation(this);
         headerNavigation.setupNavigation();
         MyApp app = (MyApp) getApplication();

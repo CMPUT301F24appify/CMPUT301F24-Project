@@ -1,0 +1,6 @@
+<!-- res/drawable/rounded_list_item.xml -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <solid android:color="#FFFFFF" /> <!-- Background color for each item -->
+    <corners android:radius="12dp" /> <!-- Rounded corners -->
+    <stroke android:width="1dp" android:color="#DADADA" /> <!-- Optional: border color -->
+</shape>
