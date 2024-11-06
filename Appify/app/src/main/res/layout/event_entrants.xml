@@ -63,6 +63,44 @@
                 android:textSize="24sp" />
         </LinearLayout>
 
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="47dp"
+            android:orientation="horizontal">
+
+            <CheckBox
+                android:id="@+id/waitListed_checkbox"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Waitlisted"
+                app:checkedState="checked" />
+
+            <CheckBox
+                android:id="@+id/invited_checkbox"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Invited"
+                app:checkedState="checked" />
+
+            <CheckBox
+                android:id="@+id/accepted_checkbox"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Accepted"
+                app:checkedState="checked" />
+
+            <CheckBox
+                android:id="@+id/rejected_checkbox"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Rejected"
+                app:checkedState="checked" />
+        </LinearLayout>
+
         <ListView
             android:id="@+id/entrant_list"
             android:layout_width="match_parent"
