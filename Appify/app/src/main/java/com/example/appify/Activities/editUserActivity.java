@@ -11,6 +11,7 @@ import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
@@ -33,6 +34,10 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Random;
 
+/**
+ * Activity to edit the user's profile information.
+ * Allows users to set their profile picture, name, phone number, email, and notification preferences.
+ */
 public class editUserActivity extends AppCompatActivity {
     private FirebaseFirestore db;
     private ImageView profileImageView;
@@ -55,13 +60,19 @@ public class editUserActivity extends AppCompatActivity {
                 }
             }
     );
-
+    /**
+     *
+     * Called when the activity is first created.
+     * Sets up the layout, initializes views, retrieves user data,displays the profile picture and tests for First time entry.
+     *
+     * @param savedInstanceState most recent Data sent.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.edit_user);
         android_id = getIntent().getStringExtra("Android ID");
-
+        boolean firstEntry = getIntent().getBooleanExtra("firstEntry", false);
         HeaderNavigation headerNavigation = new HeaderNavigation(this);
         headerNavigation.setupNavigation();
 
@@ -74,7 +85,17 @@ public class editUserActivity extends AppCompatActivity {
         Button removeButton = findViewById(R.id.removeButton);
         Button submitButton = findViewById(R.id.submitButton);
         notifications = findViewById(R.id.notificationsCheckBox);
+        Button cancelButton = findViewById(R.id.cancelButton);
 
+
+        if (firstEntry) {
+            cancelButton.setVisibility(View.GONE);
+        }
+        cancelButton.setOnClickListener(v -> {
+            Intent intent = new Intent(editUserActivity.this, userProfileActivity.class);
+            intent.putExtra("Android ID", android_id);
+            startActivity(intent);
+        });
         db = FirebaseFirestore.getInstance();
         populateFields(android_id);
         uploadButton.setOnClickListener(v -> openFileChooser());
@@ -89,9 +110,17 @@ public class editUserActivity extends AppCompatActivity {
             String phoneNumber = phoneEditText.getText().toString();
             String email = emailEditText.getText().toString();
 
+            //Check Whether the Inputs are Correct for Name, Phone and Email
             if (name.isEmpty() || email.isEmpty()) {
                 Toast.makeText(editUserActivity.this, "Please fill in both Name and Email Fields", Toast.LENGTH_SHORT).show();
-            } else {
+            } else if (!Character.isLetter(name.charAt(0))) {
+                Toast.makeText(editUserActivity.this, "Name must start with a letter", Toast.LENGTH_SHORT).show();
+            } else if (phoneNumber.length() != 10 && !phoneNumber.isEmpty()) {
+                Toast.makeText(editUserActivity.this, "Please enter a 10 digit Phone Number", Toast.LENGTH_SHORT).show();
+
+            } else if (!email.matches("[a-zA-Z0-9._-]+@[a-z]+\\.+[a-z]+")) {
+                Toast.makeText(editUserActivity.this, "Please enter a valid email address", Toast.LENGTH_SHORT).show();
+            }  else {
                 // Generate profile picture
                 if (imageUri == null) {
                     String firstLetter = String.valueOf(name.charAt(0)).toUpperCase();
@@ -105,14 +134,21 @@ public class editUserActivity extends AppCompatActivity {
         });
     }
 
-    // Method to open the gallery or file picker
+    /**
+     * Opens the file chooser to select an image from the devices files.
+     */
     private void openFileChooser() {
         Intent intent = new Intent(Intent.ACTION_PICK);
         intent.setType("image/*");
-        activityResultLauncher.launch(intent);  // Launch the file picker
+        activityResultLauncher.launch(intent);
     }
 
-    // Generate a profile picture with the first letter of the user's name
+    /**
+     * Generates a profile picture with the user's first name initial and a random background color.
+     *
+     * @param firstLetter The first letter of the user's name.
+     * @return A Bitmap of the generated profile picture.
+     */
     private Bitmap generateProfilePicture(String firstLetter) {
         int imageSize = 150;  // 150x150
 
@@ -141,7 +177,10 @@ public class editUserActivity extends AppCompatActivity {
         return bitmap;
     }
 
-    // Generate Random Color for Pfp
+    /**
+     * Generates a random color for the profile picture background.
+     * @return Color represented as an RGB integer.
+     */
     private int getRandomColor() {
         Random random = new Random();
         int red = random.nextInt(200) + 55;
@@ -150,6 +189,14 @@ public class editUserActivity extends AppCompatActivity {
         return Color.rgb(red, green, blue);
     }
 
+    /**
+     * Saves the user's data and profile picture to Firestore and Firebase Storage.
+     *
+     * @param id The user's unique device ID.
+     * @param name The user's name.
+     * @param phone The user's phone number.
+     * @param email The user's email address.
+     */
     private void sendEntrantData(String id,String name, String phone, String email){
         Bitmap profilePicture = getBitmapFromImageView(profileImageView);
         FirebaseStorage storage = FirebaseStorage.getInstance();
@@ -176,6 +223,12 @@ public class editUserActivity extends AppCompatActivity {
                             });
                 }));
     }
+
+    /**
+     * Populates the Text Boxes with the user's data retrieved from the Database.
+     *
+     * @param android_id The user's unique device ID.
+     */
     private void populateFields(String android_id){
         db.collection("Android ID").document(android_id).get()
                 .addOnSuccessListener(documentSnapshot -> {
@@ -195,11 +248,22 @@ public class editUserActivity extends AppCompatActivity {
                     }
                 });
     }
+    /**
+     * Retrieves the Bitmap from an ImageView.
+     *
+     * @param imageView The ImageView used to create the Bitmap8.
+     * @return A Bitmap created from the ImageView.
+     */
     private Bitmap getBitmapFromImageView(ImageView imageView) {
         imageView.setDrawingCacheEnabled(true);
         imageView.buildDrawingCache();
         return Bitmap.createBitmap(imageView.getDrawingCache());
     }
+    /**
+     * Loads the user's profile picture from Firebase Storage and sets it.
+     *
+     * @param android_id The user's unique device ID.
+     */
     private void loadProfilePicture(String android_id) {
         FirebaseStorage storage = FirebaseStorage.getInstance();
         StorageReference storageRef = storage.getReference().child("profile_images/" + android_id + ".jpg");
