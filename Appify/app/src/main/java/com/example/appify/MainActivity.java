@@ -176,7 +176,7 @@ public class MainActivity extends AppCompatActivity {
     private void navigateToEditUser(String androidId) {
         Intent intent = new Intent(MainActivity.this, editUserActivity.class);
         intent.putExtra("Android ID", androidId);
-
+        intent.putExtra("firstEntry", true);
         startActivity(intent);
         finish(); // Prevent user from returning to MainActivity
     }

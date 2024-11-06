@@ -18,6 +18,10 @@ import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
+/**
+ * Activity to display the user's profile information.
+ * Fetches data and photo from Database and displays it.
+ */
 public class userProfileActivity extends AppCompatActivity {
 
     private FirebaseFirestore db;
@@ -27,6 +31,12 @@ public class userProfileActivity extends AppCompatActivity {
     private Button editButton;
 
 
+    /**
+     * Called when the activity is first created.
+     * Sets up the layout, initializes views, retrieves user data, and displays the profile picture.
+     *
+     * @param savedInstanceState most recent Data sent.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -82,6 +92,11 @@ public class userProfileActivity extends AppCompatActivity {
                     });
         }
     }
+    /**
+     * Loads the user's profile picture from Firebase Storage based on the Android ID.
+     *
+     * @param android_id Unique identifier for the user's device.
+     */
     private void loadProfilePicture(String android_id) {
         FirebaseStorage storage = FirebaseStorage.getInstance();
         StorageReference storageRef = storage.getReference().child("profile_images/" + android_id + ".jpg");
