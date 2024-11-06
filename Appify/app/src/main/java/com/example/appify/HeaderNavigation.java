@@ -59,6 +59,7 @@ public class HeaderNavigation {
         ImageView profilePicture = activity.findViewById(R.id.profileImageViewHeader);
         if (profilePicture != null) {
             profilePicture.setOnClickListener(v -> navigateToProfile());
+            loadProfilePicture(profilePicture);
         }
 
     }
@@ -88,5 +89,24 @@ public class HeaderNavigation {
         Intent intent = new Intent(activity, userProfileActivity.class);
         activity.startActivity(intent);
     }
+    private void loadProfilePicture(ImageView profilePicture) {
+        MyApp app = (MyApp) activity.getApplication();
+        String androidId = app.getAndroidId();
 
+        if (androidId != null && !androidId.isEmpty()) {
+            FirebaseStorage storage = FirebaseStorage.getInstance();
+            StorageReference storageRef = storage.getReference().child("profile_images/" + androidId + ".jpg");
+
+            long size = 1024 * 1024; // Adjust the size as needed
+            storageRef.getBytes(size)
+                    .addOnSuccessListener(bytes -> {
+                        Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+                        profilePicture.setImageBitmap(bitmap);
+                    })
+                    .addOnFailureListener(e -> {
+                        // Optionally set a default image if loading fails
+                        profilePicture.setImageResource(R.drawable.default_pfp);
+                    });
+        }
+    }
 }

@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.Toast;
 
@@ -12,6 +13,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.example.appify.Adapters.CustomEventAdapter;
 import com.example.appify.Model.Event;
 import com.example.appify.HeaderNavigation;
+import com.example.appify.MyApp;
 import com.example.appify.R;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -59,6 +61,7 @@ public class EntrantHomePageActivity extends AppCompatActivity {
         // Load Events from Firebase
         loadEventsFromFirestore();
         String android_id = getIntent().getStringExtra("Android ID");
+
 
         // OnClickListener for the Events in the ListView
         eventListView.setOnItemClickListener((AdapterView<?> parent, View view, int position, long id) -> {

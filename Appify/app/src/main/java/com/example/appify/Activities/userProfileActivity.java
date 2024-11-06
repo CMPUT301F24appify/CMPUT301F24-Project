@@ -11,6 +11,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.example.appify.HeaderNavigation;
+import com.example.appify.MyApp;
 import com.example.appify.R;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.ListenerRegistration;
@@ -33,10 +34,12 @@ public class userProfileActivity extends AppCompatActivity {
         db = FirebaseFirestore.getInstance();
 
         // Get Android ID passed from the previous activity
-        String android_id = getIntent().getStringExtra("Android ID");
+        //String android_id = getIntent().getStringExtra("Android ID");
 
         HeaderNavigation headerNavigation = new HeaderNavigation(this);
         headerNavigation.setupNavigation();
+        MyApp app = (MyApp) getApplication();
+        String android_id = app.getAndroidId();
 
         // Initialize Views
         profileImageView = findViewById(R.id.profileImageView);
@@ -77,6 +80,7 @@ public class userProfileActivity extends AppCompatActivity {
                                 notificationTextView.setText("Notifications: OFF");
                             }
                             loadProfilePicture(android_id);
+                            //headerImageView.setImageBitmap(app.loadProfilePictureBitmap());
                         }
                     });
         }
@@ -91,7 +95,7 @@ public class userProfileActivity extends AppCompatActivity {
                     // Convert the byte array to a Bitmap
                     Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
                     profileImageView.setImageBitmap(bitmap);
-                    headerImageView.setImageBitmap(bitmap);
+                    //headerImageView.setImageBitmap(bitmap);
                 });
     }
 }
