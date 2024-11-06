@@ -3,6 +3,7 @@ package com.example.appify.Activities;
 import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -86,7 +87,8 @@ public class EntrantEnlistActivity extends AppCompatActivity {
         db = FirebaseFirestore.getInstance();
         MyApp app = (MyApp) getApplication();
         androidId = app.getAndroidId();
-
+        ImageView headerImageView = findViewById(R.id.profileImageViewHeader);
+        headerImageView.setImageBitmap(app.loadProfilePictureBitmap());
         // Check if user is already enlisted in the waiting list
         checkUserEnrollmentStatus();
     }

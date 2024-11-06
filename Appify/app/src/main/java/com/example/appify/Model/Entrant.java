@@ -19,7 +19,6 @@ public class Entrant {
     private String phoneNumber;
     private String profilePictureUrl;
     private boolean notifications;
-    private List<String> eventList;
 
 
     /**
@@ -124,22 +123,5 @@ public class Entrant {
         this.notifications = notifications;
     }
 
-    /**
-     * Gets the list of event IDs associated with the entrant.
-     *
-     * @return a list of event IDs
-     */
-    public List<String> getEventList() {
-        return eventList;
-    }
-
-    /**
-     * Sets the list of event IDs associated with the entrant.
-     *
-     * @param eventList a list of event IDs
-     */
-    public void setEventList(List<String> eventList) {
-        this.eventList = eventList;
-    }
 }
 

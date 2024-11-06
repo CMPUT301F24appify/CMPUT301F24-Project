@@ -33,12 +33,10 @@ public class userProfileActivity extends AppCompatActivity {
         setContentView(R.layout.user_profile);
         db = FirebaseFirestore.getInstance();
 
-        // Get Android ID passed from the previous activity
-//        String android_id = getIntent().getStringExtra("Android ID");
-        MyApp app = (MyApp) getApplication();
-        String android_id = app.getAndroidId();
         HeaderNavigation headerNavigation = new HeaderNavigation(this);
         headerNavigation.setupNavigation();
+        MyApp app = (MyApp) getApplication();
+        String android_id = app.getAndroidId();
 
         // Initialize Views
         profileImageView = findViewById(R.id.profileImageView);
@@ -79,6 +77,7 @@ public class userProfileActivity extends AppCompatActivity {
                                 notificationTextView.setText("Notifications: OFF");
                             }
                             loadProfilePicture(android_id);
+                            //headerImageView.setImageBitmap(app.loadProfilePictureBitmap());
                         }
                     });
         }
@@ -93,7 +92,7 @@ public class userProfileActivity extends AppCompatActivity {
                     // Convert the byte array to a Bitmap
                     Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
                     profileImageView.setImageBitmap(bitmap);
-                    headerImageView.setImageBitmap(bitmap);
+                    //headerImageView.setImageBitmap(bitmap);
                 });
     }
 }

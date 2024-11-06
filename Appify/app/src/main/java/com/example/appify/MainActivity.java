@@ -10,6 +10,7 @@ import android.provider.Settings;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -156,7 +157,7 @@ public class MainActivity extends AppCompatActivity {
                             navigateToEditUser(androidId);
                         } else {
                             // Existing user, navigate to HomePage
-                            Log.d("MainActivity", "User exists. Navigating to userProfileActivity.");
+                            Log.d("MainActivity", "User exists. Navigating to EntrantHomePageActivity.");
                             navigateToHomePage(androidId);
                         }
                     } else {
@@ -175,6 +176,7 @@ public class MainActivity extends AppCompatActivity {
     private void navigateToEditUser(String androidId) {
         Intent intent = new Intent(MainActivity.this, editUserActivity.class);
         intent.putExtra("Android ID", androidId);
+
         startActivity(intent);
         finish(); // Prevent user from returning to MainActivity
     }

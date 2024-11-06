@@ -1,6 +1,12 @@
 package com.example.appify;
 
 import android.app.Application;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.widget.ImageView;
+
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
 /**
  * Custom Application class to store global application state.
@@ -25,7 +31,6 @@ public class MyApp extends Application {
      *
      * @param androidId The unique Android ID to set for the application.
      */
-    public void setAndroidId(String androidId) {
-        this.androidId = androidId;
-    }
+    public void setAndroidId(String androidId) { this.androidId = androidId; }
 }
+
