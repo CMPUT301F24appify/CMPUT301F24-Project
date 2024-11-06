@@ -1,16 +1,15 @@
 package com.example.appify;
 
 import android.app.Activity;
-import android.content.ContentResolver;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.media.Image;
-import android.provider.Settings;
+import android.graphics.Color;
 import android.widget.TextView;
 import android.widget.ImageView;
 
 import com.example.appify.Activities.EntrantHomePageActivity;
+import com.example.appify.Activities.EventActivity;
 import com.example.appify.Activities.userProfileActivity;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
@@ -40,7 +39,10 @@ public class HeaderNavigation {
         // Organize
         TextView organizeText = activity.findViewById(R.id.organizeText_navBar);
         if (organizeText != null) {
-            organizeText.setOnClickListener(v -> navigateToOrganize());
+
+            organizeText.setOnClickListener(v -> {
+                navigateToOrganize();
+            });
         }
 
         // Notifications
@@ -59,6 +61,7 @@ public class HeaderNavigation {
         ImageView profilePicture = activity.findViewById(R.id.profileImageViewHeader);
         if (profilePicture != null) {
             profilePicture.setOnClickListener(v -> navigateToProfile());
+            loadProfilePicture(profilePicture);
         }
 
     }
@@ -75,8 +78,8 @@ public class HeaderNavigation {
     }
 
     private void navigateToOrganize() {
-//        Intent intent = new Intent(activity, OrganizeActivity.class);
-//        activity.startActivity(intent);
+        Intent intent = new Intent(activity, EventActivity.class);
+        activity.startActivity(intent);
     }
 
     private void navigateToNotifications() {
@@ -88,5 +91,24 @@ public class HeaderNavigation {
         Intent intent = new Intent(activity, userProfileActivity.class);
         activity.startActivity(intent);
     }
+    private void loadProfilePicture(ImageView profilePicture) {
+        MyApp app = (MyApp) activity.getApplication();
+        String androidId = app.getAndroidId();
 
+        if (androidId != null && !androidId.isEmpty()) {
+            FirebaseStorage storage = FirebaseStorage.getInstance();
+            StorageReference storageRef = storage.getReference().child("profile_images/" + androidId + ".jpg");
+
+            long size = 1024 * 1024; // Adjust the size as needed
+            storageRef.getBytes(size)
+                    .addOnSuccessListener(bytes -> {
+                        Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+                        profilePicture.setImageBitmap(bitmap);
+                    })
+                    .addOnFailureListener(e -> {
+                        // Optionally set a default image if loading fails
+                        profilePicture.setImageResource(R.drawable.default_pfp);
+                    });
+        }
+    }
 }

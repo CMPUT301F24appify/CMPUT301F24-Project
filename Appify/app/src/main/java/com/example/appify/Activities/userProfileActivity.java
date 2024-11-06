@@ -11,12 +11,17 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.example.appify.HeaderNavigation;
+import com.example.appify.MyApp;
 import com.example.appify.R;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
+/**
+ * Activity to display the user's profile information.
+ * Fetches data and photo from Database and displays it.
+ */
 public class userProfileActivity extends AppCompatActivity {
 
     private FirebaseFirestore db;
@@ -26,17 +31,22 @@ public class userProfileActivity extends AppCompatActivity {
     private Button editButton;
 
 
+    /**
+     * Called when the activity is first created.
+     * Sets up the layout, initializes views, retrieves user data, and displays the profile picture.
+     *
+     * @param savedInstanceState most recent Data sent.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.user_profile);
         db = FirebaseFirestore.getInstance();
 
-        // Get Android ID passed from the previous activity
-        String android_id = getIntent().getStringExtra("Android ID");
-
         HeaderNavigation headerNavigation = new HeaderNavigation(this);
         headerNavigation.setupNavigation();
+        MyApp app = (MyApp) getApplication();
+        String android_id = app.getAndroidId();
 
         // Initialize Views
         profileImageView = findViewById(R.id.profileImageView);
@@ -77,10 +87,16 @@ public class userProfileActivity extends AppCompatActivity {
                                 notificationTextView.setText("Notifications: OFF");
                             }
                             loadProfilePicture(android_id);
+                            //headerImageView.setImageBitmap(app.loadProfilePictureBitmap());
                         }
                     });
         }
     }
+    /**
+     * Loads the user's profile picture from Firebase Storage based on the Android ID.
+     *
+     * @param android_id Unique identifier for the user's device.
+     */
     private void loadProfilePicture(String android_id) {
         FirebaseStorage storage = FirebaseStorage.getInstance();
         StorageReference storageRef = storage.getReference().child("profile_images/" + android_id + ".jpg");
@@ -91,7 +107,7 @@ public class userProfileActivity extends AppCompatActivity {
                     // Convert the byte array to a Bitmap
                     Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
                     profileImageView.setImageBitmap(bitmap);
-                    headerImageView.setImageBitmap(bitmap);
+                    //headerImageView.setImageBitmap(bitmap);
                 });
     }
 }

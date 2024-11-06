@@ -51,7 +51,7 @@ public class EnlistConfirmationActivity extends AppCompatActivity {
         date = intent.getStringExtra("date");
         registrationEndDate = intent.getStringExtra("registrationEndDate");
         facility = intent.getStringExtra("facility");
-        isGeolocate = intent.getBooleanExtra("isGeolocate", false);
+        isGeolocate = intent.getBooleanExtra("geolocate", false);
 
         // Set up TextViews with event details
         TextView eventName = findViewById(R.id.event_name);

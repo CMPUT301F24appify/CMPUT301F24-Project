@@ -1,10 +1,14 @@
 package com.example.appify.Activities;
 
 import android.content.Intent;
+import android.graphics.Color;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -12,6 +16,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.example.appify.Adapters.CustomEventAdapter;
 import com.example.appify.Model.Event;
 import com.example.appify.HeaderNavigation;
+import com.example.appify.MyApp;
 import com.example.appify.R;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -55,10 +60,14 @@ public class EntrantHomePageActivity extends AppCompatActivity {
         // HeaderNavigation
         HeaderNavigation headerNavigation = new HeaderNavigation(this);
         headerNavigation.setupNavigation();
+        TextView eventsText = findViewById(R.id.eventsText_navBar);
+        eventsText.setTextColor(Color.parseColor("#800080"));
+        eventsText.setTypeface(eventsText.getTypeface(), Typeface.BOLD);
 
         // Load Events from Firebase
         loadEventsFromFirestore();
         String android_id = getIntent().getStringExtra("Android ID");
+
 
         // OnClickListener for the Events in the ListView
         eventListView.setOnItemClickListener((AdapterView<?> parent, View view, int position, long id) -> {
@@ -75,7 +84,7 @@ public class EntrantHomePageActivity extends AppCompatActivity {
             intent.putExtra("maxWishEntrants", selectedEvent.getMaxWishEntrants());
             intent.putExtra("maxSampleEntrants", selectedEvent.getMaxSampleEntrants());
             intent.putExtra("posterUri", selectedEvent.getPosterUri());
-            intent.putExtra("isGeolocate", selectedEvent.isGeolocate());
+            intent.putExtra("geolocate", selectedEvent.isGeolocate());
 
             startActivity(intent);
         });

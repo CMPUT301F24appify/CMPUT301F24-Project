@@ -19,7 +19,6 @@ public class Entrant {
     private String phoneNumber;
     private String profilePictureUrl;
     private boolean notifications;
-    private List<String> eventList;
 
 
     /**
@@ -122,7 +121,6 @@ public class Entrant {
     public void setNotifications(boolean notifications) {
         this.notifications = notifications;
     }
-
     /**
      * Gets the list of event IDs associated with the entrant.
      *
