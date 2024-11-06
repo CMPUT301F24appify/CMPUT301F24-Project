@@ -2,6 +2,7 @@ package com.example.appify;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.graphics.Color;
 import android.widget.TextView;
 import android.widget.ImageView;
 
@@ -34,7 +35,10 @@ public class HeaderNavigation {
         // Organize
         TextView organizeText = activity.findViewById(R.id.organizeText_navBar);
         if (organizeText != null) {
-            organizeText.setOnClickListener(v -> navigateToOrganize());
+
+            organizeText.setOnClickListener(v -> {
+                navigateToOrganize();
+            });
         }
 
         // Notifications

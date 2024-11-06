@@ -1,15 +1,19 @@
 package com.example.appify.Activities;
 
 import android.content.Intent;
+import android.graphics.Color;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.appify.Adapters.CustomEventAdapter;
 import com.example.appify.AddEventDialogFragment;
+import com.example.appify.HeaderNavigation;
 import com.example.appify.Model.Event;
 import com.example.appify.MyApp;
 import com.example.appify.R;
@@ -29,6 +33,15 @@ public class EventActivity extends AppCompatActivity implements AddEventDialogFr
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.event);
+
+
+        // HeaderNavigation
+        HeaderNavigation headerNavigation = new HeaderNavigation(this);
+        headerNavigation.setupNavigation();
+        TextView organizeText = findViewById(R.id.organizeText_navBar);
+        organizeText.setTextColor(Color.parseColor("#800080"));
+        organizeText.setTypeface(organizeText.getTypeface(), Typeface.BOLD);
+
 
         db = FirebaseFirestore.getInstance();
 
