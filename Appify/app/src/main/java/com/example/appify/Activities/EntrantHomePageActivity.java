@@ -84,7 +84,7 @@ public class EntrantHomePageActivity extends AppCompatActivity {
             intent.putExtra("maxWishEntrants", selectedEvent.getMaxWishEntrants());
             intent.putExtra("maxSampleEntrants", selectedEvent.getMaxSampleEntrants());
             intent.putExtra("posterUri", selectedEvent.getPosterUri());
-            intent.putExtra("isGeolocate", selectedEvent.isGeolocate());
+            intent.putExtra("geolocate", selectedEvent.isGeolocate());
 
             startActivity(intent);
         });
