@@ -1,5 +1,6 @@
 package com.example.appify.Activities;
 
+import android.app.AlertDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Button;
@@ -57,7 +58,7 @@ public class EntrantEnlistActivity extends AppCompatActivity {
         int maxWishEntrants = intent.getIntExtra("maxWishEntrants", 0);
         int maxSampleEntrants = intent.getIntExtra("maxSampleEntrants", 0);
         String posterUriString = intent.getStringExtra("posterUri");
-        isGeolocate = intent.getBooleanExtra("isGeolocate", false);
+        isGeolocate = intent.getBooleanExtra("geolocate", false);
 
         // Find views in the layout and set data
         TextView eventName = findViewById(R.id.event_name);
@@ -103,6 +104,7 @@ public class EntrantEnlistActivity extends AppCompatActivity {
         eventRef.get().addOnSuccessListener(documentSnapshot -> {
             if (documentSnapshot.exists()) {
                 int maxWishEntrants = documentSnapshot.getLong("maxWishEntrants").intValue();
+                boolean isGeolocate = documentSnapshot.getBoolean("geolocate") != null && documentSnapshot.getBoolean("geolocate");
 
                 waitingListRef.get().addOnSuccessListener(querySnapshot -> {
                     int currentEntrants = querySnapshot.size();
@@ -123,7 +125,13 @@ public class EntrantEnlistActivity extends AppCompatActivity {
                                 // User is not enlisted
                                 isUserEnlisted = false;
                                 enlistLeaveButton.setText("Enlist");
-                                enlistLeaveButton.setOnClickListener(v -> enlistInEvent(eventId));
+                                enlistLeaveButton.setOnClickListener(v -> {
+                                    if (isGeolocate) {
+                                        showGeolocationConfirmationDialog(() -> enlistInEvent(eventId));
+                                    } else {
+                                        enlistInEvent(eventId);
+                                    }
+                                });
                             }
                         }).addOnFailureListener(e -> Toast.makeText(this, "Error checking enrollment status.", Toast.LENGTH_SHORT).show());
                     }
@@ -133,6 +141,25 @@ public class EntrantEnlistActivity extends AppCompatActivity {
             }
         }).addOnFailureListener(e -> Toast.makeText(this, "Error fetching event data.", Toast.LENGTH_SHORT).show());
     }
+
+    /**
+     * Shows a confirmation dialog to inform the user that the event requires geolocation.
+     * If the user agrees, proceeds with the enlist action.
+     *
+     * @param onConfirm Callback to execute if the user confirms the geolocation requirement.
+     */
+    private void showGeolocationConfirmationDialog(Runnable onConfirm) {
+        new AlertDialog.Builder(this)
+                .setTitle("Geolocation Required")
+                .setMessage("Registering for this event REQUIRES geolocation. Do you want to proceed?")
+                .setPositiveButton("Yes", (dialog, which) -> {
+                    // User confirmed - proceed with enlistment
+                    onConfirm.run();
+                })
+                .setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss())
+                .show();
+    }
+
 
     /**
      * Enlists the current user in the specified event’s waiting list.
@@ -167,7 +194,7 @@ public class EntrantEnlistActivity extends AppCompatActivity {
                                 intent.putExtra("date", date);
                                 intent.putExtra("registrationEndDate", registrationEndDate);
                                 intent.putExtra("facility", facility);
-                                intent.putExtra("isGeolocate", isGeolocate);
+                                intent.putExtra("geolocate", isGeolocate);
                                 startActivity(intent);
                                 finish();
                             })
@@ -203,7 +230,7 @@ public class EntrantEnlistActivity extends AppCompatActivity {
                                 intent.putExtra("date", date);
                                 intent.putExtra("registrationEndDate", registrationEndDate);
                                 intent.putExtra("facility", facility);
-                                intent.putExtra("isGeolocate", isGeolocate);
+                                intent.putExtra("geolocate", isGeolocate);
                                 startActivity(intent);
                                 finish();
                             })
