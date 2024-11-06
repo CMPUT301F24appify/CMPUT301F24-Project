@@ -9,6 +9,7 @@ import com.google.firebase.firestore.QueryDocumentSnapshot;
 import java.util.ArrayList;
 import java.util.UUID;
 import java.util.Random;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Represents an event with various attributes such as name, date, facility, and more.
@@ -79,62 +80,62 @@ public class Event {
 
         return event;
     }
-    
-    public ArrayList<Entrant> getWaitingList() {
-        ArrayList<Entrant> waitingList = new ArrayList<>();
-
-        db.collection("events").document(this.eventId)
-                .collection("waitingList")
-                .get()
-                .addOnSuccessListener(queryDocumentSnapshots -> {
-                    for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
-                        String id = document.getString("id");
-                        String name = document.getString("name");
-                        String email = document.getString("email");
-                        String status = document.getString("status");
-
-                        Entrant entrant = new Entrant(id, name, email, status);
-                        waitingList.add(entrant);
-                    }
-                    Log.d("Event", "Waiting list retrieved successfully!");
-                })
-                .addOnFailureListener(e -> {
-                    Log.w("Event", "Error retrieving waiting list", e);
-                });
-
-        return waitingList;
-    }
-
+    //The function below was done with major assistance from chatGPT, "Help make the lottery function
+    //(provided explanation of how the database is structured), (explained that
+    //need to update in both waitlists)", 2024-11-05
     public void lottery(FirebaseFirestore db, String eventID) {
-        int chosenPeople = 0;
-        ArrayList<Entrant> waitingListUpdate = this.getWaitingList();
-        Random chance = new Random();
+        AtomicInteger chosenCount = new AtomicInteger(0); // Track the number of invited entrants
+        Random random = new Random();
 
-        while (chosenPeople < maxWishEntrants) {
-            for (Entrant entrant : waitingListUpdate) {
-                if ("enrolled".equals(entrant.getStatus())) {
-                    int chanceChoose = chance.nextInt(2); // 50% chance
-                    if (chanceChoose == 1) {
-                        // Person is chosen, update their status to "invited" directly in Firestore
+        // Retrieve the waiting list for the event
+        db.collection("events").document(eventID)
+                .collection("waitingList")
+                .whereEqualTo("status", "enrolled") // Only consider entrants with "enrolled" status
+                .get()
+                .addOnSuccessListener(querySnapshot -> {
+                    ArrayList<String> eligibleEntrants = new ArrayList<>();
+
+                    // Collect the IDs of all eligible entrants
+                    for (QueryDocumentSnapshot document : querySnapshot) {
+                        eligibleEntrants.add(document.getId());
+                    }
+
+                    // Continue selecting entrants until maxSampleEntrants is reached or we run out of eligible entrants
+                    while (chosenCount.get() < maxSampleEntrants && !eligibleEntrants.isEmpty()) {
+                        int randomIndex = random.nextInt(eligibleEntrants.size());
+                        String selectedEntrantId = eligibleEntrants.remove(randomIndex);
+
+                        // Update the selected entrant's status to "invited" in the waiting list of the event
                         db.collection("events").document(eventID)
-                                .collection("waitingList").document(entrant.getId())
+                                .collection("waitingList").document(selectedEntrantId)
                                 .update("status", "invited")
                                 .addOnSuccessListener(aVoid -> {
-                                    Log.d("Lottery", "Entrant " + entrant.getId() + " invited successfully.");
+                                    Log.d("Lottery", "Entrant " + selectedEntrantId + " invited successfully.");
+                                    chosenCount.incrementAndGet(); // Increment the count of invited entrants
+
+                                    // Update the entrant's status in their Android ID collection as well
+                                    db.collection("Android ID").document(selectedEntrantId)
+                                            .collection("waitListedEvents").document(eventID)
+                                            .update("status", "invited")
+                                            .addOnSuccessListener(innerVoid -> {
+                                                Log.d("Lottery", "Entrant " + selectedEntrantId + " status updated in Android ID collection for event " + eventID);
+                                            })
+                                            .addOnFailureListener(e -> {
+                                                Log.w("Lottery", "Error updating entrant " + selectedEntrantId + " status in Android ID collection for event " + eventID, e);
+                                            });
                                 })
                                 .addOnFailureListener(e -> {
-                                    Log.w("Lottery", "Error inviting entrant " + entrant.getId(), e);
+                                    Log.w("Lottery", "Error inviting entrant " + selectedEntrantId, e);
                                 });
-
-                        chosenPeople++;
-                        if (chosenPeople >= maxWishEntrants) {
-                            return; // Exit the method once the max number of entrants is invited
-                        }
                     }
-                }
-            }
-        }
+
+                    Log.d("Lottery", "Lottery completed. Total invited entrants: " + chosenCount.get());
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("Lottery", "Error retrieving waiting list for event " + eventID, e);
+                });
     }
+
 
 
     // Getters
