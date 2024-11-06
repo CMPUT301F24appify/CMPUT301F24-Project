@@ -121,23 +121,7 @@ public class Entrant {
     public void setNotifications(boolean notifications) {
         this.notifications = notifications;
     }
-    /**
-     * Gets the list of event IDs associated with the entrant.
-     *
-     * @return a list of event IDs
-     */
-    public List<String> getEventList() {
-        return eventList;
-    }
 
-    /**
-     * Sets the list of event IDs associated with the entrant.
-     *
-     * @param eventList a list of event IDs
-     */
-    public void setEventList(List<String> eventList) {
-        this.eventList = eventList;
-    }
     //The 2 functions below were done with major assistance from chatGPT, "Help make accept and
     //decline functions (provided explanation of how the database is structured), (explained that
     //need to update in both waitlists)", 2024-11-05
