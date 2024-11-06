@@ -22,12 +22,12 @@
     &quot;assignee&quot;: &quot;ntrueman11&quot;
   }
 }</component>
-  <component name="GithubPullRequestsUISettings">{
-  &quot;selectedUrlAndAccountId&quot;: {
-    &quot;url&quot;: &quot;https://github.com/CMPUT301F24appify/CMPUT301F24-Project.git&quot;,
-    &quot;accountId&quot;: &quot;84cf9dba-25f8-4c0e-ada3-68466ddf92e6&quot;
+  <component name="GithubPullRequestsUISettings"><![CDATA[{
+  "selectedUrlAndAccountId": {
+    "url": "https://github.com/CMPUT301F24appify/CMPUT301F24-Project.git",
+    "accountId": "19eefa49-b47e-4b71-83f1-2a2332cc0d1b"
   }
-}</component>
+}]]></component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 4
 }</component>
@@ -45,7 +45,7 @@
     "cidr.known.project.marker": "true",
     "git-widget-placeholder": "main",
     "kotlin-language-version-configured": "true",
-    "last_opened_file_path": "/Users/nathantrueman/CMPUT-301/Project/CMPUT301F24-Project"
+    "last_opened_file_path": "C:/Users/User/Desktop/CMPUT301F24-Project/Appify"
   }
 }]]></component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
