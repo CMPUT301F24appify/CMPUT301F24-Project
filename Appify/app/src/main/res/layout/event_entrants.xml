@@ -73,28 +73,32 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Waitlisted" />
+                android:text="Waitlisted"
+                app:checkedState="checked" />
 
             <CheckBox
                 android:id="@+id/invited_checkbox"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Invited" />
+                android:text="Invited"
+                app:checkedState="checked" />
 
             <CheckBox
-                android:id="@+id/acceptedCheckBox"
+                android:id="@+id/accepted_checkbox"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Accepted" />
+                android:text="Accepted"
+                app:checkedState="checked" />
 
             <CheckBox
                 android:id="@+id/rejected_checkbox"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Rejected" />
+                android:text="Rejected"
+                app:checkedState="checked" />
         </LinearLayout>
 
         <ListView
