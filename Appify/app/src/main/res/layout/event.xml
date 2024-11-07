@@ -1,33 +1,53 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    tools:context=".MainActivity">
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
 
     <include
         layout="@layout/header"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
 
     <LinearLayout
+        android:id="@+id/linearLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/header">
 
         <Button
             android:id="@+id/button_manage"
-            android:layout_width="180dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="MANAGE FACILITY" />
+            android:layout_weight="1"
+            android:text="MANAGE FACILITY"
+            android:layout_marginStart="5dp"
+            android:layout_marginEnd="60dp"
+            android:textColor="@color/black"
+            app:backgroundTint="@color/buttons"
+            app:strokeColor="@color/buttons_stroke"
+            app:strokeWidth="1dp"/>
 
         <Button
             android:id="@+id/button_add"
-            android:layout_width="180dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="ADD EVENT" />
+            android:layout_weight="1"
+            android:text="ADD EVENT"
+            android:layout_marginStart="5dp"
+            android:layout_marginEnd="5dp"
+            android:textColor="@color/black"
+            app:backgroundTint="@color/buttons"
+            app:strokeColor="@color/buttons_stroke"
+            app:strokeWidth="1dp"/>
     </LinearLayout>
 
     <ListView
@@ -35,7 +55,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:choiceMode="singleChoice"
-        android:listSelector="#999999">
+        android:listSelector="#999999"
+        app:layout_constraintTop_toBottomOf="@+id/linearLayout">
 
     </ListView>
 
@@ -66,5 +87,4 @@
             android:text="CONFIRM" />
 
     </LinearLayout>
-
-</LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

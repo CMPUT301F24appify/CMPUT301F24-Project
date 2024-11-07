@@ -57,6 +57,12 @@ public class EventActivity extends AppCompatActivity implements AddEventDialogFr
             dialog.show(getSupportFragmentManager(), "AddEventDialogFragment");
         });
 
+        Button manageFacilityButton = findViewById(R.id.button_manage);
+        manageFacilityButton.setOnClickListener(v -> {
+            Intent intent = new Intent(EventActivity.this, ManageFacilityActivity.class);
+            startActivity(intent);
+        });
+
         // Set an item click listener to open the EventDetailActivity
         eventListView.setOnItemClickListener((parent, view, position, id) -> {
             Event selectedEvent = eventList.get(position);
