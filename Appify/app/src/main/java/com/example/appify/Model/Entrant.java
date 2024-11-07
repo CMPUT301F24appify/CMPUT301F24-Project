@@ -42,9 +42,6 @@ public class Entrant {
         this.facilityID = facilityID;
     }
 
-    public String getFacilityID() {
-        return facilityID;
-    }
 
     public void setFacilityID(String facilityID) {
         this.facilityID = facilityID;

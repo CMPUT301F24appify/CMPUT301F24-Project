@@ -143,7 +143,8 @@ public class EventActionsActivity extends AppCompatActivity {
         String profilePictureUrl = document.getString("profilePictureUrl");
         boolean notifications = document.getBoolean("notifications") != null && document.getBoolean("notifications");
         String facilityID = document.getString("facilityID");
-
-        return new Entrant(entrantId, name, phoneNumber, email, profilePictureUrl, notifications, facilityID);
+        Entrant entrant = new Entrant(entrantId, name, phoneNumber, email, profilePictureUrl, notifications);
+        entrant.setFacilityID(facilityID);
+        return entrant;
     }
 }
