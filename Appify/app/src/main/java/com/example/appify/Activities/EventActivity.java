@@ -106,16 +106,16 @@ public class EventActivity extends AppCompatActivity implements AddEventDialogFr
         String organizerID = app.getAndroidId();
 
         // Determine notification booleans based on message presence
-        boolean notifyWaitlisted = waitlistedMessage != null && !waitlistedMessage.isEmpty();
-        boolean notifyEnrolled = enrolledMessage != null && !enrolledMessage.isEmpty();
-        boolean notifyCancelled = cancelledMessage != null && !cancelledMessage.isEmpty();
-        boolean notifyInvited = invitedMessage != null && !invitedMessage.isEmpty();
+//        boolean notifyWaitlisted = waitlistedMessage != null && !waitlistedMessage.isEmpty();
+//        boolean notifyEnrolled = enrolledMessage != null && !enrolledMessage.isEmpty();
+//        boolean notifyCancelled = cancelledMessage != null && !cancelledMessage.isEmpty();
+//        boolean notifyInvited = invitedMessage != null && !invitedMessage.isEmpty();
 
         // Create new Event object with notification messages
         Event newEvent = new Event(name, date, facility, registrationEndDate, description,
                 maxWishEntrants, maxSampleEntrants, posterUri, isGeolocate,
-                notifyWaitlisted, notifyEnrolled, notifyCancelled, notifyInvited,
-                waitlistedMessage, enrolledMessage, cancelledMessage, invitedMessage,
+                false, false, false, false,
+                "", "", "", "",
                 organizerID);
 
         // Use the addToFirestore method in Event
