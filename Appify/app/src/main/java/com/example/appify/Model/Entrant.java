@@ -19,6 +19,7 @@ public class Entrant {
     private String phoneNumber;
     private String profilePictureUrl;
     private boolean notifications;
+    private String facilityID;
 
 
     /**
@@ -122,6 +123,13 @@ public class Entrant {
     public void setNotifications(boolean notifications) {
         this.notifications = notifications;
     }
+
+    /**
+     * Gets the Facility ID of the Entrant's Facility
+     *
+     * @return the Facility ID
+     */
+    public String getFacilityID() { return facilityID; }
 
 }
 
