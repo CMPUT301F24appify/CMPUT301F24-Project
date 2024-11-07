@@ -23,14 +23,16 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".Activities.editUserActivity"> </activity>
-        <activity android:name=".Activities.userProfileActivity"> </activity>
+        <activity android:name=".Activities.editUserActivity" />
+        <activity android:name=".Activities.userProfileActivity" />
         <activity android:name=".Activities.EntrantHomePageActivity" />
         <activity android:name=".Activities.EntrantEnlistActivity" />
         <activity android:name=".Activities.EventEntrantsActivity" />
         <activity android:name=".Activities.EventDetailActivity" />
         <activity android:name=".Activities.EventActivity" />
         <activity android:name=".Activities.EnlistConfirmationActivity" />
+        <activity android:name=".Activities.EventActionsActivity" />
+        <activity android:name=".Activities.ManageFacilityActivity" />
 
     </application>
 

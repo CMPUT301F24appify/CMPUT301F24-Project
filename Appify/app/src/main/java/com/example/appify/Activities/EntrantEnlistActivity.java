@@ -3,6 +3,7 @@ package com.example.appify.Activities;
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -10,6 +11,7 @@ import android.widget.Toast;
 
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FieldValue;
 
@@ -21,6 +23,7 @@ import com.example.appify.R;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * The EntrantEnlistActivity class provides the UI and functionality for users
@@ -99,28 +102,60 @@ public class EntrantEnlistActivity extends AppCompatActivity {
     private void checkUserEnrollmentStatus() {
         DocumentReference eventRef = db.collection("events").document(eventId);
         CollectionReference waitingListRef = eventRef.collection("waitingList");
-
+        Button acceptInviteButton = findViewById(R.id.accept_invite_button);
+        Button declineInviteButton = findViewById(R.id.decline_invite_button);
         // Check the current status of the waiting list
         eventRef.get().addOnSuccessListener(documentSnapshot -> {
+
+
+
+//                    db.collection("Android ID").document(entrantID).collection("waitListedEvents").document(eventID).get().addOnSuccessListener(DocumentSnapshot -> {
+//                        String status = DocumentSnapshot.getString("status");
+
+
             if (documentSnapshot.exists()) {
                 int maxWishEntrants = documentSnapshot.getLong("maxWishEntrants").intValue();
                 boolean isGeolocate = documentSnapshot.getBoolean("geolocate") != null && documentSnapshot.getBoolean("geolocate");
 
+
+
                 waitingListRef.get().addOnSuccessListener(querySnapshot -> {
                     int currentEntrants = querySnapshot.size();
+
+
 
                     if (currentEntrants >= maxWishEntrants) {
                         // Waiting list is full
                         enlistLeaveButton.setText("Full");
                         enlistLeaveButton.setOnClickListener(null); // Disable button
                     } else {
-                        // Check if the user is already enlisted
-                        waitingListRef.document(androidId).get().addOnSuccessListener(docSnapshot -> {
-                            if (docSnapshot.exists()) {
-                                // User is already enlisted
+
+                        waitingListRef.document(androidId).get().addOnSuccessListener(DocumentSnapshot ->{
+
+                            String status = DocumentSnapshot.getString("status");
+
+                            if(Objects.equals(status, "enrolled")){
                                 isUserEnlisted = true;
                                 enlistLeaveButton.setText("Leave");
                                 enlistLeaveButton.setOnClickListener(v -> leaveEvent(eventId));
+                            } else if (Objects.equals(status, "accepted")) {
+                                isUserEnlisted = true;
+                                enlistLeaveButton.setText("Accepted");
+                                enlistLeaveButton.setOnClickListener(null);
+
+
+                            } else if (Objects.equals(status, "rejected")) {
+                                isUserEnlisted = true;
+                                enlistLeaveButton.setText("Rejected");
+                                enlistLeaveButton.setOnClickListener(null);
+                            } else if (Objects.equals(status, "invited")) {
+                                isUserEnlisted = true;
+                                enlistLeaveButton.setText("Invited");
+                                acceptInviteButton.setVisibility(View.VISIBLE);
+                                declineInviteButton.setVisibility(View.VISIBLE);
+                                enlistLeaveButton.setOnClickListener(null);
+
+
                             } else {
                                 // User is not enlisted
                                 isUserEnlisted = false;
@@ -133,7 +168,7 @@ public class EntrantEnlistActivity extends AppCompatActivity {
                                     }
                                 });
                             }
-                        }).addOnFailureListener(e -> Toast.makeText(this, "Error checking enrollment status.", Toast.LENGTH_SHORT).show());
+                        });
                     }
                 }).addOnFailureListener(e -> Toast.makeText(this, "Error fetching waiting list data.", Toast.LENGTH_SHORT).show());
             } else {

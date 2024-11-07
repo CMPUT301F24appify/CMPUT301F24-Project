@@ -53,7 +53,7 @@ public class EntrantHomePageActivity extends AppCompatActivity {
 
         // Initialize the ListView and the Adapter
         eventList = new ArrayList<>();
-        eventAdapter = new CustomEventAdapter(this, eventList);
+        eventAdapter = new CustomEventAdapter(this, eventList, false);
         eventListView = findViewById(R.id.home_events);
         eventListView.setAdapter(eventAdapter);
 

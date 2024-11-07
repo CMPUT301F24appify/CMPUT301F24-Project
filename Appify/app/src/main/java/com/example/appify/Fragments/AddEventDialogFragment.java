@@ -1,4 +1,4 @@
-package com.example.appify;
+package com.example.appify.Fragments;
 
 import android.app.Dialog;
 import android.content.Context;
@@ -15,6 +15,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 
+import com.example.appify.R;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 

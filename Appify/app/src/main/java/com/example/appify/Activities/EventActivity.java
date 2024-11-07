@@ -12,7 +12,7 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.appify.Adapters.CustomEventAdapter;
-import com.example.appify.AddEventDialogFragment;
+import com.example.appify.Fragments.AddEventDialogFragment;
 import com.example.appify.HeaderNavigation;
 import com.example.appify.Model.Event;
 import com.example.appify.MyApp;
@@ -48,7 +48,7 @@ public class EventActivity extends AppCompatActivity implements AddEventDialogFr
         db = FirebaseFirestore.getInstance();
 
         eventListView = findViewById(R.id.event_list);
-        eventAdapter = new CustomEventAdapter(this, eventList);
+        eventAdapter = new CustomEventAdapter(this, eventList, true);
         eventListView.setAdapter(eventAdapter);
 
         loadEventsFromFirestore();
@@ -57,6 +57,12 @@ public class EventActivity extends AppCompatActivity implements AddEventDialogFr
         addEventButton.setOnClickListener(v -> {
             AddEventDialogFragment dialog = new AddEventDialogFragment();
             dialog.show(getSupportFragmentManager(), "AddEventDialogFragment");
+        });
+
+        Button manageFacilityButton = findViewById(R.id.button_manage);
+        manageFacilityButton.setOnClickListener(v -> {
+            Intent intent = new Intent(EventActivity.this, ManageFacilityActivity.class);
+            startActivity(intent);
         });
 
         // Set an item click listener to open the EventDetailActivity

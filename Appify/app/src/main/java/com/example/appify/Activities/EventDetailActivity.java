@@ -84,6 +84,7 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
         TextView maxSampleTextView = findViewById(R.id.textViewMaxSampleEntrants);
         ImageView posterImageView = findViewById(R.id.imageViewPoster);
         TextView geolocateTextView = findViewById(R.id.textViewGeolocate);
+        Button organizerActionsButton = findViewById(R.id.organizerActions);
 
 //        Button buttonNotifyWaitlisted = findViewById(R.id.buttonWaitlisted);
 //        Button buttonNotifyEnrolled = findViewById(R.id.buttonEnrolled);
@@ -139,8 +140,30 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
         geolocateTextView.setText(isGeolocate ? "Geo-Location Enabled" : "Geo-Location Disabled");
 
         Button backButton = findViewById(R.id.buttonBackToEvents);
-        backButton.setOnClickListener(v -> finish());
+        backButton.setOnClickListener(v -> {
+            Intent intent2 = new Intent(EventDetailActivity.this, EventActivity.class);
+            intent2.putExtra("eventID", eventID);
+            startActivity(intent2);
 
+        });
+
+
+        organizerActionsButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                    Intent intent = new Intent(EventDetailActivity.this, EventActionsActivity.class);
+                    intent.putExtra("name", name );
+                    intent.putExtra("date", date);
+                    intent.putExtra("facility", facility);
+                    intent.putExtra("registrationEndDate", registrationEndDate);
+                    intent.putExtra("description",description );
+                    intent.putExtra("maxWishEntrants", maxWishEntrants);
+                    intent.putExtra("maxSampleEntrants", maxSampleEntrants);
+                    intent.putExtra("eventID", eventID);
+                    startActivity(intent);
+                }
+            });
         Button entrantListButton = findViewById(R.id.entrant_list_button);
 
 
