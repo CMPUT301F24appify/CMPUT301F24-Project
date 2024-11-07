@@ -19,6 +19,7 @@ public class Entrant {
     private String phoneNumber;
     private String profilePictureUrl;
     private boolean notifications;
+    private String facilityID;
 
 
     /**
@@ -31,16 +32,24 @@ public class Entrant {
      * @param profilePicture    the URL of the entrant's profile picture
      * @param notifications     the notification preference of the entrant
      */
-    public Entrant(String id, String name, String phoneNumber, String email, String profilePicture, boolean notifications) {
+    public Entrant(String id, String name, String phoneNumber, String email, String profilePicture, boolean notifications, String facilityID) {
         this.id = id;
         this.name = name;
         this.phoneNumber = phoneNumber;
         this.email = email;
         this.profilePictureUrl = profilePicture;
         this.notifications = notifications;
+        this.facilityID = facilityID;
     }
 
-    // Getters
+    public String getFacilityID() {
+        return facilityID;
+    }
+
+    public void setFacilityID(String facilityID) {
+        this.facilityID = facilityID;
+    }
+// Getters
 
     /**
      * Gets the unique ID of the entrant.

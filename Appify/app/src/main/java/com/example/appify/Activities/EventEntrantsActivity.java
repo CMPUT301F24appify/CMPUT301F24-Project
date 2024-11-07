@@ -1,5 +1,7 @@
 package com.example.appify.Activities;
 
+import static android.content.Intent.getIntent;
+
 import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Button;
@@ -21,20 +23,20 @@ import java.util.Objects;
 
 // This activity is the page that displays the entrants that have enrolled for an event, and what their enrollment status is.
 public class EventEntrantsActivity extends AppCompatActivity{
-    private FirebaseFirestore db;
-    ListView entrantListView;
+    public FirebaseFirestore db;
+    public ListView entrantListView;
     CustomEntrantAdapter entrantAdapterAll;
     CollectionReference waitingListRef;
-    ArrayList<Entrant> entrantListAll = new ArrayList<>();
-    ArrayList<Entrant> entrantListWaitinglisted = new ArrayList<>();
+    public ArrayList<Entrant> entrantListAll = new ArrayList<>();
+    public ArrayList<Entrant> entrantListWaitinglisted = new ArrayList<>();
     ArrayList<Entrant> entrantListInvited = new ArrayList<>();
     ArrayList<Entrant> entrantListAccepted = new ArrayList<>();
     ArrayList<Entrant> entrantListRejected = new ArrayList<>();
 
-    CheckBox waitListedCheckbox;
-    CheckBox invitedCheckBox;
-    CheckBox acceptedCheckBox;
-    CheckBox rejectedCheckBox;
+    public CheckBox waitListedCheckbox;
+    public CheckBox invitedCheckBox;
+    public CheckBox acceptedCheckBox;
+    public CheckBox rejectedCheckBox;
 
 
     @Override
@@ -103,8 +105,10 @@ public class EventEntrantsActivity extends AppCompatActivity{
     }
 
     public void reloadData(String eventID) {
+
         entrantListAll.clear(); // Clear existing list
-// Get the waiting list details for the current event
+
+        // Get the waiting list details for the current event
         waitingListRef = db.collection("events").document(eventID).collection("waitingList");
         waitingListRef.get().addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
@@ -129,7 +133,8 @@ public class EventEntrantsActivity extends AppCompatActivity{
                                     String email = entrantData.get("email").toString();
                                     String entrantProfilePic = entrantData.get("profilePictureUrl").toString();
                                     boolean notifications = entrantData.getBoolean("notifications");
-                                    Entrant entrant = new Entrant(entrantID, entrantName, phoneNumber, entrantEmail, entrantProfilePic, notifications);
+                                    String facilityID = entrantData.getString("facilityID");
+                                    Entrant entrant = new Entrant(entrantID, entrantName, phoneNumber, entrantEmail, entrantProfilePic, notifications, facilityID);
 
                                     db.collection("Android ID").document(entrantID).collection("waitListedEvents").document(eventID).get().addOnSuccessListener(DocumentSnapshot -> {
                                         String status = DocumentSnapshot.getString("status");

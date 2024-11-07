@@ -46,6 +46,7 @@ public class editUserActivity extends AppCompatActivity {
     private byte[] profilePictureByte;
     private EditText nameEditText, phoneEditText, emailEditText;
     private CheckBox notifications;
+    private String facilityID = null;
     private ActivityResultLauncher<Intent> activityResultLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
             result -> {
@@ -60,6 +61,7 @@ public class editUserActivity extends AppCompatActivity {
                 }
             }
     );
+
     /**
      *
      * Called when the activity is first created.
@@ -201,7 +203,7 @@ public class editUserActivity extends AppCompatActivity {
         Bitmap profilePicture = getBitmapFromImageView(profileImageView);
         FirebaseStorage storage = FirebaseStorage.getInstance();
         StorageReference storageRef = storage.getReference().child("profile_images/" + android_id + ".jpg");
-        boolean notifcationCheck = notifications.isChecked();
+        boolean notificationCheck = notifications.isChecked();
         // Convert Bitmap to ByteArray
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         profilePicture.compress(Bitmap.CompressFormat.JPEG, 100, baos);
@@ -211,7 +213,7 @@ public class editUserActivity extends AppCompatActivity {
                     String downloadUrl = uri.toString();
 
                     // Create Entrant object with the download URL
-                    Entrant user = new Entrant(id, name, phone, email, downloadUrl, notifcationCheck);
+                    Entrant user = new Entrant(id, name, phone, email, downloadUrl, notificationCheck, facilityID);
 
                     // Save Entrant data to Firestore
                     db.collection("Android ID").document(android_id).set(user)
@@ -237,6 +239,7 @@ public class editUserActivity extends AppCompatActivity {
                         String name = documentSnapshot.getString("name");
                         String phone = documentSnapshot.getString("phoneNumber");
                         String email = documentSnapshot.getString("email");
+                        facilityID = documentSnapshot.getString("facilityID");
                         //String profileImageUrl = documentSnapshot.getString("profilePictureUrl");
 
                         // Populate the EditText fields with the retrieved data
