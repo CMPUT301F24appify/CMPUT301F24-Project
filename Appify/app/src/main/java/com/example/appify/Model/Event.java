@@ -284,6 +284,70 @@ public class Event {
         this.isGeolocate = geolocate;
     }
 
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setDate(String date) {
+        this.date = date;
+    }
+
+    public void setFacility(String facility) {
+        this.facility = facility;
+    }
+
+    public void setRegistrationEndDate(String registrationEndDate) {
+        this.registrationEndDate = registrationEndDate;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public void setMaxWishEntrants(int maxWishEntrants) {
+        this.maxWishEntrants = maxWishEntrants;
+    }
+
+    public void setMaxSampleEntrants(int maxSampleEntrants) {
+        this.maxSampleEntrants = maxSampleEntrants;
+    }
+
+    public void setPosterUri(String posterUri) {
+        this.posterUri = posterUri;
+    }
+
+    public void setNotifyWaitlisted(boolean notifyWaitlisted) {
+        this.notifyWaitlisted = notifyWaitlisted;
+    }
+
+    public void setNotifyEnrolled(boolean notifyEnrolled) {
+        this.notifyEnrolled = notifyEnrolled;
+    }
+
+    public void setNotifyCancelled(boolean notifyCancelled) {
+        this.notifyCancelled = notifyCancelled;
+    }
+
+    public void setNotifyInvited(boolean notifyInvited) {
+        this.notifyInvited = notifyInvited;
+    }
+
+    public void setWaitlistedMessage(String waitlistedMessage) {
+        this.waitlistedMessage = waitlistedMessage;
+    }
+
+    public void setEnrolledMessage(String enrolledMessage) {
+        this.enrolledMessage = enrolledMessage;
+    }
+
+    public void setCancelledMessage(String cancelledMessage) {
+        this.cancelledMessage = cancelledMessage;
+    }
+
+    public void setInvitedMessage(String invitedMessage) {
+        this.invitedMessage = invitedMessage;
+    }
+
     public void setEventId(String eventId) {
         this.eventId = eventId;
     }
@@ -293,12 +357,29 @@ public class Event {
         void onEventAdded(Event event);
     }
 
+    // EventAddCallback interface remains unchanged
+    public interface EventEditCallback {
+        void onEventEdited(Event event);
+    }
+
     // Modify your addToFirestore method if necessary
     public void addToFirestore(EventAddCallback callback) {
         db.collection("events").document(this.eventId).set(this)
                 .addOnSuccessListener(aVoid -> {
                     if (callback != null) {
                         callback.onEventAdded(this);
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    // Handle the failure
+                });
+    }
+
+    public void editFirestore(EventEditCallback callback) {
+        db.collection("events").document(this.eventId).set(this)
+                .addOnSuccessListener(aVoid -> {
+                    if (callback != null) {
+                        callback.onEventEdited(this);
                     }
                 })
                 .addOnFailureListener(e -> {
