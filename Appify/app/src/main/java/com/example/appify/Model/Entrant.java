@@ -134,6 +134,14 @@ public class Entrant {
     //The 2 functions below were done with major assistance from chatGPT, "Help make accept and
     //decline functions (provided explanation of how the database is structured), (explained that
     //need to update in both waitlists)", 2024-11-05
+    /**
+     * Updates the entrant's status to "accepted" for a specific event in both the event's waiting list
+     * and the Android ID collection.
+     *
+     * @param db      The Firestore database instance used to access and update the database.
+     * @param eventID The unique identifier of the event for which the entrant's status is being updated.
+     *
+     */
     public void acceptEvent(FirebaseFirestore db, String eventID) {
         // Update status to "accepted" in the event's waiting list
         db.collection("events").document(eventID)
@@ -157,7 +165,16 @@ public class Entrant {
                     Log.w("Entrant", "Error updating status in waiting list for entrant " + this.id, e);
                 });
     }
+    /**
+     * Updates the entrant's status to "declined" for a specified event in both the event's waiting list
+     * and the Android ID collection, and re-runs the lottery to select a replacement entrant
+     *
+     * @param db      The Firestore database instance used to access and update the database.
+     * @param eventID The unique identifier of the event for which the entrant's status is being updated.
+     * @param event   The Event instance on which to call the lottery method if the decline is successful.
+     *
 
+     */
     public void declineEvent(FirebaseFirestore db, String eventID, Event event) {
         // Update status to "declined" in the event's waiting list
         db.collection("events").document(eventID)
