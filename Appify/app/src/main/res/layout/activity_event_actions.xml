@@ -2,6 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     android:padding="16dp">
 
@@ -21,6 +22,10 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Run Lottery"
+        android:textColor="@color/black"
+        app:backgroundTint="@color/buttons"
+        app:strokeColor="#FF8C00"
+        app:strokeWidth="1dp"
         android:layout_marginTop="16dp" />
 
     <!-- Accept Button -->
@@ -29,6 +34,10 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Accept All Invited"
+        android:textColor="@color/black"
+        app:backgroundTint="@color/buttons"
+        app:strokeColor="#FF8C00"
+        app:strokeWidth="1dp"
         android:layout_marginTop="8dp" />
 
     <!-- Deny Button -->
@@ -37,6 +46,21 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Deny All Invited"
+        android:textColor="@color/black"
+        app:backgroundTint="@color/buttons"
+        app:strokeColor="#FF8C00"
+        app:strokeWidth="1dp"
         android:layout_marginTop="8dp" />
+
+    <Button
+        android:layout_marginTop="400dp"
+        android:id="@+id/back_button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textColor="@color/black"
+        app:backgroundTint="@color/buttons"
+        app:strokeColor="#FF8C00"
+        app:strokeWidth="1dp"
+        android:text="Back" />
 
 </LinearLayout>

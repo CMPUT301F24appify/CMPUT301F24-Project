@@ -1,9 +1,9 @@
 // EventActionsActivity.java
-package com.example.appify;
+package com.example.appify.Activities;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
@@ -11,13 +11,14 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.appify.Model.Entrant;
 import com.example.appify.Model.Event;
+import com.example.appify.R;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 public class EventActionsActivity extends AppCompatActivity {
 
     private static final String TAG = "LotteryTestActivity";
-    private static final String TEST_EVENT_ID = "8b0f2eb9-e96f-48ee-84c0-8002a676f5ca";
+    private String eventID;
     private FirebaseFirestore db;
 
     @Override
@@ -26,10 +27,21 @@ public class EventActionsActivity extends AppCompatActivity {
         setContentView(R.layout.activity_event_actions);
 
         db = FirebaseFirestore.getInstance();
+        Intent intent = getIntent();
 
+        eventID = intent.getStringExtra("eventID");
+        String name = intent.getStringExtra("name");
+        String date = intent.getStringExtra("date");
+        String facility = intent.getStringExtra("facility");
+        String registrationEndDate = intent.getStringExtra("registrationEndDate");
+        String description = intent.getStringExtra("description");
+        int maxWishEntrants = intent.getIntExtra("maxWishEntrants", 0);
+        int maxSampleEntrants = intent.getIntExtra("maxSampleEntrants", 0);
+        String posterUriString = intent.getStringExtra("posterUri");
+        boolean isGeolocate = intent.getBooleanExtra("isGeolocate", false);
         // Set up the event ID text view
         TextView eventIdText = findViewById(R.id.event_id_text);
-        eventIdText.setText("Event ID: " + TEST_EVENT_ID);
+        eventIdText.setText("Event ID: " + eventID);
 
         // Lottery Button
         Button lotteryButton = findViewById(R.id.lottery_button);
@@ -42,11 +54,24 @@ public class EventActionsActivity extends AppCompatActivity {
         // Deny Button
         Button denyButton = findViewById(R.id.deny_button);
         denyButton.setOnClickListener(v -> runDenyStatusTest());
+        Button backButton = findViewById(R.id.back_button);
+        backButton.setOnClickListener(v -> {
+            Intent sendIntent = new Intent(EventActionsActivity.this, EventDetailActivity.class);
+            sendIntent.putExtra("name", name );
+            sendIntent.putExtra("date", date);
+            sendIntent.putExtra("facility", facility);
+            sendIntent.putExtra("registrationEndDate", registrationEndDate);
+            sendIntent.putExtra("description",description );
+            sendIntent.putExtra("maxWishEntrants", maxWishEntrants);
+            sendIntent.putExtra("maxSampleEntrants", maxSampleEntrants);
+            sendIntent.putExtra("eventID", eventID);
+            startActivity(sendIntent);
+        });
     }
 
     // Runs the lottery for a specific event
     public void runLotteryTest() {
-        db.collection("events").document(TEST_EVENT_ID)
+        db.collection("events").document(eventID)
                 .get()
                 .addOnSuccessListener(documentSnapshot -> {
                     if (documentSnapshot.exists()) {
@@ -84,21 +109,21 @@ public class EventActionsActivity extends AppCompatActivity {
                                 waitlistedMessage, enrolledMessage, cancelledMessage, invitedMessage, organizerID);
 
                         // Run the lottery function for the event
-                        testEvent.lottery(db, TEST_EVENT_ID);
+                        testEvent.lottery(db, eventID);
 
                         // Log to confirm the test execution
-                        Log.d(TAG, "Lottery test run completed for event ID: " + TEST_EVENT_ID);
+                        Log.d(TAG, "Lottery test run completed for event ID: " + eventID);
                     } else {
-                        Log.w(TAG, "No event found with ID: " + TEST_EVENT_ID);
+                        Log.w(TAG, "No event found with ID: " + eventID);
                     }
                 })
-                .addOnFailureListener(e -> Log.e(TAG, "Error retrieving event with ID: " + TEST_EVENT_ID, e));
+                .addOnFailureListener(e -> Log.e(TAG, "Error retrieving event with ID: " + eventID, e));
     }
 
 
     // Accept all invited entrants for a specific event
     public void runAcceptStatusTest() {
-        db.collection("events").document(TEST_EVENT_ID)
+        db.collection("events").document(eventID)
                 .collection("waitingList")
                 .whereEqualTo("status", "invited")
                 .get()
@@ -108,16 +133,16 @@ public class EventActionsActivity extends AppCompatActivity {
                         Entrant entrant = createEntrantFromDocument(document);
 
                         // Call acceptEvent for each invited entrant
-                        entrant.acceptEvent(db, TEST_EVENT_ID);
+                        entrant.acceptEvent(db, eventID);
                     }
-                    Log.d(TAG, "AcceptStatusTest: All invited entrants have been accepted for event ID: " + TEST_EVENT_ID);
+                    Log.d(TAG, "AcceptStatusTest: All invited entrants have been accepted for event ID: " + eventID);
                 })
-                .addOnFailureListener(e -> Log.e(TAG, "Error retrieving invited entrants for event ID: " + TEST_EVENT_ID, e));
+                .addOnFailureListener(e -> Log.e(TAG, "Error retrieving invited entrants for event ID: " + eventID, e));
     }
 
     // Deny all invited entrants for a specific event
     public void runDenyStatusTest() {
-        db.collection("events").document(TEST_EVENT_ID)
+        db.collection("events").document(eventID)
                 .collection("waitingList")
                 .whereEqualTo("status", "invited")
                 .get()
@@ -127,11 +152,11 @@ public class EventActionsActivity extends AppCompatActivity {
                         Entrant entrant = createEntrantFromDocument(document);
 
                         // Call declineEvent for each invited entrant
-                        entrant.declineEvent(db, TEST_EVENT_ID, new Event());
+                        entrant.declineEvent(db, eventID, new Event());
                     }
-                    Log.d(TAG, "DenyStatusTest: All invited entrants have been denied for event ID: " + TEST_EVENT_ID);
+                    Log.d(TAG, "DenyStatusTest: All invited entrants have been denied for event ID: " + eventID);
                 })
-                .addOnFailureListener(e -> Log.e(TAG, "Error retrieving invited entrants for event ID: " + TEST_EVENT_ID, e));
+                .addOnFailureListener(e -> Log.e(TAG, "Error retrieving invited entrants for event ID: " + eventID, e));
     }
 
     // Helper method to create an Entrant object from Firestore document data

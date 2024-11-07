@@ -81,7 +81,7 @@
                 android:text="Back to Events"
                 android:textColor="@color/black"
                 app:backgroundTint="@color/buttons"
-                app:strokeColor="@color/buttons_stroke"
+                app:strokeColor="#FF8C00"
                 app:strokeWidth="1dp"/>
 
             <Button
@@ -94,15 +94,20 @@
                 android:text="View Entrants"
                 android:textColor="@color/black"
                 app:backgroundTint="@color/buttons"
-                app:strokeColor="@color/buttons_stroke"
+                app:strokeColor="#FF8C00"
                 app:strokeWidth="1dp" />
         </LinearLayout>
 
         <Button
-            android:id="@+id/button"
+            android:id="@+id/organizerActions"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Button" />
+            android:textColor="@color/black"
+            app:backgroundTint="@color/buttons"
+            app:strokeColor="#FF8C00"
+            app:strokeWidth="1dp"
+            android:text="organizerActions"
+             />
 
 
     </LinearLayout>
