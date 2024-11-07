@@ -4,14 +4,13 @@ import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Color;
 import android.widget.TextView;
 import android.widget.ImageView;
-import android.widget.Toast;
 
 import com.example.appify.Activities.EntrantHomePageActivity;
 import com.example.appify.Activities.EventActivity;
 import com.example.appify.Activities.userProfileActivity;
+import com.example.appify.Fragments.AddFacilityDialogFragment;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;

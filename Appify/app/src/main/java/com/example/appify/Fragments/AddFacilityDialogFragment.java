@@ -1,4 +1,4 @@
-package com.example.appify;
+package com.example.appify.Fragments;
 
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -14,6 +14,8 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
 
 import com.example.appify.Model.Facility;
+import com.example.appify.MyApp;
+import com.example.appify.R;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.UUID;

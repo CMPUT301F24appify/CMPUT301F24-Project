@@ -12,7 +12,7 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.appify.Adapters.CustomEventAdapter;
-import com.example.appify.AddEventDialogFragment;
+import com.example.appify.Fragments.AddEventDialogFragment;
 import com.example.appify.HeaderNavigation;
 import com.example.appify.Model.Event;
 import com.example.appify.MyApp;

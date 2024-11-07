@@ -1,5 +1,6 @@
 package com.example.appify.Activities;
 
+import android.app.AlertDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Button;
@@ -8,7 +9,7 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.example.appify.AddFacilityDialogFragment;
+import com.example.appify.Fragments.AddFacilityDialogFragment;
 import com.example.appify.HeaderNavigation;
 import com.example.appify.MyApp;
 import com.example.appify.R;
@@ -149,19 +150,28 @@ public class ManageFacilityActivity extends AppCompatActivity implements AddFaci
      * @param facilityID The ID of the facility to delete.
      */
     private void deleteFacility(String facilityID) {
-        // Delete facility from "facilities" collection
-        db.collection("facilities").document(facilityID).delete()
-                .addOnSuccessListener(aVoid -> {
-                    // Update user's facilityID to null
-                    String androidId = ((MyApp) getApplication()).getAndroidId();
-                    db.collection("Android ID").document(androidId)
-                            .update("facilityID", null)
-                            .addOnSuccessListener(aVoid2 -> {
-                                Toast.makeText(this, "Facility deleted.", Toast.LENGTH_SHORT).show();
-                                Intent intent = new Intent(ManageFacilityActivity.this, EntrantHomePageActivity.class);
-                                startActivity(intent);
+        // Show confirmation dialog
+        new AlertDialog.Builder(this)
+                .setTitle("Delete Facility")
+                .setMessage("Are you sure you want to delete this facility? This action cannot be undone.")
+                .setPositiveButton("Delete", (dialog, which) -> {
+                    // Proceed with deletion
+                    db.collection("facilities").document(facilityID).delete()
+                            .addOnSuccessListener(aVoid -> {
+                                // Update user's facilityID to null
+                                String androidId = ((MyApp) getApplication()).getAndroidId();
+                                db.collection("Android ID").document(androidId)
+                                        .update("facilityID", null)
+                                        .addOnSuccessListener(aVoid2 -> {
+                                            Toast.makeText(this, "Facility deleted.", Toast.LENGTH_SHORT).show();
+                                            // Redirect to the EntrantHomePageActivity after deletion
+                                            Intent intent = new Intent(ManageFacilityActivity.this, EntrantHomePageActivity.class);
+                                            startActivity(intent);
+                                            finish();
+                                        });
                             });
-
-                });
+                })
+                .setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss())
+                .show();
     }
 }
