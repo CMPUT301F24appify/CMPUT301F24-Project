@@ -179,16 +179,16 @@ public class Entrant {
         // Update status to "declined" in the event's waiting list
         db.collection("events").document(eventID)
                 .collection("waitingList").document(this.id)
-                .update("status", "declined")
+                .update("status", "rejected")
                 .addOnSuccessListener(aVoid -> {
                     Log.d("Entrant", "Status updated to 'declined' in waiting list for entrant " + this.id);
 
                     // Update status to "declined" in the Android ID collection for the specific event
                     db.collection("Android ID").document(this.id)
                             .collection("waitListedEvents").document(eventID)
-                            .update("status", "declined")
+                            .update("status", "rejected")
                             .addOnSuccessListener(innerVoid -> {
-                                Log.d("Entrant", "Status updated to 'declined' in Android ID collection for entrant " + this.id);
+                                Log.d("Entrant", "Status updated to 'rejected' in Android ID collection for entrant " + this.id);
 
                                 // Run the lottery again to select a replacement entrant
                                 event.lottery(db, eventID);

@@ -98,6 +98,16 @@
                 app:strokeWidth="1dp" />
         </LinearLayout>
 
+        <Button
+            android:id="@+id/organizerActions"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@color/black"
+            app:backgroundTint="@color/buttons"
+            app:strokeColor="#FF8C00"
+            app:strokeWidth="1dp"
+            android:text="organizerActions"
+             />
 
 
     </LinearLayout>
