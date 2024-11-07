@@ -1,11 +1,11 @@
 package com.example.appify.Model;
 
+import android.content.Context;
 import android.util.Log;
 
 import com.google.firebase.firestore.FirebaseFirestore;
-
+import java.util.ArrayList;
 import java.util.List;
-
 /**
  * Represents an entrant with personal details and preferences.
  * An entrant can have various attributes such as name, contact information,
@@ -39,9 +39,17 @@ public class Entrant {
         this.email = email;
         this.profilePictureUrl = profilePicture;
         this.notifications = notifications;
+        this.facilityID = facilityID;
     }
 
-    // Getters
+    public String getFacilityID() {
+        return facilityID;
+    }
+
+    public void setFacilityID(String facilityID) {
+        this.facilityID = facilityID;
+    }
+// Getters
 
     /**
      * Gets the unique ID of the entrant.
@@ -51,7 +59,6 @@ public class Entrant {
     public String getId() {
         return id;
     }
-
     /**
      * Gets the name of the entrant.
      *
@@ -124,6 +131,7 @@ public class Entrant {
         this.notifications = notifications;
     }
 
+
     /**
      * Gets the Facility ID of the Entrant's Facility
      *
@@ -131,5 +139,77 @@ public class Entrant {
      */
     public String getFacilityID() { return facilityID; }
 
+
+    //The 2 functions below were done with major assistance from chatGPT, "Help make accept and
+    //decline functions (provided explanation of how the database is structured), (explained that
+    //need to update in both waitlists)", 2024-11-05
+    /**
+     * Updates the entrant's status to "accepted" for a specific event in both the event's waiting list
+     * and the Android ID collection.
+     *
+     * @param db      The Firestore database instance used to access and update the database.
+     * @param eventID The unique identifier of the event for which the entrant's status is being updated.
+     *
+     */
+    public void acceptEvent(FirebaseFirestore db, String eventID) {
+        // Update status to "accepted" in the event's waiting list
+        db.collection("events").document(eventID)
+                .collection("waitingList").document(this.id)
+                .update("status", "accepted")
+                .addOnSuccessListener(aVoid -> {
+                    Log.d("Entrant", "Status updated to 'accepted' in waiting list for entrant " + this.id);
+
+                    // Update status to "accepted" in the Android ID collection for the specific event
+                    db.collection("Android ID").document(this.id)
+                            .collection("waitListedEvents").document(eventID)
+                            .update("status", "accepted")
+                            .addOnSuccessListener(innerVoid -> {
+                                Log.d("Entrant", "Status updated to 'accepted' in Android ID collection for entrant " + this.id);
+                            })
+                            .addOnFailureListener(e -> {
+                                Log.w("Entrant", "Error updating status in Android ID collection for entrant " + this.id, e);
+                            });
+                })
+                .addOnFailureListener(e -> {
+                    Log.w("Entrant", "Error updating status in waiting list for entrant " + this.id, e);
+                });
+    }
+    /**
+     * Updates the entrant's status to "declined" for a specified event in both the event's waiting list
+     * and the Android ID collection, and re-runs the lottery to select a replacement entrant
+     *
+     * @param db      The Firestore database instance used to access and update the database.
+     * @param eventID The unique identifier of the event for which the entrant's status is being updated.
+     * @param event   The Event instance on which to call the lottery method if the decline is successful.
+     *
+
+     */
+    public void declineEvent(FirebaseFirestore db, String eventID, Event event) {
+        // Update status to "declined" in the event's waiting list
+        db.collection("events").document(eventID)
+                .collection("waitingList").document(this.id)
+                .update("status", "declined")
+                .addOnSuccessListener(aVoid -> {
+                    Log.d("Entrant", "Status updated to 'declined' in waiting list for entrant " + this.id);
+
+                    // Update status to "declined" in the Android ID collection for the specific event
+                    db.collection("Android ID").document(this.id)
+                            .collection("waitListedEvents").document(eventID)
+                            .update("status", "declined")
+                            .addOnSuccessListener(innerVoid -> {
+                                Log.d("Entrant", "Status updated to 'declined' in Android ID collection for entrant " + this.id);
+
+                                // Run the lottery again to select a replacement entrant
+                                event.lottery(db, eventID);
+                            })
+                            .addOnFailureListener(e -> {
+                                Log.w("Entrant", "Error updating status in Android ID collection for entrant " + this.id, e);
+                            });
+                })
+                .addOnFailureListener(e -> {
+                    Log.w("Entrant", "Error updating status in waiting list for entrant " + this.id, e);
+                });
+    }
 }
+
 
