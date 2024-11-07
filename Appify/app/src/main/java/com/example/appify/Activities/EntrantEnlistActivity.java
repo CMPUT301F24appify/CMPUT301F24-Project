@@ -2,6 +2,7 @@ package com.example.appify.Activities;
 
 import android.app.AlertDialog;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -142,12 +143,15 @@ public class EntrantEnlistActivity extends AppCompatActivity {
                                 isUserEnlisted = true;
                                 enlistLeaveButton.setText("Accepted");
                                 enlistLeaveButton.setOnClickListener(null);
+                                enlistLeaveButton.setBackgroundColor(Color.parseColor("#00FF00"));
 
 
                             } else if (Objects.equals(status, "rejected")) {
                                 isUserEnlisted = true;
                                 enlistLeaveButton.setText("Rejected");
                                 enlistLeaveButton.setOnClickListener(null);
+                                enlistLeaveButton.setBackgroundColor(Color.parseColor("#FF0000"));
+                                enlistLeaveButton.setTextColor(Color.parseColor("#FFFFFF"));
                             } else if (Objects.equals(status, "invited")) {
                                 isUserEnlisted = true;
                                 enlistLeaveButton.setText("Invited");
