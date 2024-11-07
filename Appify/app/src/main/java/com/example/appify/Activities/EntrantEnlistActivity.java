@@ -44,7 +44,16 @@ public class EntrantEnlistActivity extends AppCompatActivity {
     private String facility;
     private boolean isGeolocate;
 
-    @Override
+    /**
+     * Initializes the activity, sets up the navigation header, retrieves event details from
+     * the incoming intent, and populates the UI with these details. Configures the enlistment
+     * or leave button based on the user’s enrollment status in the event’s waiting list.
+     *
+     * @param savedInstanceState If the activity is being re-initialized after previously being
+     *                           shut down, then this Bundle contains the data it most recently
+     *                           supplied in onSaveInstanceState(Bundle). Note: Otherwise, it is null.
+     */
+     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.enlist_page);
