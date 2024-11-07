@@ -4,25 +4,38 @@ import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Color;
 import android.widget.TextView;
 import android.widget.ImageView;
 
 import com.example.appify.Activities.EntrantHomePageActivity;
 import com.example.appify.Activities.EventActivity;
 import com.example.appify.Activities.userProfileActivity;
+import com.example.appify.Fragments.AddFacilityDialogFragment;
+import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
+/**
+ * The HeaderNavigation class handles navigation within the application by setting up listeners for
+ * various header components, including events, facilities, organizing, notifications, home, and profile.
+ * It also checks if a user has a facility (organizer status) and prompts them to create one if not.
+ */
 public class HeaderNavigation {
+    // Attributes
     private Activity activity;
-
-    // Constructor
+    private FirebaseFirestore db = FirebaseFirestore.getInstance();
+    /**
+     * Constructor for HeaderNavigation.
+     *
+     * @param activity The activity where the header navigation is used.
+     */
     public HeaderNavigation(Activity activity) {
         this.activity = activity;
     }
 
-    // Method to initialize the navigation
+    /**
+     * Initializes navigation listeners for various header components.
+     */
     public void setupNavigation() {
         // Events
         TextView eventsText = activity.findViewById(R.id.eventsText_navBar);
@@ -41,7 +54,7 @@ public class HeaderNavigation {
         if (organizeText != null) {
 
             organizeText.setOnClickListener(v -> {
-                navigateToOrganize();
+                checkOrganizerStatus();
             });
         }
 
@@ -66,31 +79,51 @@ public class HeaderNavigation {
 
     }
 
-    // Navigation methods for each destination
+    /**
+     * Navigates to the entrant events page.
+     */
     private void navigateToEvents() {
         Intent intent = new Intent(activity, EntrantHomePageActivity.class);
         activity.startActivity(intent);
     }
 
+    /**
+     * Navigates to the facilities management page.
+     */
     private void navigateToFacilities() {
 //        Intent intent = new Intent(activity, FacilitiesActivity.class);
 //        activity.startActivity(intent);
     }
 
+    /**
+     * Navigates to the event management page.
+     */
     private void navigateToOrganize() {
         Intent intent = new Intent(activity, EventActivity.class);
         activity.startActivity(intent);
     }
 
+    /**
+     * Navigates to the notifications page. (Placeholder, modify as needed)
+     */
     private void navigateToNotifications() {
 //        Intent intent = new Intent(activity, NotificationsActivity.class);
 //        activity.startActivity(intent);
     }
 
+    /**
+     * Navigates to the user's profile page.
+     */
     private void navigateToProfile() {
         Intent intent = new Intent(activity, userProfileActivity.class);
         activity.startActivity(intent);
     }
+
+    /**
+     * Loads the user's profile picture from Firebase Storage into the provided ImageView.
+     *
+     * @param profilePicture The ImageView to display the user's profile picture.
+     */
     private void loadProfilePicture(ImageView profilePicture) {
         MyApp app = (MyApp) activity.getApplication();
         String androidId = app.getAndroidId();
@@ -109,6 +142,48 @@ public class HeaderNavigation {
                         // Optionally set a default image if loading fails
                         profilePicture.setImageResource(R.drawable.default_pfp);
                     });
+        }
+    }
+
+    /**
+     * Checks if the user is an organizer by querying the database.
+     * If the user is an organizer, navigates to EventActivity.
+     * If the user is not an organizer, shows the Add Facility dialog.
+     */
+    private void checkOrganizerStatus() {
+        MyApp app = (MyApp) activity.getApplication();
+        String androidId = app.getAndroidId();
+
+        if (androidId != null) {
+            db.collection("Android ID").document(androidId)
+                    .get()
+                    .addOnSuccessListener(documentSnapshot -> {
+                        if (documentSnapshot.exists() && documentSnapshot.getString("facilityID") != null) {
+                            // User is an organizer, navigate to EventActivity
+                            navigateToOrganize();
+                        } else {
+                            // User is not an organizer, show Add Facility dialog
+                            showAddFacilityDialog();
+                        }
+                    });
+        }
+    }
+
+    /**
+     * Displays the Add Facility dialog, allowing the user to add a new facility.
+     * This method checks if the current activity is a FragmentActivity to ensure fragment management compatibility.
+     * If the condition is met, it creates an instance of the AddFacilityDialogFragment and displays it.
+     */
+    private void showAddFacilityDialog() {
+        // Check if the activity is a FragmentActivity, required for managing fragments
+        if (activity instanceof androidx.fragment.app.FragmentActivity) {
+            androidx.fragment.app.FragmentActivity fragmentActivity = (androidx.fragment.app.FragmentActivity) activity;
+
+            // Create an instance of the AddFacilityDialogFragment
+            AddFacilityDialogFragment addFacilityDialog = new AddFacilityDialogFragment();
+
+            // Show the dialog fragment
+            addFacilityDialog.show(fragmentActivity.getSupportFragmentManager(), "AddFacilityDialog");
         }
     }
 }

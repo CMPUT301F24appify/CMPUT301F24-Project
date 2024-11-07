@@ -32,7 +32,7 @@ public class Entrant {
      * @param profilePicture    the URL of the entrant's profile picture
      * @param notifications     the notification preference of the entrant
      */
-    public Entrant(String id, String name, String phoneNumber, String email, String profilePicture, boolean notifications, String facilityID) {
+    public Entrant(String id, String name, String phoneNumber, String email, String profilePicture, boolean notifications) {
         this.id = id;
         this.name = name;
         this.phoneNumber = phoneNumber;
@@ -42,9 +42,6 @@ public class Entrant {
         this.facilityID = facilityID;
     }
 
-    public String getFacilityID() {
-        return facilityID;
-    }
 
     public void setFacilityID(String facilityID) {
         this.facilityID = facilityID;
@@ -130,6 +127,15 @@ public class Entrant {
     public void setNotifications(boolean notifications) {
         this.notifications = notifications;
     }
+
+
+    /**
+     * Gets the Facility ID of the Entrant's Facility
+     *
+     * @return the Facility ID
+     */
+    public String getFacilityID() { return facilityID; }
+
 
     //The 2 functions below were done with major assistance from chatGPT, "Help make accept and
     //decline functions (provided explanation of how the database is structured), (explained that
