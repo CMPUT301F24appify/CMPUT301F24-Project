@@ -106,14 +106,14 @@ public class AddFacilityDialogFragment extends DialogFragment {
     }
 
     /**
-     * Sets the width and height of the dialog to 85% and 60% of the screen dimensions, respectively.
+     * Sets the width and height of the dialog to 95% and 90% of the screen dimensions, respectively.
      */
     @Override
     public void onStart() {
         super.onStart();
         if (getDialog() != null && getDialog().getWindow() != null) {
-            int width = (int) (getResources().getDisplayMetrics().widthPixels * 0.85);
-            int height = (int) (getResources().getDisplayMetrics().heightPixels * 0.60);
+            int width = (int) (getResources().getDisplayMetrics().widthPixels * 0.95);
+            int height = (int) (getResources().getDisplayMetrics().heightPixels * 0.90);
             getDialog().getWindow().setLayout(width, height);
         }
     }

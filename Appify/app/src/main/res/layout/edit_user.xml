@@ -45,18 +45,22 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
-            android:backgroundTint="@android:color/holo_orange_light"
             android:text="Upload"
-            android:textColor="@android:color/black" />
+            android:textColor="@color/black"
+            app:backgroundTint="@color/buttons"
+            app:strokeColor="@color/buttons_stroke"
+            app:strokeWidth="1dp" />
 
         <Button
             android:id="@+id/removeButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
-            android:backgroundTint="@android:color/holo_orange_light"
             android:text="Remove"
-            android:textColor="@android:color/black" />
+            android:textColor="@color/black"
+            app:backgroundTint="@color/buttons"
+            app:strokeColor="@color/buttons_stroke"
+            app:strokeWidth="1dp" />
     </LinearLayout>
 
     <!-- Name Row with Editable Field -->
@@ -171,17 +175,21 @@
             android:id="@+id/submitButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:backgroundTint="@android:color/holo_orange_light"
             android:text="Submit"
-            android:textColor="@android:color/black" />
+            android:textColor="@color/black"
+            app:backgroundTint="@color/buttons"
+            app:strokeColor="@color/buttons_stroke"
+            app:strokeWidth="1dp"/>
 
         <Button
             android:id="@+id/cancelButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Cancel"
-            android:backgroundTint="@android:color/holo_orange_light"
-            android:textColor="@android:color/black"
+            android:textColor="@color/black"
+            app:backgroundTint="@color/buttons"
+            app:strokeColor="@color/buttons_stroke"
+            app:strokeWidth="1dp"
             android:layout_marginStart="20dp" />
 
     </LinearLayout>
