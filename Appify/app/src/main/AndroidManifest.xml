@@ -32,7 +32,6 @@
         <activity android:name=".Activities.EventActivity" />
         <activity android:name=".Activities.EnlistConfirmationActivity" />
         <activity android:name=".Activities.EventActionsActivity" />
-
         <activity android:name=".Activities.ManageFacilityActivity" />
 
     </application>
