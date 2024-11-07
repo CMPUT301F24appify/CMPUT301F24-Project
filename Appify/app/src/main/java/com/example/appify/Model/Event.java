@@ -133,6 +133,17 @@ public class Event {
     //The function below was done with major assistance from chatGPT, "Help make the lottery function
     //(provided explanation of how the database is structured), (explained that
     //need to update in both waitlists)", 2024-11-05
+    /**
+     * Runs a lottery to randomly select entrants with "enrolled" status from the waiting list of a specified event
+     * and updates their status to "invited." The method continues to invite entrants until the maximum number of
+     * sample entrants (`maxSampleEntrants`) is reached or no more eligible entrants are available. Additionally,
+     * it updates the entrant's status in their Android ID collection under "waitListedEvents" for the specific event.
+     *
+     * @param db      The Firestore database instance used to access and update the database.
+     * @param eventID The unique identifier of the event for which the lottery is being conducted.
+     *
+     *
+     */
     public void lottery(FirebaseFirestore db, String eventID) {
         AtomicInteger chosenCount = new AtomicInteger(0); // Track the number of invited entrants
         Random random = new Random();
