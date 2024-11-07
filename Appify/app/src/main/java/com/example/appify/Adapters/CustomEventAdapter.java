@@ -6,6 +6,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -23,11 +24,13 @@ import java.util.Objects;
 public class CustomEventAdapter extends ArrayAdapter<Event> {
     private Context context;
     private List<Event> eventList;
+    private boolean isOrganizePage;
 
-    public CustomEventAdapter(Context context, List<Event> eventList){
+    public CustomEventAdapter(Context context, List<Event> eventList, boolean isOrganizePage){
         super(context, 0, eventList);
         this.context = context;
         this.eventList = eventList;
+        this.isOrganizePage = isOrganizePage;
     }
 
     @NonNull
@@ -37,6 +40,8 @@ public class CustomEventAdapter extends ArrayAdapter<Event> {
             convertView = LayoutInflater.from(context).inflate(R.layout.event_list_content, parent, false);
         }
 
+        MyApp app = (MyApp) context.getApplicationContext();
+        String entrantID = app.getAndroidId();
         Event event = eventList.get(position);
 
         TextView eventTitle = convertView.findViewById(R.id.event_title);
@@ -45,16 +50,15 @@ public class CustomEventAdapter extends ArrayAdapter<Event> {
         TextView eventStartDate = convertView.findViewById(R.id.event_date);
         ImageView statusIcon = convertView.findViewById(R.id.statusIcon);
 
-        MyApp app = (MyApp) context.getApplicationContext();
-        String entrantID = app.getAndroidId();
+
         FirebaseFirestore db = FirebaseFirestore.getInstance();
 
-        db.collection("Android ID").document(entrantID).collection("waitListedEvents").document(event.getEventId()).get().addOnSuccessListener(DocumentSnapshot ->{
+        db.collection("Android ID").document(entrantID).collection("waitListedEvents").document(event.getEventId()).get().addOnSuccessListener(DocumentSnapshot -> {
             String status = DocumentSnapshot.getString("status");
 
             statusIcon.setVisibility(View.VISIBLE);
             // Change the icon based off the status
-            if (Objects.equals(status, "enrolled")){
+            if (Objects.equals(status, "enrolled")) {
                 statusIcon.setImageResource(R.drawable.waiting_list_icon);
             } else if (Objects.equals(status, "invited")) {
                 statusIcon.setImageResource(R.drawable.invited_icon);
@@ -72,6 +76,14 @@ public class CustomEventAdapter extends ArrayAdapter<Event> {
         eventDesc.setText(event.getDescription());
         eventRegistrationEndDate.setText(event.getRegistrationEndDate());
         eventStartDate.setText(event.getDate());
+
+        if (Objects.equals(event.getOrganizerID(), entrantID) && !isOrganizePage){
+            LinearLayout topPart = convertView.findViewById(R.id.top_part);
+            LinearLayout bottomPart = convertView.findViewById(R.id.event_dates);
+            bottomPart.setVisibility(View.GONE);
+            topPart.setVisibility(View.GONE);
+        }
+
         return convertView;
     }
 }
