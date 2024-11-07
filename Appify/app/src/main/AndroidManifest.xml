@@ -31,7 +31,6 @@
         <activity android:name=".Activities.EventDetailActivity" />
         <activity android:name=".Activities.EventActivity" />
         <activity android:name=".Activities.EnlistConfirmationActivity" />
-<!--        <activity android:name=".Activities.EditEventDialogFragment" />-->
 
     </application>
 
