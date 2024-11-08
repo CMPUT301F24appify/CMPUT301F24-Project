@@ -21,7 +21,12 @@ import com.google.firebase.firestore.QueryDocumentSnapshot;
 import java.util.ArrayList;
 import java.util.Objects;
 
-// This activity is the page that displays the entrants that have enrolled for an event, and what their enrollment status is.
+
+/**
+ * This class is an Android activity that displays the list of entrants
+ * enrolled in a particular event, as well as their enrollment status.
+ * Users can filter entrants based on their status (waiting list, invited, accepted, rejected) using checkboxes.
+ */
 public class EventEntrantsActivity extends AppCompatActivity{
     public FirebaseFirestore db;
     public ListView entrantListView;
@@ -38,7 +43,12 @@ public class EventEntrantsActivity extends AppCompatActivity{
     public CheckBox acceptedCheckBox;
     public CheckBox rejectedCheckBox;
 
-
+    /**
+     * Called when the activity is first created.
+     * Initializes the activity's views, retrieves the event ID, loads entrant data, and sets up listeners.
+     *
+     * @param savedInstanceState The saved instance state bundle.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
@@ -104,6 +114,13 @@ public class EventEntrantsActivity extends AppCompatActivity{
 
     }
 
+    /**
+     * Reloads entrant data for the specified event by querying Firebase Firestore.
+     * Retrieves and categorizes entrants based on their enrollment status (waiting list, invited, accepted, or rejected).
+     * Sets up a custom adapter for displaying the entrant data.
+     *
+     * @param eventID The ID of the event for which to retrieve entrant data.
+     */
     public void reloadData(String eventID) {
 
         entrantListAll.clear(); // Clear existing list

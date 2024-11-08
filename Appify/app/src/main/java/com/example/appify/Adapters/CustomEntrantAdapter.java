@@ -1,9 +1,7 @@
 package com.example.appify.Adapters;
 
 import android.app.AlertDialog;
-import android.app.Dialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -11,29 +9,37 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 
-import com.bumptech.glide.signature.ObjectKey;
 import com.example.appify.Activities.EventEntrantsActivity;
 import com.example.appify.Model.Entrant;
 import com.example.appify.R;
-import com.google.firebase.firestore.CollectionReference;
-import com.google.firebase.firestore.DocumentReference;
-import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 
+/**
+ * The {@code CustomEntrantAdapter} is a custom ArrayAdapter for displaying entrant information
+ * in a ListView. It manages each entrant's data and status for a specific event and handles status
+ * changes through a Firebase Firestore database.
+ */
 public class CustomEntrantAdapter extends ArrayAdapter<Entrant> {
     private Context context;
     private List<Entrant> entrantList;
     private String eventID;
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
 
+
+    /**
+     * Constructs a new {@code CustomEntrantAdapter} instance.
+     *
+     * @param context     the context in which the adapter is used.
+     * @param entrantList the list of entrants to display.
+     * @param eventID     the ID of the event associated with the entrants.
+     */
     public CustomEntrantAdapter(Context context, List<Entrant> entrantList, String eventID){
         super(context,0,entrantList);
         this.context = context;
@@ -42,6 +48,15 @@ public class CustomEntrantAdapter extends ArrayAdapter<Entrant> {
 
     }
 
+    /**
+     * Returns a view for each entrant in the list, setting the entrant's name and status and configuring
+     * an 'X' icon that allows the user to reject the entrant when clicked, if their status is invited.
+     *
+     * @param position    the position of the item within the adapter's data set.
+     * @param convertView the old view to reuse.
+     * @param parent      the parent view that this view will be attached to.
+     * @return the view for the specific position in the list.
+     */
     @NonNull
     @Override
     public View getView(int position, View convertView, @NonNull ViewGroup parent){
@@ -93,6 +108,13 @@ public class CustomEntrantAdapter extends ArrayAdapter<Entrant> {
         return convertView;
     }
 
+    /**
+     * Displays a dialog to confirm the rejection of an entrant.
+     * Upon confirmation, updates the entrant's status to "rejected" in the Firestore database
+     * and refreshes the {@code EventEntrantsActivity} to reflect the change.
+     *
+     * @param entrant the entrant to be rejected.
+     */
     private void showCancelUserDialog(Entrant entrant){
         AlertDialog.Builder builder = new AlertDialog.Builder(this.getContext());
         builder

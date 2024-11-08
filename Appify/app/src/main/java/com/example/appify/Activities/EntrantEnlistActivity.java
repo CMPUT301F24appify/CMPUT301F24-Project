@@ -159,7 +159,6 @@ public class EntrantEnlistActivity extends AppCompatActivity {
                                 declineInviteButton.setVisibility(View.VISIBLE);
                                 enlistLeaveButton.setOnClickListener(null);
 
-
                             } else {
                                 // User is not enlisted
                                 isUserEnlisted = false;
