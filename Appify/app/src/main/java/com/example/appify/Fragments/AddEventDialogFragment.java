@@ -1,3 +1,17 @@
+/**
+ * AddEventDialogFragment.java
+ *
+ * This fragment provides the dialog interface for adding a new event.
+ * It allows organizers to input details for an event, validates the inputs, and uploads an optional poster image.
+ * The validated event data is passed back to the parent activity with a callback interface.
+ *
+ * Outstanding Issues:
+ * 1. Input Validation: Error messages could be further customized based on invalid input specifics.
+ * 2. Firebase Storage Handling: Potential improvements in handling large images or slow network conditions.
+ * 3. Geolocation Toggle Appearance: Button appearance updates for geolocation toggle could be enhanced with additional styling.
+ */
+
+
 package com.example.appify.Fragments;
 
 import android.app.Dialog;
@@ -5,6 +19,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.net.Uri;
+import android.util.Log;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -18,6 +33,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.appify.MyApp;
 import com.example.appify.R;
+import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
@@ -27,15 +43,41 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.UUID;
 
+/**
+ * Fragment dialog for adding an event, allowing organizers to input event details.
+ * This fragment performs input validation and image uploading to Firebase storage.
+ */
 public class AddEventDialogFragment extends DialogFragment {
     private static final int Pick_Image_Request = 1;
     private String posterUri;
     private AddEventDialogListener listener;
     private Button uploadPosterButton;
-
     private boolean isGeolocate = false;
+    private String facilityID;
+    private String facilityName;
+    private EditText eventFacility;
 
+    /**
+     * Interface for communicating the added event details to the parent activity.
+     */
     public interface AddEventDialogListener {
+        /**
+         * Callback for adding a new event with the provided details.
+         *
+         * @param name              Name of the event.
+         * @param date              Date of the event.
+         * @param facility          Facility for the event.
+         * @param registrationEndDate Registration end date.
+         * @param description       Description of the event.
+         * @param maxWaitEntrants   Maximum number of waitlist entrants.
+         * @param maxSampleEntrants Maximum number of sample entrants.
+         * @param posterUri         URI of the uploaded poster image.
+         * @param isGeolocate       Geolocation status.
+         * @param waitlistedMessage Notification message for waitlisted entrants.
+         * @param enrolledMessage   Notification message for enrolled entrants.
+         * @param cancelledMessage  Notification message for cancelled entrants.
+         * @param invitedMessage    Notification message for invited entrants.
+         */
         void onEventAdded(String name, String date, String facility, String registrationEndDate,
                           String description, int maxWaitEntrants, int maxSampleEntrants,
                           String posterUri, boolean isGeolocate,
@@ -43,6 +85,12 @@ public class AddEventDialogFragment extends DialogFragment {
                           String cancelledMessage, String invitedMessage);
     }
 
+    /**
+     * Attaches the dialog to the parent activity and checks if the parent implements the callback interface.
+     *
+     * @param context The context to which the dialog is attached.
+     * @throws ClassCastException if the context does not implement AddEventDialogListener.
+     */
     @Override
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
@@ -53,6 +101,12 @@ public class AddEventDialogFragment extends DialogFragment {
         }
     }
 
+    /**
+     * Creates the dialog, initializes UI components allowing organizer to input details, and sets up event handlers.
+     *
+     * @param savedInstanceState The saved state of the dialog.
+     * @return The created dialog instance.
+     */
     @NonNull
     @Override
     public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
@@ -61,11 +115,38 @@ public class AddEventDialogFragment extends DialogFragment {
         View view = inflater.inflate(R.layout.add_event_dialog, null);
 
         // Retrieve and set facility name from MyApp
-        EditText eventFacility = view.findViewById(R.id.editFacility);
+//        MyApp app = (MyApp) requireActivity().getApplication();
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
         MyApp app = (MyApp) requireActivity().getApplication();
-        String facilityName = app.getFacilityName();
-        eventFacility.setText(facilityName);
-        eventFacility.setEnabled(false);
+        String androidId = app.getAndroidId();
+        db.collection("Android ID").document(androidId)
+                .get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    facilityID = documentSnapshot.getString("facilityID");
+                    if (facilityID != null && !facilityID.isEmpty()) {
+                        db.collection("facilities").document(facilityID)
+                                .get()
+                                .addOnSuccessListener(documentSnapshot2 -> {
+                                    facilityName = documentSnapshot2.getString("name");
+                                    System.out.println(facilityName);
+                                    eventFacility = view.findViewById(R.id.editFacility);
+                                    eventFacility.setText(facilityName);
+                                    eventFacility.setEnabled(false);
+                                    eventFacility.setBackgroundColor(getResources().getColor(android.R.color.darker_gray));
+                                    if (facilityName == null) {
+                                        Log.w("MyApp", "Facility name not found for facilityID: " + facilityID);
+                                        facilityName = "No facility assigned";
+                                    }
+                                })
+                                .addOnFailureListener(e -> Log.w("MyApp", "Failed to retrieve facility name", e));
+                    } else {
+                        Log.w("MyApp", "No facilityID found for this Android ID");
+                    }
+                })
+                .addOnFailureListener(e -> Log.w("MyApp", "Failed to retrieve facilityID", e));
+        System.out.println(facilityName);
+
+
 
 
         EditText eventName = view.findViewById(R.id.editTextEventName);
@@ -93,7 +174,7 @@ public class AddEventDialogFragment extends DialogFragment {
                     if (validateInputs(eventName, eventDate, eventFacility, eventregistrationEndDate, maxWaitEntrant, maxSampleEntrant)) {
                         String name = eventName.getText().toString();
                         String date = eventDate.getText().toString();
-                        String facility = app.getFacilityName();
+                        String facility = facilityName;
                         String registrationEndDate = eventregistrationEndDate.getText().toString();
                         String description = eventDescription.getText().toString();
 
@@ -112,7 +193,17 @@ public class AddEventDialogFragment extends DialogFragment {
         return builder.create();
     }
 
-    // Method to validate inputs
+    /**
+     * Validates input fields to ensure they meet required formats and values.
+     *
+     * @param eventName            Event name field.
+     * @param eventDate            Event date field.
+     * @param eventFacility        Facility field.
+     * @param eventRegistrationEndDate Registration end date field.
+     * @param maxWaitEntrant       Maximum waitlist entrants field.
+     * @param maxSampleEntrant     Maximum sample entrants field.
+     * @return True if inputs are valid, otherwise false.
+     */
     private boolean validateInputs(EditText eventName, EditText eventDate, EditText eventFacility, EditText eventRegistrationEndDate, EditText maxWaitEntrant, EditText maxSampleEntrant) {
         boolean isValid = true;
         StringBuilder errorMessage = new StringBuilder();
@@ -171,6 +262,13 @@ public class AddEventDialogFragment extends DialogFragment {
         return isValid;
     }
 
+    /**
+     * Checks if the registration end date is before the event date.
+     *
+     * @param eventDateStr The event date as a string in "MMM dd, yyyy" format.
+     * @param registrationEndDateStr The registration end date as a string in "MMM dd, yyyy" format.
+     * @return True if the registration end date is before the event date, otherwise false.
+     */
     private boolean isRegistrationEndDateBeforeEventDate(String eventDateStr, String registrationEndDateStr) {
         SimpleDateFormat sdf = new SimpleDateFormat("MMM dd, yyyy", Locale.getDefault());
         sdf.setLenient(false); // Strict date parsing
@@ -183,7 +281,12 @@ public class AddEventDialogFragment extends DialogFragment {
         }
     }
 
-    // Utility to check if a string is a valid positive integer
+    /**
+     * Checks if a given string represents a positive integer.
+     *
+     * @param text The string to check.
+     * @return True if the string is a positive integer, otherwise false.
+     */
     private boolean isPositiveInteger(String text) {
         try {
             return Integer.parseInt(text) > 0;
@@ -192,7 +295,12 @@ public class AddEventDialogFragment extends DialogFragment {
         }
     }
 
-    // Utility to validate date in yyyy-MM-dd format
+    /**
+     * Validates if a given string is in a valid date format ("MMM dd, yyyy").
+     *
+     * @param date The date string to validate.
+     * @return True if the date is valid, otherwise false.
+     */
     private boolean isValidDate(String date) {
         SimpleDateFormat sdf = new SimpleDateFormat("MMM dd, yyyy", Locale.getDefault());
         sdf.setLenient(false);
@@ -204,6 +312,12 @@ public class AddEventDialogFragment extends DialogFragment {
         }
     }
 
+    /**
+     * Updates the button's appearance based on its active state.
+     *
+     * @param button The button to update.
+     * @param isActive True if the button should appear active, otherwise false.
+     */
     private void updateButtonAppearance(Button button, boolean isActive) {
         if (isActive) {
             button.setBackgroundColor(getResources().getColor(android.R.color.holo_blue_light));
@@ -212,6 +326,12 @@ public class AddEventDialogFragment extends DialogFragment {
         }
     }
 
+    /**
+     * Parses a string to an integer. Shows a toast message if parsing fails.
+     *
+     * @param text The text to parse.
+     * @return The integer value if parsing is successful, otherwise 0.
+     */
     private int parseInteger(String text) {
         try {
             return Integer.parseInt(text);
@@ -221,6 +341,9 @@ public class AddEventDialogFragment extends DialogFragment {
         }
     }
 
+    /**
+     * Opens a file chooser to select an image for the event poster.
+     */
     private void openFileChooser() {
         Intent intent = new Intent();
         intent.setType("image/*");
@@ -228,6 +351,13 @@ public class AddEventDialogFragment extends DialogFragment {
         startActivityForResult(Intent.createChooser(intent, "Select Poster Image"), Pick_Image_Request);
     }
 
+    /**
+     * Handles the result of the file chooser intent, uploading the selected image to Firebase.
+     *
+     * @param requestCode The request code originally supplied to startActivityForResult.
+     * @param resultCode  The result code returned by the child activity.
+     * @param data        The intent containing the result data.
+     */
     @Override
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -238,6 +368,11 @@ public class AddEventDialogFragment extends DialogFragment {
         }
     }
 
+    /**
+     * Uploads the selected image to Firebase storage and sets the poster URI.
+     *
+     * @param imageUri The URI of the image to upload.
+     */
     private void uploadImageToFirebase(Uri imageUri) {
         StorageReference storageRef = FirebaseStorage.getInstance().getReference();
         StorageReference posterRef = storageRef.child("event_posters/" + UUID.randomUUID().toString() + ".jpg");

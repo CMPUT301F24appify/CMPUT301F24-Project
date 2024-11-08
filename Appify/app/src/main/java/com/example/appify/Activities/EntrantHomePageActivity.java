@@ -115,8 +115,9 @@ public class EntrantHomePageActivity extends AppCompatActivity {
                     // Use the fromFirestore method to create an Event object
 
                     db.collection("events").document(event.getId()).get().addOnCompleteListener(task1 -> {
-
+                        System.out.println(db.collection("events").document(event.getId()));
                         DocumentSnapshot eventData = task1.getResult();
+                        System.out.println(eventData);
 
                         String eventID = eventData.getId();
                         String name = eventData.getString("name");

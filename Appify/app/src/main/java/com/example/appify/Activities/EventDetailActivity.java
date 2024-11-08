@@ -1,3 +1,18 @@
+/**
+ * EventDetailActivity.java
+ *
+ * This class represents the activity for displaying detailed information about an event.
+ * It allows the user to view event details, edit the event, and send notifications to
+ * participants. The class retrieves event data from Firebase Firestore and updates
+ * both UI elements and the database as needed.
+ *
+ * Outstanding Issues:
+ * 1. Image Loading Placeholder: A placeholder image should be shown if the poster URI is invalid or missing.
+ * 2. Event Data Refresh: The UI does not automatically refresh event data when edited from other activities.
+ * 3. Firebase Error Handling: Improved error handling for Firebase operations is required for better user feedback.
+ */
+
+
 package com.example.appify.Activities;
 
 import android.content.Intent;
@@ -33,6 +48,10 @@ import com.google.zxing.qrcode.QRCodeWriter;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * The EventDetailActivity class displays and manages the details of the selected event.
+ * It allows viewing, editing, and sending notifications to participants.
+ */
 public class EventDetailActivity extends AppCompatActivity implements EditEventDialogFragment.EditEventDialogListener {
     private FirebaseFirestore db;
     private String eventID;
@@ -43,6 +62,14 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
     private String cancelledMessage = "";
     private String invitedMessage = "";
 
+
+    /**
+     * This is called when the activity is created. It sets up the UI and initializes data fields.
+     *
+     * @param savedInstanceState If the activity is being re-initialized after previously
+     *                           being shut down, this Bundle contains the most recent
+     *                           data; otherwise, it is null.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -171,7 +198,6 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
         organizerActionsButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
                     Intent intent = new Intent(EventDetailActivity.this, EventActionsActivity.class);
                     intent.putExtra("name", name );
                     intent.putExtra("date", date);
@@ -184,16 +210,16 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
                     startActivity(intent);
                 }
             });
-        Button entrantListButton = findViewById(R.id.entrant_list_button);
 
-
+        // Setup edit event button
         Button editEventButton = findViewById(R.id.buttonEditEvent);
         editEventButton.setOnClickListener(v -> {
             EditEventDialogFragment dialog = new EditEventDialogFragment();
             dialog.show(getSupportFragmentManager(), "EditEventDialogFragment");
         });
 
-
+        // Setup entrant list button
+        Button entrantListButton = findViewById(R.id.entrant_list_button);
         entrantListButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -233,7 +259,23 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
     }
 
 
-
+    /**
+     * Updates the event data with the edited values when edited through the edit event dialog.
+     *
+     * @param name Name of the event
+     * @param date Date of the event
+     * @param facility Event location
+     * @param registrationEndDate Registration end date
+     * @param description Event description
+     * @param maxWaitEntrants Maximum waitlist entrants
+     * @param maxSampleEntrants Maximum sample entrants
+     * @param posterUri URI of the event poster
+     * @param isGeolocate Geo-location status of the event
+     * @param waitlistedMessage Notification message for waitlisted participants
+     * @param enrolledMessage Notification message for enrolled participants
+     * @param cancelledMessage Notification message for canceled events
+     * @param invitedMessage Notification message for invited participants
+     */
     @Override
     public void onEventEdited(String name, String date, String facility, String registrationEndDate,
                              String description, int maxWaitEntrants, int maxSampleEntrants,
@@ -280,7 +322,19 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
     }
 
 
-
+    /**
+     * Method to refresh the UI to update event details.
+     *
+     * @param name Name of the event
+     * @param date Date of the event
+     * @param facility Event facility
+     * @param registrationEndDate Registration end date
+     * @param description Event description
+     * @param maxWaitEntrants Maximum waitlist entrants
+     * @param maxSampleEntrants Maximum sample entrants
+     * @param posterUri URI of the event poster
+     * @param isGeolocate Geo-location status of the event
+     */
     private void refreshEventUI(String name, String date, String facility, String registrationEndDate,
                                 String description, int maxWaitEntrants, int maxSampleEntrants,
                                 String posterUri, boolean isGeolocate) {
@@ -315,7 +369,12 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
     }
 
 
-
+    /**
+     * Changes the appearance of a button based on its active state.
+     *
+     * @param button The button to update
+     * @param isActive True if the button is active, false otherwise
+     */
     private void updateButtonAppearance(Button button, boolean isActive) {
         if (isActive) {
             button.setBackgroundColor(getResources().getColor(android.R.color.holo_blue_light));
@@ -324,11 +383,26 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
         }
     }
 
-    // Interface for callback after input dialog
+    /**
+     * Callback interface for setting notification messages.
+     * Used to handle message input and pass the result to the calling method.
+     */
     private interface NotificationMessageCallback {
+        /**
+         * Called when a notification message is set.
+         *
+         * @param message The message set by the user
+         */
         void onMessageSet(String message);
     }
 
+    /**
+     * Displays a dialog box for entering or editing a notification message.
+     *
+     * @param title Title of the dialog
+     * @param existingMessage Existing notification message
+     * @param callback Callback for when the message is set
+     */
     private void showNotificationInputDialog(String title, String existingMessage, NotificationMessageCallback callback) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle(title);
@@ -351,7 +425,13 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
     }
 
 
-
+    /**
+     * Updates the notification message in Firestore for the specific event.
+     *
+     * @param messageField The Firestore field for the message
+     * @param message The notification message
+     * @param notifyField The Firestore field indicating notification status
+     */
     private void updateNotificationMessage(String messageField, String message, String notifyField) {
         boolean shouldNotify = !message.isEmpty();
 
