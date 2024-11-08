@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
@@ -19,6 +20,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.appify.MyApp;
 import com.example.appify.R;
+import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
@@ -33,8 +35,10 @@ public class EditEventDialogFragment extends DialogFragment {
     private String posterUri;  // Store as String URL
     private EditEventDialogListener listener;
     private Button uploadPosterButton;
-
     private boolean isGeolocate = false;
+    private String facilityID;
+    private String facilityName;
+    private EditText eventFacility;
 
     public interface EditEventDialogListener {
         void onEventEdited(String name, String date, String facility, String registrationEndDate,
@@ -62,12 +66,37 @@ public class EditEventDialogFragment extends DialogFragment {
         LayoutInflater inflater = requireActivity().getLayoutInflater();
         View view = inflater.inflate(R.layout.add_event_dialog, null);
 
-        EditText eventFacility = view.findViewById(R.id.editFacility);
+        // Retrieve and set facility name from MyApp
+//        MyApp app = (MyApp) requireActivity().getApplication();
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
         MyApp app = (MyApp) requireActivity().getApplication();
-        String facilityName = app.getFacilityName();
-        eventFacility.setText(facilityName);
-        eventFacility.setEnabled(false);
-        eventFacility.setBackgroundColor(getResources().getColor(android.R.color.darker_gray));
+        String androidId = app.getAndroidId();
+        db.collection("Android ID").document(androidId)
+                .get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    facilityID = documentSnapshot.getString("facilityID");
+                    if (facilityID != null && !facilityID.isEmpty()) {
+                        db.collection("facilities").document(facilityID)
+                                .get()
+                                .addOnSuccessListener(documentSnapshot2 -> {
+                                    facilityName = documentSnapshot2.getString("name");
+                                    System.out.println(facilityName);
+                                    eventFacility = view.findViewById(R.id.editFacility);
+                                    eventFacility.setText(facilityName);
+                                    eventFacility.setEnabled(false);
+                                    eventFacility.setBackgroundColor(getResources().getColor(android.R.color.darker_gray));
+                                    if (facilityName == null) {
+                                        Log.w("MyApp", "Facility name not found for facilityID: " + facilityID);
+                                        facilityName = "No facility assigned";
+                                    }
+                                })
+                                .addOnFailureListener(e -> Log.w("MyApp", "Failed to retrieve facility name", e));
+                    } else {
+                        Log.w("MyApp", "No facilityID found for this Android ID");
+                    }
+                })
+                .addOnFailureListener(e -> Log.w("MyApp", "Failed to retrieve facilityID", e));
+        System.out.println(facilityName);
 
         EditText eventName = view.findViewById(R.id.editTextEventName);
         EditText eventDate = view.findViewById(R.id.editDate);
@@ -94,7 +123,7 @@ public class EditEventDialogFragment extends DialogFragment {
                     if (validateInputs(eventName, eventDate, eventFacility, eventregistrationEndDate, maxWaitEntrant, maxSampleEntrant)) {
                         String name = eventName.getText().toString();
                         String date = eventDate.getText().toString();
-                        String facility = app.getFacilityName();
+                        String facility = facilityName;
                         String registrationEndDate = eventregistrationEndDate.getText().toString();
                         String description = eventDescription.getText().toString();
 
