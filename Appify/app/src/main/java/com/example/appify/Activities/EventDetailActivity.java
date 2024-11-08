@@ -328,11 +328,5 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
                 .addOnFailureListener(e -> Toast.makeText(this, "Failed to update notification: " + e.getMessage(), Toast.LENGTH_SHORT).show());
     }
 }
-//    private void updateNotificationMessage(String eventId, String field, String message) {
-//        db.collection("events").document(eventId)
-//                .update(field, message)
-//                .addOnSuccessListener(aVoid -> Toast.makeText(this, field + " updated", Toast.LENGTH_SHORT).show())
-//                .addOnFailureListener(e -> Toast.makeText(this, "Failed to update: " + e.getMessage(), Toast.LENGTH_SHORT).show());
-//    }
-//}
+
 
