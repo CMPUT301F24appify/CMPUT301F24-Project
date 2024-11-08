@@ -1,4 +1,4 @@
-package com.example.appify.Activities;
+package com.example.appify.Fragments;
 
 import android.app.Dialog;
 import android.content.Context;
@@ -8,7 +8,6 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
-import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.Toast;
 
@@ -17,7 +16,6 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.DialogFragment;
 
-import com.example.appify.AddEventDialogFragment;
 import com.example.appify.R;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
@@ -34,13 +32,6 @@ public class EditEventDialogFragment extends DialogFragment {
 
     private boolean isGeolocate = false;
 
-//    // Callback interface for updates
-//    public interface EditEventDialogListener {
-//        void onEventUpdated(Event updatedEvent);
-//    }
-
-
-
     public interface EditEventDialogListener {
         void onEventEdited(String name, String date, String facility, String registrationEndDate,
                            String description, int maxWishEntrants, int maxSampleEntrants,
@@ -49,7 +40,6 @@ public class EditEventDialogFragment extends DialogFragment {
                            String cancelledMessage, String invitedMessage);
 
     }
-
 
     @Override
     public void onAttach(@NonNull Context context) {
@@ -85,14 +75,6 @@ public class EditEventDialogFragment extends DialogFragment {
             updateButtonAppearance(reminderGeolocation, isGeolocate);
         });
 
-//        // Populate fields with existing event data
-//        eventName.setText(event.getName());
-//        eventDate.setText(event.getDate());
-//        eventFacility.setText(event.getFacility());
-//        eventregistrationEndDate.setText(event.getRegistrationEndDate());
-//        eventDescription.setText(event.getDescription());
-//        geolocateCheckbox.setChecked(event.isGeolocate());
-
         uploadPosterButton.setOnClickListener(v -> openFileChooser());
 
 
@@ -118,19 +100,6 @@ public class EditEventDialogFragment extends DialogFragment {
 
                 })
 
-//                    // Update Firebase with new values
-//                    db.collection("events").document(event.getEventId())
-//                            .set(event)
-//                            .addOnSuccessListener(aVoid -> {
-//                                if (listener != null) {
-//                                    listener.onEventUpdated(event); // Callback for UI refresh
-//                                }
-//                                Toast.makeText(getContext(), "Event updated successfully", Toast.LENGTH_SHORT).show();
-//                            })
-//                            .addOnFailureListener(e -> {
-//                                Toast.makeText(getContext(), "Failed to update event: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-//                            });
-//                })
                 .setNegativeButton("CANCEL", (dialog, id) -> dialog.dismiss());
 
         return builder.create();
@@ -243,43 +212,17 @@ public class EditEventDialogFragment extends DialogFragment {
         posterRef.putFile(imageUri).addOnSuccessListener(taskSnapshot -> {
             posterRef.getDownloadUrl().addOnSuccessListener(downloadUri -> {
                 posterUri = downloadUri.toString();
-                Toast.makeText(getContext(), "Poster uploaded successfully!", Toast.LENGTH_SHORT).show();
+                if (getContext() != null) {
+                    Toast.makeText(getContext(), "Poster uploaded successfully!", Toast.LENGTH_SHORT).show();
+                }
             }).addOnFailureListener(e -> {
-                Toast.makeText(getContext(), "Failed to get download URL: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                if (getContext() == null) {
+                    Toast.makeText(getContext(), "Failed to get download URL: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                }
             });
         }).addOnFailureListener(e -> {
             Toast.makeText(getContext(), "Failed to upload poster: " + e.getMessage(), Toast.LENGTH_SHORT).show();
         });
     }
-
-    // Interface for callback after input dialog
-    public interface NotificationMessageCallback {
-        void onMessageSet(String message);
-    }
-
-    private void showNotificationInputDialog(String title, String existingMessage, AddEventDialogFragment.NotificationMessageCallback callback) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
-        builder.setTitle(title);
-
-        // Set up the input
-        final EditText input = new EditText(requireContext());
-        input.setText(existingMessage);  // Pre-fill with existing message if any
-        builder.setView(input);
-
-        // Set up the buttons
-        builder.setPositiveButton("Confirm", (dialog, which) -> {
-            String message = input.getText().toString();
-            callback.onMessageSet(message);
-        });
-        builder.setNegativeButton("Cancel", (dialog, which) -> dialog.cancel());
-        builder.setNeutralButton("Delete", (dialog, which) -> {
-            callback.onMessageSet("");
-            Toast.makeText(getContext(), "Notification message deleted", Toast.LENGTH_SHORT).show();
-        });
-
-        builder.show();
-    }
-
-
 }
 

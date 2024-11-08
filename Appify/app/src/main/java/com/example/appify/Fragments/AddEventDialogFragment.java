@@ -14,7 +14,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.appify.MyApp;
 import com.example.appify.R;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
@@ -26,17 +28,11 @@ import java.util.UUID;
 
 public class AddEventDialogFragment extends DialogFragment {
     private static final int PICK_IMAGE_REQUEST = 1;
-    private String posterUri;  // Store as String URL
+    private String posterUri;
     private AddEventDialogListener listener;
 
     // State variables for buttons
     private boolean isGeolocate = false;
-
-//    // Notification message variables
-//    private String waitlistedMessage = "";
-//    private String enrolledMessage = "";
-//    private String cancelledMessage = "";
-//    private String invitedMessage = "";
 
     public interface AddEventDialogListener {
         void onEventAdded(String name, String date, String facility, String registrationEndDate,
@@ -63,9 +59,16 @@ public class AddEventDialogFragment extends DialogFragment {
         LayoutInflater inflater = requireActivity().getLayoutInflater();
         View view = inflater.inflate(R.layout.add_event_dialog, null);
 
+        // Retrieve and set facility name from MyApp
+        EditText eventFacility = view.findViewById(R.id.editFacility);
+        MyApp app = (MyApp) requireActivity().getApplication();
+        String facilityName = app.getFacilityName();
+        eventFacility.setText(facilityName);
+        eventFacility.setEnabled(false);
+
+
         EditText eventName = view.findViewById(R.id.editTextEventName);
         EditText eventDate = view.findViewById(R.id.editDate);
-        EditText eventFacility = view.findViewById(R.id.editFacility);
         EditText eventregistrationEndDate = view.findViewById(R.id.editRegistrationEndDate);
         EditText eventDescription = view.findViewById(R.id.editTextEventDescription);
 
@@ -76,45 +79,11 @@ public class AddEventDialogFragment extends DialogFragment {
         EditText maxWishEntrant = view.findViewById(R.id.maxNumberWishList);
         EditText maxSampleEntrant = view.findViewById(R.id.maxNumberSample);
 
-//        // Update variable types and IDs
-//        Button notifyWaitlisted = view.findViewById(R.id.buttonWaitlisted);
-//        Button notifyEnrolled = view.findViewById(R.id.buttonEnrolled);
-//        Button notifyCancelled = view.findViewById(R.id.buttonCancelled);
-//        Button notifyInvited = view.findViewById(R.id.buttonInvited);
-
         // Set OnClickListeners for buttons
         reminderGeolocation.setOnClickListener(v -> {
             isGeolocate = !isGeolocate;
             updateButtonAppearance(reminderGeolocation, isGeolocate);
         });
-
-//        notifyWaitlisted.setOnClickListener(v -> {
-//            showNotificationInputDialog("Waitlisted Notification", waitlistedMessage, message -> {
-//                waitlistedMessage = message;
-//                updateButtonAppearance(notifyWaitlisted, !message.isEmpty());
-//            });
-//        });
-//
-//        notifyEnrolled.setOnClickListener(v -> {
-//            showNotificationInputDialog("Enrolled Notification", enrolledMessage, message -> {
-//                enrolledMessage = message;
-//                updateButtonAppearance(notifyEnrolled, !message.isEmpty());
-//            });
-//        });
-//
-//        notifyCancelled.setOnClickListener(v -> {
-//            showNotificationInputDialog("Cancelled Notification", cancelledMessage, message -> {
-//                cancelledMessage = message;
-//                updateButtonAppearance(notifyCancelled, !message.isEmpty());
-//            });
-//        });
-//
-//        notifyInvited.setOnClickListener(v -> {
-//            showNotificationInputDialog("Invited Notification", invitedMessage, message -> {
-//                invitedMessage = message;
-//                updateButtonAppearance(notifyInvited, !message.isEmpty());
-//            });
-//        });
 
         uploadPosterButton.setOnClickListener(v -> openFileChooser());
 
@@ -124,7 +93,7 @@ public class AddEventDialogFragment extends DialogFragment {
                     if (validateInputs(eventName, eventDate, eventFacility, eventregistrationEndDate, maxWishEntrant, maxSampleEntrant)) {
                         String name = eventName.getText().toString();
                         String date = eventDate.getText().toString();
-                        String facility = eventFacility.getText().toString();
+                        String facility = app.getFacilityName();
                         String registrationEndDate = eventregistrationEndDate.getText().toString();
                         String description = eventDescription.getText().toString();
 
@@ -162,12 +131,6 @@ public class AddEventDialogFragment extends DialogFragment {
         // Validate registration end date format
         if (!isValidDate(eventRegistrationEndDate.getText().toString())) {
             eventRegistrationEndDate.setError("Enter date in 'MMM dd, yyyy' format (e.g., Nov 10, 2022)");
-            isValid = false;
-        }
-
-        // Check for non-empty facility
-        if (eventFacility.getText().toString().trim().isEmpty()) {
-            eventFacility.setError("Facility name is required");
             isValid = false;
         }
 
@@ -253,33 +216,5 @@ public class AddEventDialogFragment extends DialogFragment {
         }).addOnFailureListener(e -> {
             Toast.makeText(getContext(), "Failed to upload poster: " + e.getMessage(), Toast.LENGTH_SHORT).show();
         });
-    }
-
-    // Interface for callback after input dialog
-    public interface NotificationMessageCallback {
-        void onMessageSet(String message);
-    }
-
-    private void showNotificationInputDialog(String title, String existingMessage, NotificationMessageCallback callback) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
-        builder.setTitle(title);
-
-        // Set up the input
-        final EditText input = new EditText(requireContext());
-        input.setText(existingMessage);  // Pre-fill with existing message if any
-        builder.setView(input);
-
-        // Set up the buttons
-        builder.setPositiveButton("Confirm", (dialog, which) -> {
-            String message = input.getText().toString();
-            callback.onMessageSet(message);
-        });
-        builder.setNegativeButton("Cancel", (dialog, which) -> dialog.cancel());
-        builder.setNeutralButton("Delete", (dialog, which) -> {
-            callback.onMessageSet("");
-            Toast.makeText(getContext(), "Notification message deleted", Toast.LENGTH_SHORT).show();
-        });
-
-        builder.show();
     }
 }

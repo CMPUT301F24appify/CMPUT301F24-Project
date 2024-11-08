@@ -12,14 +12,13 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.appify.Fragments.EditEventDialogFragment;
 import com.example.appify.HeaderNavigation;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.bumptech.glide.Glide;
-import com.example.appify.AddEventDialogFragment;
-import com.example.appify.HeaderNavigation;
 import com.example.appify.Model.Event;
 import com.example.appify.MyApp;
 import com.example.appify.R;
@@ -51,7 +50,7 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
         organizeText.setTextColor(Color.parseColor("#800080"));
         organizeText.setTypeface(organizeText.getTypeface(), Typeface.BOLD);
 
-        db = FirebaseFirestore.getInstance(); // Ensure this line is in onCreate
+        db = FirebaseFirestore.getInstance();
 
 
         // Retrieve event ID from the intent
@@ -68,12 +67,10 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
         int maxSampleEntrants = intent.getIntExtra("maxSampleEntrants", 0);
         String posterUriString = intent.getStringExtra("posterUri");
         boolean isGeolocate = intent.getBooleanExtra("isGeolocate", false);
-//        String eventID = intent.getStringExtra("eventID");
 
 
         Uri posterUri = posterUriString != null && !posterUriString.isEmpty() ? Uri.parse(posterUriString) : null;
 
-//        FirebaseFirestore db = FirebaseFirestore.getInstance();
         // Bind data to views
         TextView nameTextView = findViewById(R.id.textViewName);
         TextView dateTextView = findViewById(R.id.textViewDate);
@@ -85,16 +82,6 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
         ImageView posterImageView = findViewById(R.id.imageViewPoster);
         TextView geolocateTextView = findViewById(R.id.textViewGeolocate);
         Button organizerActionsButton = findViewById(R.id.organizerActions);
-
-//        Button buttonNotifyWaitlisted = findViewById(R.id.buttonWaitlisted);
-//        Button buttonNotifyEnrolled = findViewById(R.id.buttonEnrolled);
-//        Button buttonNotifyCancelled = findViewById(R.id.buttonCancelled);
-//        Button buttonNotifyInvited = findViewById(R.id.buttonInvited);
-//
-//        buttonNotifyWaitlisted.setOnClickListener(v -> showNotificationInputDialog("Waitlisted Message", "waitlistedMessage"));
-//        buttonNotifyEnrolled.setOnClickListener(v -> showNotificationInputDialog("Enrolled Message", "enrolledMessage"));
-//        buttonNotifyCancelled.setOnClickListener(v -> showNotificationInputDialog("Cancelled Message", "cancelledMessage"));
-//        buttonNotifyInvited.setOnClickListener(v -> showNotificationInputDialog("Invited Message", "invitedMessage"));
 
         // Set up notification button click listeners
         Button notifyWaitlisted = findViewById(R.id.buttonWaitlisted);
@@ -196,12 +183,8 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
                         }
                     }
                 });
-
-
-
             }
         });
-
 
         // Display the image if the URI is valid
         if (posterUri != null) {
@@ -211,22 +194,6 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
 //            posterImageView.setImageResource(R.drawable.placeholder_image);  // Set a placeholder if no image is available
         }
     }
-
-//    private void showNotificationInputDialog(String title, String fieldName) {
-//        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-//        builder.setTitle(title);
-//
-//        final EditText input = new EditText(this);
-//        builder.setView(input);
-//
-//        builder.setPositiveButton("Save", (dialog, which) -> {
-//            String message = input.getText().toString();
-//            updateNotificationMessage(eventID, fieldName, message);
-//        });
-//        builder.setNegativeButton("Cancel", (dialog, which) -> dialog.cancel());
-//
-//        builder.show();
-//    }
 
 
 
@@ -267,25 +234,12 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
                     Toast.makeText(this, "Failed to update event: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                 });
 
-        // Determine notification booleans based on message presence
-//        boolean notifyWaitlisted = waitlistedMessage != null && !waitlistedMessage.isEmpty();
-//        boolean notifyEnrolled = enrolledMessage != null && !enrolledMessage.isEmpty();
-//        boolean notifyCancelled = cancelledMessage != null && !cancelledMessage.isEmpty();
-//        boolean notifyInvited = invitedMessage != null && !invitedMessage.isEmpty();
-
         // Create new Event object with notification messages
         Event updatedEvent = new Event(name, date, facility, registrationEndDate, description,
                 maxWishEntrants, maxSampleEntrants, posterUri, isGeolocate,
                 false, false, false, false,
                 "", "", "", "",
                 organizerID);
-
-//         Use the addToFirestore method in Event
-//        updatedEvent.addToFirestore(event -> {
-//            Toast.makeText(EventDetailActivity.this, "Event added: " + event.getName(), Toast.LENGTH_SHORT).show();
-//            eventList.add(event);
-//            eventAdapter.notifyDataSetChanged();
-//        });
     }
 
 

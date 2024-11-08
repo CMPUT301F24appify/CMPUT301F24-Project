@@ -21,8 +21,6 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 public class EventActivity extends AppCompatActivity implements AddEventDialogFragment.AddEventDialogListener {
     private FirebaseFirestore db;
@@ -65,7 +63,7 @@ public class EventActivity extends AppCompatActivity implements AddEventDialogFr
             startActivity(intent);
         });
 
-        // Set an item click listener to open the EventDetailActivity
+
         eventListView.setOnItemClickListener((parent, view, position, id) -> {
             Event selectedEvent = eventList.get(position);
 
@@ -111,20 +109,14 @@ public class EventActivity extends AppCompatActivity implements AddEventDialogFr
         MyApp app = (MyApp) getApplication();
         String organizerID = app.getAndroidId();
 
-        // Determine notification booleans based on message presence
-//        boolean notifyWaitlisted = waitlistedMessage != null && !waitlistedMessage.isEmpty();
-//        boolean notifyEnrolled = enrolledMessage != null && !enrolledMessage.isEmpty();
-//        boolean notifyCancelled = cancelledMessage != null && !cancelledMessage.isEmpty();
-//        boolean notifyInvited = invitedMessage != null && !invitedMessage.isEmpty();
 
-        // Create new Event object with notification messages
         Event newEvent = new Event(name, date, facility, registrationEndDate, description,
                 maxWishEntrants, maxSampleEntrants, posterUri, isGeolocate,
                 false, false, false, false,
                 "", "", "", "",
                 organizerID);
 
-        // Use the addToFirestore method in Event
+
         newEvent.addToFirestore(event -> {
             Toast.makeText(EventActivity.this, "Event added: " + event.getName(), Toast.LENGTH_SHORT).show();
             eventList.add(event);
@@ -154,4 +146,6 @@ public class EventActivity extends AppCompatActivity implements AddEventDialogFr
                     Toast.makeText(EventActivity.this, "Failed to load events: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                 });
     }
+
+
 }

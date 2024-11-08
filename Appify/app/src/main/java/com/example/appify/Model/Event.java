@@ -448,16 +448,4 @@ public class Event {
                     // Handle the failure
                 });
     }
-
-    public void editFirestore(EventEditCallback callback) {
-        db.collection("events").document(this.eventId).set(this)
-                .addOnSuccessListener(aVoid -> {
-                    if (callback != null) {
-                        callback.onEventEdited(this);
-                    }
-                })
-                .addOnFailureListener(e -> {
-                    // Handle the failure
-                });
-    }
 }
