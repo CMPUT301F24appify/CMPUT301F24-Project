@@ -35,7 +35,7 @@ import java.util.Objects;
  */
 public class EntrantEnlistActivity extends AppCompatActivity {
 
-    private boolean isUserEnlisted = false; // Track if the user is in the waiting list
+    private boolean isUserEnlisted; // Track if the user is in the waiting list
     private String eventId;
     private String androidId;
     private FirebaseFirestore db;
@@ -134,15 +134,14 @@ public class EntrantEnlistActivity extends AppCompatActivity {
                 waitingListRef.get().addOnSuccessListener(querySnapshot -> {
                     int currentEntrants = querySnapshot.size();
 
-                    if (currentEntrants >= maxWishEntrants) {
-                        // Waiting list is full
-                        enlistLeaveButton.setText("Full");
-                        enlistLeaveButton.setOnClickListener(null); // Disable button
-                    } else {
-                        waitingListRef.document(androidId).get().addOnSuccessListener(docSnapshot -> {
-                            String status = docSnapshot.getString("status");
 
-                            if (Objects.equals(status, "enrolled")) {
+
+                    if (currentEntrants <= maxWishEntrants) {
+                        waitingListRef.document(androidId).get().addOnSuccessListener(DocumentSnapshot ->{
+
+                            String status = DocumentSnapshot.getString("status");
+
+                            if(Objects.equals(status, "enrolled")){
                                 isUserEnlisted = true;
                                 enlistLeaveButton.setText("Leave");
                                 enlistLeaveButton.setOnClickListener(v -> leaveEvent(eventId));
@@ -161,9 +160,69 @@ public class EntrantEnlistActivity extends AppCompatActivity {
                                 isUserEnlisted = true;
                                 enlistLeaveButton.setText("Invited");
                                 enlistLeaveButton.setOnClickListener(null);
+
                                 // Display accept and decline buttons for invited users
                                 acceptInviteButton.setVisibility(View.VISIBLE);
                                 declineInviteButton.setVisibility(View.VISIBLE);
+
+                                // Set up actions for the accept and decline buttons
+                                acceptInviteButton.setOnClickListener(v -> {
+                                    db.collection("Android ID").document(androidId).get().addOnSuccessListener(entrantDoc -> {
+                                        if (entrantDoc.exists()) {
+                                            Entrant entrant = new Entrant(
+                                                    entrantDoc.getString("id"),
+                                                    entrantDoc.getString("name"),
+                                                    entrantDoc.getString("phoneNumber"),
+                                                    entrantDoc.getString("email"),
+                                                    entrantDoc.getString("profilePictureUrl"),
+                                                    entrantDoc.getBoolean("notifications") != null && entrantDoc.getBoolean("notifications")
+                                            );
+                                            entrant.acceptEvent(db, eventId);
+                                        }
+                                    });
+                                });
+
+                                declineInviteButton.setOnClickListener(v -> {
+                                    db.collection("Android ID").document(androidId).get().addOnSuccessListener(entrantDoc -> {
+                                        if (entrantDoc.exists()) {
+                                            Entrant entrant = new Entrant(
+                                                    entrantDoc.getString("id"),
+                                                    entrantDoc.getString("name"),
+                                                    entrantDoc.getString("phoneNumber"),
+                                                    entrantDoc.getString("email"),
+                                                    entrantDoc.getString("profilePictureUrl"),
+                                                    entrantDoc.getBoolean("notifications") != null && entrantDoc.getBoolean("notifications")
+                                            );
+
+                                            eventRef.get().addOnSuccessListener(eventDoc -> {
+                                                if (eventDoc.exists()) {
+                                                    Event event = new Event(
+                                                            eventDoc.getString("name"),
+                                                            eventDoc.getString("date"),
+                                                            eventDoc.getString("facility"),
+                                                            eventDoc.getString("registrationEndDate"),
+                                                            eventDoc.getString("description"),
+                                                            eventDoc.getLong("maxWishEntrants").intValue(),
+                                                            eventDoc.getLong("maxSampleEntrants").intValue(),
+                                                            eventDoc.getString("posterUri"),
+                                                            eventDoc.getBoolean("geolocate") != null && eventDoc.getBoolean("geolocate"),
+                                                            eventDoc.getBoolean("notifyWaitlisted") != null && eventDoc.getBoolean("notifyWaitlisted"),
+                                                            eventDoc.getBoolean("notifyEnrolled") != null && eventDoc.getBoolean("notifyEnrolled"),
+                                                            eventDoc.getBoolean("notifyCancelled") != null && eventDoc.getBoolean("notifyCancelled"),
+                                                            eventDoc.getBoolean("notifyInvited") != null && eventDoc.getBoolean("notifyInvited"),
+                                                            eventDoc.getString("waitlistedMessage"),
+                                                            eventDoc.getString("enrolledMessage"),
+                                                            eventDoc.getString("cancelledMessage"),
+                                                            eventDoc.getString("invitedMessage"),
+                                                            eventDoc.getString("organizerID")
+                                                    );
+
+                                                    entrant.declineEvent(db, eventId, event);
+                                                }
+                                            });
+                                        }
+                                    });
+                                });
 
                                 // Set up actions for the accept and decline buttons
                                 acceptInviteButton.setOnClickListener(v -> {
@@ -236,6 +295,10 @@ public class EntrantEnlistActivity extends AppCompatActivity {
                                 });
                             }
                         });
+                    } else {
+                        // Waiting list is full
+                        enlistLeaveButton.setText("Full");
+                        enlistLeaveButton.setOnClickListener(null); // Disable button
                     }
                 }).addOnFailureListener(e -> Toast.makeText(this, "Error fetching waiting list data.", Toast.LENGTH_SHORT).show());
             } else {

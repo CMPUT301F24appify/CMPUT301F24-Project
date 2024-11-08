@@ -1,6 +1,6 @@
 package com.example.appify.Model;
 
-import android.content.Context;
+
 import android.util.Log;
 
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -354,16 +354,6 @@ public class Event {
      */
     public String getInvitedMessage() {
         return invitedMessage;
-    }
-
-    // Setters (if needed)
-
-    public void setGeolocate(boolean geolocate) {
-        this.isGeolocate = geolocate;
-    }
-
-    public void setEventId(String eventId) {
-        this.eventId = eventId;
     }
 
     // EventAddCallback interface remains unchanged
