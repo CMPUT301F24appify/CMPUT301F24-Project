@@ -19,6 +19,8 @@ import com.example.appify.HeaderNavigation;
 import com.example.appify.MyApp;
 import com.example.appify.R;
 import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
@@ -35,7 +37,8 @@ public class EntrantHomePageActivity extends AppCompatActivity {
     ListView eventListView;
     CustomEventAdapter eventAdapter;
     ArrayList<Event> eventList;
-
+//    MyApp app = (MyApp) getApplication();
+//    String androidId = app.getAndroidId();
 
     /**
      * Called when the activity is starting. Initializes UI components and loads event data.
@@ -47,6 +50,8 @@ public class EntrantHomePageActivity extends AppCompatActivity {
     @Override
     protected void  onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
+
+
         setContentView(R.layout.entrant_home_page);
 
         db = FirebaseFirestore.getInstance();
@@ -66,13 +71,13 @@ public class EntrantHomePageActivity extends AppCompatActivity {
 
         // Load Events from Firebase
         loadEventsFromFirestore();
-        String android_id = getIntent().getStringExtra("Android ID");
 
 
         // OnClickListener for the Events in the ListView
         eventListView.setOnItemClickListener((AdapterView<?> parent, View view, int position, long id) -> {
             Event selectedEvent = eventList.get(position);
 
+            System.out.println("abc " + selectedEvent.getName());
             Intent intent = new Intent(EntrantHomePageActivity.this, EntrantEnlistActivity.class);
 
             intent.putExtra("eventId", selectedEvent.getEventId());
@@ -96,19 +101,69 @@ public class EntrantHomePageActivity extends AppCompatActivity {
      * and notifies the adapter to refresh the ListView.
      */
     private void loadEventsFromFirestore() {
-        CollectionReference eventsRef = db.collection("events");
+        MyApp app = (MyApp) getApplication();
+        String androidId = app.getAndroidId();
+        System.out.println(androidId);
 
-        eventsRef.get().addOnCompleteListener(task -> {
+        CollectionReference userRef = db.collection("Android ID").document(androidId).collection("waitListedEvents");
+
+        userRef.get().addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
+
                 eventList.clear(); // Clear the list to avoid duplicates
-                for (QueryDocumentSnapshot document : task.getResult()) {
+                for (QueryDocumentSnapshot event : task.getResult()) {
                     // Use the fromFirestore method to create an Event object
-                    Event event = Event.fromFirestore(document);
-                    eventList.add(event);
+
+                    db.collection("events").document(event.getId()).get().addOnCompleteListener(task1 -> {
+
+                        DocumentSnapshot eventData = task1.getResult();
+
+                        String eventID = eventData.getId();
+                        String name = eventData.getString("name");
+                        System.out.println(name);
+                        String date = eventData.getString("date");
+                        System.out.println(date);
+                        String registrationEndDate = eventData.getString("registrationEndDate");
+                        System.out.println(registrationEndDate);
+                        String description = eventData.getString("description");
+                        System.out.println(description);
+                        String facility = eventData.getString("facility");
+                        System.out.println(facility);
+                        int maxWaitEntrants = eventData.getLong("maxWaitEntrants").intValue();
+                        System.out.println(maxWaitEntrants);
+                        int maxSampleEntrants = eventData.getLong("maxSampleEntrants").intValue();
+                        System.out.println(maxSampleEntrants);
+                        String posterUri = eventData.getString("posterUri");
+                        System.out.println(posterUri);
+                        boolean isGeolocate = eventData.getBoolean("geolocate") != null ? eventData.getBoolean("geolocate") : false;
+                        System.out.println(isGeolocate);
+                        boolean notifyWaitlisted = eventData.getBoolean("notifyWaitlisted") != null ? eventData.getBoolean("notifyWaitlisted") : false;
+                        System.out.println(notifyWaitlisted);
+                        boolean notifyEnrolled = eventData.getBoolean("notifyEnrolled") != null ? eventData.getBoolean("notifyEnrolled") : false;
+                        System.out.println(notifyEnrolled);
+                        boolean notifyCancelled = eventData.getBoolean("notifyCancelled") != null ? eventData.getBoolean("notifyCancelled") : false;
+                        System.out.println(notifyCancelled);
+                        boolean notifyInvited = eventData.getBoolean("notifyInvited") != null ? eventData.getBoolean("notifyInvited") : false;
+                        System.out.println(notifyInvited);
+                        String organizerID = eventData.getString("organizerID");
+                        System.out.println(organizerID);
+
+                        // Retrieve notification messages
+                        String waitlistedMessage = eventData.getString("waitlistedMessage");
+                        String enrolledMessage = eventData.getString("enrolledMessage");
+                        String cancelledMessage = eventData.getString("cancelledMessage");
+                        String invitedMessage = eventData.getString("invitedMessage");
+
+                        Event event1 = new Event(name,date,facility,registrationEndDate,description,maxWaitEntrants,maxSampleEntrants,posterUri,isGeolocate,notifyWaitlisted,notifyEnrolled,notifyCancelled,notifyInvited,waitlistedMessage,enrolledMessage,cancelledMessage,invitedMessage,organizerID);
+                        event1.setEventId(eventID);
+                        eventList.add(event1);
+                        // Notify the adapter that data has changed
+                        eventAdapter.notifyDataSetChanged();
+                    });
                 }
-                // Notify the adapter that data has changed
-                eventAdapter.notifyDataSetChanged();
+
             } else {
+
                 Toast.makeText(EntrantHomePageActivity.this, "Error getting events.", Toast.LENGTH_SHORT).show();
             }
         });

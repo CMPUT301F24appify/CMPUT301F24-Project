@@ -3,6 +3,8 @@ package com.example.appify.Model;
 
 import android.util.Log;
 
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
@@ -99,37 +101,44 @@ public class Event {
      * @param document the Firestore document representing the event
      * @return an Event object populated with data from the Firestore document
      */
-    public static Event fromFirestore(QueryDocumentSnapshot document) {
-        String name = document.getString("name");
-        String date = document.getString("date");
-        String registrationEndDate = document.getString("registrationEndDate");
-        String description = document.getString("description");
-        String facility = document.getString("facility");
-        int maxWaitEntrants = document.getLong("maxWaitEntrants").intValue();
-        int maxSampleEntrants = document.getLong("maxSampleEntrants").intValue();
-        String posterUri = document.getString("posterUri");
-        boolean isGeolocate = document.getBoolean("geolocate") != null ? document.getBoolean("geolocate") : false;
-        boolean notifyWaitlisted = document.getBoolean("notifyWaitlisted") != null ? document.getBoolean("notifyWaitlisted") : false;
-        boolean notifyEnrolled = document.getBoolean("notifyEnrolled") != null ? document.getBoolean("notifyEnrolled") : false;
-        boolean notifyCancelled = document.getBoolean("notifyCancelled") != null ? document.getBoolean("notifyCancelled") : false;
-        boolean notifyInvited = document.getBoolean("notifyInvited") != null ? document.getBoolean("notifyInvited") : false;
-        String organizerID = document.getString("organizerID");
-
-        // Retrieve notification messages
-        String waitlistedMessage = document.getString("waitlistedMessage");
-        String enrolledMessage = document.getString("enrolledMessage");
-        String cancelledMessage = document.getString("cancelledMessage");
-        String invitedMessage = document.getString("invitedMessage");
-
-        Event event = new Event(name, date, facility, registrationEndDate, description,
-                maxWaitEntrants, maxSampleEntrants, posterUri, isGeolocate,
-                notifyWaitlisted, notifyEnrolled, notifyCancelled, notifyInvited,
-                waitlistedMessage, enrolledMessage, cancelledMessage, invitedMessage, organizerID);
-
-        event.eventId = document.getId(); // Use Firestore ID if available
-
-        return event;
-    }
+//    public static Event fromFirestore(QueryDocumentSnapshot document) {
+//        String eventId = document.getId();
+//
+//        FirebaseFirestore db = FirebaseFirestore.getInstance();
+//
+//        DocumentReference eventRef = db.collection("events").document(eventId);
+//        System.out.println("1");
+//        System.out.println(eventData);
+//        String name = eventData.getString("name");
+//        String date = eventData.getString("date");
+//        String registrationEndDate = eventData.getString("registrationEndDate");
+//        String description = eventData.getString("description");
+//        String facility = eventData.getString("facility");
+//        int maxWaitEntrants = eventData.getLong("maxWaitEntrants").intValue();
+//        int maxSampleEntrants = eventData.getLong("maxSampleEntrants").intValue();
+//        String posterUri = eventData.getString("posterUri");
+//        boolean isGeolocate = eventData.getBoolean("geolocate") != null ? eventData.getBoolean("geolocate") : false;
+//        boolean notifyWaitlisted = eventData.getBoolean("notifyWaitlisted") != null ? eventData.getBoolean("notifyWaitlisted") : false;
+//        boolean notifyEnrolled = eventData.getBoolean("notifyEnrolled") != null ? eventData.getBoolean("notifyEnrolled") : false;
+//        boolean notifyCancelled = eventData.getBoolean("notifyCancelled") != null ? eventData.getBoolean("notifyCancelled") : false;
+//        boolean notifyInvited = eventData.getBoolean("notifyInvited") != null ? eventData.getBoolean("notifyInvited") : false;
+//        String organizerID = eventData.getString("organizerID");
+//
+//        // Retrieve notification messages
+//        String waitlistedMessage = eventData.getString("waitlistedMessage");
+//        String enrolledMessage = eventData.getString("enrolledMessage");
+//        String cancelledMessage = eventData.getString("cancelledMessage");
+//        String invitedMessage = eventData.getString("invitedMessage");
+//
+//        Event event = new Event(name, date, facility, registrationEndDate, description,
+//                maxWaitEntrants, maxSampleEntrants, posterUri, isGeolocate,
+//                notifyWaitlisted, notifyEnrolled, notifyCancelled, notifyInvited,
+//                waitlistedMessage, enrolledMessage, cancelledMessage, invitedMessage, organizerID);
+//
+//        event.eventId = document.getId(); // Use Firestore ID if available
+//
+//        return event;
+//    }
     //The function below was done with major assistance from chatGPT, "Help make the lottery function
     //(provided explanation of how the database is structured), (explained that
     //need to update in both waitlists)", 2024-11-05
