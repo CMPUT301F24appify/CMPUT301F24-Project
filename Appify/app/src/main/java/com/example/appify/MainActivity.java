@@ -90,7 +90,7 @@ public class MainActivity extends AppCompatActivity {
      * Initiates an animated sequence for the Appify logo components on the main screen.
      * Once the animation completes, checks user status via {@link #checkAndNavigate(String)}.
      */
-    void startUpAnimation(){
+    private void startUpAnimation(){
 
         // Animate the top bar of the Appify Logo
         View topBar = findViewById(R.id.top_bar);
