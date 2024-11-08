@@ -151,6 +151,7 @@ public class Event {
         // Retrieve the waiting list for the event
         db.collection("events").document(eventID)
                 .collection("waitingList")
+                .whereEqualTo("status", "enrolled") // Only consider entrants with "enrolled" status
                 .get()
                 .addOnSuccessListener(querySnapshot -> {
                     ArrayList<String> eligibleEntrants = new ArrayList<>();
@@ -165,35 +166,27 @@ public class Event {
                         int randomIndex = random.nextInt(eligibleEntrants.size());
                         String selectedEntrantId = eligibleEntrants.remove(randomIndex);
 
-                        // Move the selected entrant to the invitedList in the event's collection and update their status in Android ID
+                        // Update the selected entrant's status to "invited" in the waiting list of the event
                         db.collection("events").document(eventID)
                                 .collection("waitingList").document(selectedEntrantId)
-                                .delete()
+                                .update("status", "invited")
                                 .addOnSuccessListener(aVoid -> {
-                                    db.collection("events").document(eventID)
-                                            .collection("invitedList").document(selectedEntrantId)
-                                            .set(new Object()) // Adding the ID without additional data
-                                            .addOnSuccessListener(inviteSuccess -> {
-                                                Log.d("Lottery", "Entrant " + selectedEntrantId + " moved to invitedList in event " + eventID);
-                                                chosenCount.incrementAndGet(); // Increment the count of invited entrants
+                                    Log.d("Lottery", "Entrant " + selectedEntrantId + " invited successfully.");
+                                    chosenCount.incrementAndGet(); // Increment the count of invited entrants
 
-                                                // Update the entrant's status in their Android ID collection as well
-                                                db.collection("Android ID").document(selectedEntrantId)
-                                                        .collection("waitListedEvents").document(eventID)
-                                                        .update("status", "invited")
-                                                        .addOnSuccessListener(innerVoid -> {
-                                                            Log.d("Lottery", "Entrant " + selectedEntrantId + " status updated to 'invited' in Android ID collection for event " + eventID);
-                                                        })
-                                                        .addOnFailureListener(e -> {
-                                                            Log.w("Lottery", "Error updating entrant " + selectedEntrantId + " status in Android ID collection for event " + eventID, e);
-                                                        });
+                                    // Update the entrant's status in their Android ID collection as well
+                                    db.collection("Android ID").document(selectedEntrantId)
+                                            .collection("waitListedEvents").document(eventID)
+                                            .update("status", "invited")
+                                            .addOnSuccessListener(innerVoid -> {
+                                                Log.d("Lottery", "Entrant " + selectedEntrantId + " status updated in Android ID collection for event " + eventID);
                                             })
                                             .addOnFailureListener(e -> {
-                                                Log.w("Lottery", "Error moving entrant " + selectedEntrantId + " to invitedList in event " + eventID, e);
+                                                Log.w("Lottery", "Error updating entrant " + selectedEntrantId + " status in Android ID collection for event " + eventID, e);
                                             });
                                 })
                                 .addOnFailureListener(e -> {
-                                    Log.w("Lottery", "Error removing entrant " + selectedEntrantId + " from waitingList in event " + eventID, e);
+                                    Log.w("Lottery", "Error inviting entrant " + selectedEntrantId, e);
                                 });
                     }
 
