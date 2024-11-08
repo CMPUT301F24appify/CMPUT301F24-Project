@@ -3,8 +3,10 @@ package com.example.appify;
 import android.app.Application;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.util.Log;
 import android.widget.ImageView;
 
+import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
@@ -15,6 +17,8 @@ import com.google.firebase.storage.StorageReference;
  */
 public class MyApp extends Application {
     private String androidId;
+    private String facilityID;
+    private String facilityName;
 
     /**
      * Retrieves the Android ID, a unique identifier for the device.
@@ -31,6 +35,40 @@ public class MyApp extends Application {
      *
      * @param androidId The unique Android ID to set for the application.
      */
-    public void setAndroidId(String androidId) { this.androidId = androidId; }
+    public void setAndroidId(String androidId) {
+        this.androidId = androidId;
+        retrieveFacilityID();
+    }
+
+    public String getFacilityName() { return facilityName; }
+
+    private void retrieveFacilityID() {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        db.collection("Android ID").document(androidId)
+                .get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    facilityID = documentSnapshot.getString("facilityID");
+                    if (facilityID != null && !facilityID.isEmpty()) {
+                        retrieveFacilityName();
+                    } else {
+                        Log.w("MyApp", "No facilityID found for this Android ID");
+                    }
+                })
+                .addOnFailureListener(e -> Log.w("MyApp", "Failed to retrieve facilityID", e));
+    }
+
+    private void retrieveFacilityName() {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        db.collection("facilities").document(facilityID)
+                .get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    facilityName = documentSnapshot.getString("name");
+                    if (facilityName == null) {
+                        Log.w("MyApp", "Facility name not found for facilityID: " + facilityID);
+                        facilityName = "No facility assigned";
+                    }
+                })
+                .addOnFailureListener(e -> Log.w("MyApp", "Failed to retrieve facility name", e));
+    }
 }
 

@@ -35,7 +35,7 @@ public class EventActionsActivity extends AppCompatActivity {
         String facility = intent.getStringExtra("facility");
         String registrationEndDate = intent.getStringExtra("registrationEndDate");
         String description = intent.getStringExtra("description");
-        int maxWishEntrants = intent.getIntExtra("maxWishEntrants", 0);
+        int maxWaitEntrants = intent.getIntExtra("maxWaitEntrants", 0);
         int maxSampleEntrants = intent.getIntExtra("maxSampleEntrants", 0);
         String posterUriString = intent.getStringExtra("posterUri");
         boolean isGeolocate = intent.getBooleanExtra("isGeolocate", false);
@@ -62,7 +62,7 @@ public class EventActionsActivity extends AppCompatActivity {
             sendIntent.putExtra("facility", facility);
             sendIntent.putExtra("registrationEndDate", registrationEndDate);
             sendIntent.putExtra("description",description );
-            sendIntent.putExtra("maxWishEntrants", maxWishEntrants);
+            sendIntent.putExtra("maxWaitEntrants", maxWaitEntrants);
             sendIntent.putExtra("maxSampleEntrants", maxSampleEntrants);
             sendIntent.putExtra("eventID", eventID);
             startActivity(sendIntent);
@@ -81,7 +81,7 @@ public class EventActionsActivity extends AppCompatActivity {
                         String registrationEndDate = documentSnapshot.getString("registrationEndDate");
                         String description = documentSnapshot.getString("description");
                         String facility = documentSnapshot.getString("facility");
-                        int maxWishEntrants = documentSnapshot.getLong("maxWishEntrants").intValue();
+                        int maxWaitEntrants = documentSnapshot.getLong("maxWaitEntrants").intValue();
                         int maxSampleEntrants = documentSnapshot.getLong("maxSampleEntrants").intValue();
                         String posterUri = documentSnapshot.getString("posterUri");
                         boolean isGeolocate = documentSnapshot.getBoolean("isGeolocate") != null
@@ -104,7 +104,7 @@ public class EventActionsActivity extends AppCompatActivity {
 
                         // Create the Event object
                         Event testEvent = new Event(name, date, facility, registrationEndDate, description,
-                                maxWishEntrants, maxSampleEntrants, posterUri, isGeolocate,
+                                maxWaitEntrants, maxSampleEntrants, posterUri, isGeolocate,
                                 notifyWaitlisted, notifyEnrolled, notifyCancelled, notifyInvited,
                                 waitlistedMessage, enrolledMessage, cancelledMessage, invitedMessage, organizerID);
 

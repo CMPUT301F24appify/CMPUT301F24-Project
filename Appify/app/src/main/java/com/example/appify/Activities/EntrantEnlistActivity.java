@@ -74,7 +74,7 @@ public class EntrantEnlistActivity extends AppCompatActivity {
         registrationEndDate = intent.getStringExtra("registrationEndDate");
         facility = intent.getStringExtra("facility");
         String description = intent.getStringExtra("description");
-        int maxWishEntrants = intent.getIntExtra("maxWishEntrants", 0);
+        int maxWaitEntrants = intent.getIntExtra("maxWaitEntrants", 0);
         int maxSampleEntrants = intent.getIntExtra("maxSampleEntrants", 0);
         String posterUriString = intent.getStringExtra("posterUri");
         isGeolocate = intent.getBooleanExtra("geolocate", false);
@@ -128,13 +128,13 @@ public class EntrantEnlistActivity extends AppCompatActivity {
         // Check the current status of the waiting list
         eventRef.get().addOnSuccessListener(documentSnapshot -> {
             if (documentSnapshot.exists()) {
-                int maxWishEntrants = documentSnapshot.getLong("maxWishEntrants").intValue();
+                int maxWaitEntrants = documentSnapshot.getLong("maxWaitEntrants").intValue();
                 boolean isGeolocate = documentSnapshot.getBoolean("geolocate") != null && documentSnapshot.getBoolean("geolocate");
 
                 waitingListRef.get().addOnSuccessListener(querySnapshot -> {
                     int currentEntrants = querySnapshot.size();
 
-                    if (currentEntrants < maxWishEntrants) {
+                    if (currentEntrants < maxWaitEntrants) {
                         waitingListRef.document(androidId).get().addOnSuccessListener(DocumentSnapshot ->{
 
                             String status = DocumentSnapshot.getString("status");
@@ -200,7 +200,7 @@ public class EntrantEnlistActivity extends AppCompatActivity {
                                                             eventDoc.getString("facility"),
                                                             eventDoc.getString("registrationEndDate"),
                                                             eventDoc.getString("description"),
-                                                            eventDoc.getLong("maxWishEntrants").intValue(),
+                                                            eventDoc.getLong("maxWaitEntrants").intValue(),
                                                             eventDoc.getLong("maxSampleEntrants").intValue(),
                                                             eventDoc.getString("posterUri"),
                                                             eventDoc.getBoolean("geolocate") != null && eventDoc.getBoolean("geolocate"),
@@ -259,7 +259,7 @@ public class EntrantEnlistActivity extends AppCompatActivity {
                                                             eventDoc.getString("facility"),
                                                             eventDoc.getString("registrationEndDate"),
                                                             eventDoc.getString("description"),
-                                                            eventDoc.getLong("maxWishEntrants").intValue(),
+                                                            eventDoc.getLong("maxWaitEntrants").intValue(),
                                                             eventDoc.getLong("maxSampleEntrants").intValue(),
                                                             eventDoc.getString("posterUri"),
                                                             eventDoc.getBoolean("geolocate") != null && eventDoc.getBoolean("geolocate"),

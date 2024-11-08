@@ -3,17 +3,18 @@ package com.example.appify.Fragments;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
-import android.os.Bundle;
 import android.net.Uri;
-import android.widget.Toast;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AlertDialog;
-import androidx.fragment.app.DialogFragment;
+import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
+import androidx.fragment.app.DialogFragment;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.appify.MyApp;
@@ -27,29 +28,30 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.UUID;
 
-public class AddEventDialogFragment extends DialogFragment {
-    private static final int Pick_Image_Request = 1;
-    private String posterUri;
-    private AddEventDialogListener listener;
+public class EditEventDialogFragment extends DialogFragment {
+    private static final int PICK_IMAGE_REQUEST = 1;
+    private String posterUri;  // Store as String URL
+    private EditEventDialogListener listener;
     private Button uploadPosterButton;
 
     private boolean isGeolocate = false;
 
-    public interface AddEventDialogListener {
-        void onEventAdded(String name, String date, String facility, String registrationEndDate,
-                          String description, int maxWaitEntrants, int maxSampleEntrants,
-                          String posterUri, boolean isGeolocate,
-                          String waitlistedMessage, String enrolledMessage,
-                          String cancelledMessage, String invitedMessage);
+    public interface EditEventDialogListener {
+        void onEventEdited(String name, String date, String facility, String registrationEndDate,
+                           String description, int maxWaitEntrants, int maxSampleEntrants,
+                           String posterUri, boolean isGeolocate,
+                           String waitlistedMessage, String enrolledMessage,
+                           String cancelledMessage, String invitedMessage);
+
     }
 
     @Override
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
         try {
-            listener = (AddEventDialogListener) context;
+            listener = (EditEventDialogListener) context;
         } catch (ClassCastException e) {
-            throw new ClassCastException(context.toString() + " must implement AddEventDialogListener");
+            throw new ClassCastException(context.toString() + " must implement EditEventDialogListener");
         }
     }
 
@@ -60,26 +62,23 @@ public class AddEventDialogFragment extends DialogFragment {
         LayoutInflater inflater = requireActivity().getLayoutInflater();
         View view = inflater.inflate(R.layout.add_event_dialog, null);
 
-        // Retrieve and set facility name from MyApp
         EditText eventFacility = view.findViewById(R.id.editFacility);
         MyApp app = (MyApp) requireActivity().getApplication();
         String facilityName = app.getFacilityName();
         eventFacility.setText(facilityName);
         eventFacility.setEnabled(false);
 
-
         EditText eventName = view.findViewById(R.id.editTextEventName);
         EditText eventDate = view.findViewById(R.id.editDate);
         EditText eventregistrationEndDate = view.findViewById(R.id.editRegistrationEndDate);
         EditText eventDescription = view.findViewById(R.id.editTextEventDescription);
-
-        // Update variable type and ID
         Button reminderGeolocation = view.findViewById(R.id.checkGeolocation);
 
         uploadPosterButton = view.findViewById(R.id.buttonUploadPoster);
         EditText maxWaitEntrant = view.findViewById(R.id.maxNumberWaitList);
         EditText maxSampleEntrant = view.findViewById(R.id.maxNumberSample);
 
+        // Set OnClickListeners for buttons
         reminderGeolocation.setOnClickListener(v -> {
             isGeolocate = !isGeolocate;
             updateButtonAppearance(reminderGeolocation, isGeolocate);
@@ -87,9 +86,10 @@ public class AddEventDialogFragment extends DialogFragment {
 
         uploadPosterButton.setOnClickListener(v -> openFileChooser());
 
+
         builder.setView(view)
-                .setTitle("Add Event")
-                .setPositiveButton("CONFIRM", (dialog, id) -> {
+                .setTitle("Edit Event")
+                .setPositiveButton("SAVE", (dialog, id) -> {
                     if (validateInputs(eventName, eventDate, eventFacility, eventregistrationEndDate, maxWaitEntrant, maxSampleEntrant)) {
                         String name = eventName.getText().toString();
                         String date = eventDate.getText().toString();
@@ -100,17 +100,18 @@ public class AddEventDialogFragment extends DialogFragment {
                         int wait_max = parseInteger(maxWaitEntrant.getText().toString());
                         int sample_max = parseInteger(maxSampleEntrant.getText().toString());
 
-                        listener.onEventAdded(name, date, facility, registrationEndDate, description,
+                        listener.onEventEdited(name, date, facility, registrationEndDate, description,
                                 wait_max, sample_max, posterUri, isGeolocate,
                                 "", "", "", "");
-                        } else {
-                            Toast.makeText(getContext(), "Please correct the highlighted fields", Toast.LENGTH_SHORT).show();
-                        }
-                    })
+                    } else {
+                        Toast.makeText(getContext(), "Please correct the highlighted fields", Toast.LENGTH_SHORT).show();
+                    }
+                })
                 .setNegativeButton("CANCEL", (dialog, id) -> dialog.dismiss());
 
         return builder.create();
     }
+
 
     // Method to validate inputs
     private boolean validateInputs(EditText eventName, EditText eventDate, EditText eventFacility, EditText eventRegistrationEndDate, EditText maxWaitEntrant, EditText maxSampleEntrant) {
@@ -154,7 +155,7 @@ public class AddEventDialogFragment extends DialogFragment {
         // Validate max entrants as integers within a reasonable range
         if (!isPositiveInteger(maxWaitEntrant.getText().toString())) {
             maxWaitEntrant.setError("Enter a positive number");
-            Toast.makeText(getContext(), "Max waitlist entrants must be a positive number.", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getContext(), "Max wait entrants must be a positive number.", Toast.LENGTH_SHORT).show();
             isValid = false;
         }
 
@@ -221,22 +222,25 @@ public class AddEventDialogFragment extends DialogFragment {
         }
     }
 
+
     private void openFileChooser() {
         Intent intent = new Intent();
         intent.setType("image/*");
         intent.setAction(Intent.ACTION_GET_CONTENT);
-        startActivityForResult(Intent.createChooser(intent, "Select Poster Image"), Pick_Image_Request);
+        startActivityForResult(Intent.createChooser(intent, "Select Poster Image"), PICK_IMAGE_REQUEST);
     }
+
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if (requestCode == Pick_Image_Request && resultCode == getActivity().RESULT_OK && data != null && data.getData() != null) {
+        if (requestCode == PICK_IMAGE_REQUEST && resultCode == getActivity().RESULT_OK && data != null && data.getData() != null) {
             uploadImageToFirebase(data.getData());
             uploadPosterButton.setBackgroundColor(getResources().getColor(android.R.color.holo_blue_light));
         }
     }
+
 
     private void uploadImageToFirebase(Uri imageUri) {
         StorageReference storageRef = FirebaseStorage.getInstance().getReference();
@@ -245,14 +249,17 @@ public class AddEventDialogFragment extends DialogFragment {
         posterRef.putFile(imageUri).addOnSuccessListener(taskSnapshot -> {
             posterRef.getDownloadUrl().addOnSuccessListener(downloadUri -> {
                 posterUri = downloadUri.toString();
-                Toast.makeText(getContext(), "Poster uploaded successfully!", Toast.LENGTH_SHORT).show();
+                if (getContext() != null) {
+                    Toast.makeText(getContext(), "Poster uploaded successfully!", Toast.LENGTH_SHORT).show();
+                }
             }).addOnFailureListener(e -> {
-                Toast.makeText(getContext(), "Failed to get download URL: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                if (getContext() == null) {
+                    Toast.makeText(getContext(), "Failed to get download URL: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                }
             });
         }).addOnFailureListener(e -> {
             Toast.makeText(getContext(), "Failed to upload poster: " + e.getMessage(), Toast.LENGTH_SHORT).show();
         });
     }
-
-
 }
+

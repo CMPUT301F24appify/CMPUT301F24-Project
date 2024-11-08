@@ -166,7 +166,7 @@ public class MainActivity extends AppCompatActivity {
          //               String registrationEndDate = documentSnapshot.getString("registrationEndDate");
          //               String description = documentSnapshot.getString("description");
          //               String facility = documentSnapshot.getString("facility");
-         //               int maxWishEntrants = documentSnapshot.getLong("maxWishEntrants").intValue();
+         //               int maxWaitEntrants = documentSnapshot.getLong("maxWaitEntrants").intValue();
          //               int maxSampleEntrants = documentSnapshot.getLong("maxSampleEntrants").intValue();
          //               String posterUri = documentSnapshot.getString("posterUri");
           //              boolean isGeolocate = documentSnapshot.getBoolean("isGeolocate") != null
@@ -174,7 +174,7 @@ public class MainActivity extends AppCompatActivity {
 //
 //                        // Create the Event object
 //                        Event testEvent = new Event(name, date, registrationEndDate, description, facility,
- //                               maxWishEntrants, maxSampleEntrants, posterUri, isGeolocate);
+ //                               maxWaitEntrants, maxSampleEntrants, posterUri, isGeolocate);
 
                         // Run the lottery function for the event
  //                       testEvent.lottery(db, TEST_EVENT_ID);
