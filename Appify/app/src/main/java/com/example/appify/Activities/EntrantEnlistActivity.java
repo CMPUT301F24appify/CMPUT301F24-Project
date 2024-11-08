@@ -2,6 +2,7 @@ package com.example.appify.Activities;
 
 import android.app.AlertDialog;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -43,7 +44,16 @@ public class EntrantEnlistActivity extends AppCompatActivity {
     private String facility;
     private boolean isGeolocate;
 
-    @Override
+    /**
+     * Initializes the activity, sets up the navigation header, retrieves event details from
+     * the incoming intent, and populates the UI with these details. Configures the enlistment
+     * or leave button based on the user’s enrollment status in the event’s waiting list.
+     *
+     * @param savedInstanceState If the activity is being re-initialized after previously being
+     *                           shut down, then this Bundle contains the data it most recently
+     *                           supplied in onSaveInstanceState(Bundle). Note: Otherwise, it is null.
+     */
+     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.enlist_page);
@@ -142,19 +152,21 @@ public class EntrantEnlistActivity extends AppCompatActivity {
                                 isUserEnlisted = true;
                                 enlistLeaveButton.setText("Accepted");
                                 enlistLeaveButton.setOnClickListener(null);
+                                enlistLeaveButton.setBackgroundColor(Color.parseColor("#00FF00"));
 
 
                             } else if (Objects.equals(status, "rejected")) {
                                 isUserEnlisted = true;
                                 enlistLeaveButton.setText("Rejected");
                                 enlistLeaveButton.setOnClickListener(null);
+                                enlistLeaveButton.setBackgroundColor(Color.parseColor("#FF0000"));
+                                enlistLeaveButton.setTextColor(Color.parseColor("#FFFFFF"));
                             } else if (Objects.equals(status, "invited")) {
                                 isUserEnlisted = true;
                                 enlistLeaveButton.setText("Invited");
                                 acceptInviteButton.setVisibility(View.VISIBLE);
                                 declineInviteButton.setVisibility(View.VISIBLE);
                                 enlistLeaveButton.setOnClickListener(null);
-
 
                             } else {
                                 // User is not enlisted
