@@ -232,7 +232,7 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
                     if (task.isSuccessful()) {
                         int totalTasks = task.getResult().size();
                         if (totalTasks == 0){
-                            // Check if there are any entrants on the waiting List.
+                            // Check if there are any entrants on the waiting List
                             Toast.makeText(getApplicationContext(), "No entrants", Toast.LENGTH_SHORT).show();
                         }
                         else {
