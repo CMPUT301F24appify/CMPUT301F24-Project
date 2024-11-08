@@ -1,3 +1,21 @@
+/**
+ * EventActivity.java
+ *
+ * This class manages the main screen for event organizers. It displays a list of events,
+ * allows organizers to add new events, and provides options for managing event details
+ * and facilities. Events are loaded from Firebase Firestore and displayed using a custom
+ * adapter.
+ *
+ * Outstanding Issues:
+ * 1. Data Duplication Prevention: When loading events from Firestore, the event list should
+ *    be cleared to avoid duplicating entries upon subsequent data fetches.
+ * 2. Error Handling Improvements: Current error messages for Firestore operations are basic;
+ *    additional logging and detailed feedback would improve user experience.
+ * 3. Null Checks: The use of null checks for Intent extras is crucial to prevent crashes if
+ *    data fields are missing or not set.
+ */
+
+
 package com.example.appify.Activities;
 
 import android.content.Intent;
@@ -22,6 +40,11 @@ import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
 
+
+/**
+ * EventActivity manages the displaying and interactions of organizer events.
+ * It displays a list of events, allows the organizer to add a new event, and navigate to event management and detail screens.
+ */
 public class EventActivity extends AppCompatActivity implements AddEventDialogFragment.AddEventDialogListener {
     private FirebaseFirestore db;
     private static final int REQUEST_READ_EXTERNAL_STORAGE = 1;
@@ -29,6 +52,12 @@ public class EventActivity extends AppCompatActivity implements AddEventDialogFr
     CustomEventAdapter eventAdapter;
     ArrayList<Event> eventList = new ArrayList<>();
 
+
+    /**
+     * Initializes the EventActivity, setting up the user interface and loading events from Firestore.
+     *
+     * @param savedInstanceState The previously saved state of the activity, if available.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -99,6 +128,23 @@ public class EventActivity extends AppCompatActivity implements AddEventDialogFr
         });
     }
 
+    /**
+     * Callback method for adding a new event from the AddEventDialogFragment.
+     *
+     * @param name              The name of the event.
+     * @param date              The date of the event.
+     * @param facility          The facility where the event takes place.
+     * @param registrationEndDate The registration end date for the event.
+     * @param description       A description of the event.
+     * @param maxWaitEntrants   Maximum number of waitlist entrants allowed.
+     * @param maxSampleEntrants Maximum number of sample entrants allowed.
+     * @param posterUri         URI of the event poster.
+     * @param isGeolocate       Whether geolocation is enabled for the event.
+     * @param waitlistedMessage Notification message for waitlisted entrants.
+     * @param enrolledMessage   Notification message for enrolled entrants.
+     * @param cancelledMessage  Notification message for cancelled entrants.
+     * @param invitedMessage    Notification message for invited entrants.
+     */
     @Override
     public void onEventAdded(String name, String date, String facility, String registrationEndDate,
                              String description, int maxWaitEntrants, int maxSampleEntrants,
@@ -124,9 +170,15 @@ public class EventActivity extends AppCompatActivity implements AddEventDialogFr
         });
     }
 
+    /**
+     * Loads events from Firestore based on the organizer's ID and populates the event list.
+     */
     private void loadEventsFromFirestore() {
         MyApp app = (MyApp) getApplication();
         String organizerID = app.getAndroidId();
+
+        // Clear the existing list to avoid duplicate entries
+        eventList.clear();
 
         db.collection("events")
                 .whereEqualTo("organizerID", organizerID)

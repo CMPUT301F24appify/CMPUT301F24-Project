@@ -99,7 +99,9 @@ public class editUserActivity extends AppCompatActivity {
             startActivity(intent);
         });
         db = FirebaseFirestore.getInstance();
-        populateFields(android_id);
+        if (android_id != null) {
+            populateFields(android_id);
+        }
         uploadButton.setOnClickListener(v -> openFileChooser());
 
         removeButton.setOnClickListener(v -> {
