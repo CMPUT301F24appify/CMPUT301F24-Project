@@ -34,11 +34,10 @@ android {
     tasks.withType<Test> {
         useJUnitPlatform() // Make all tests use JUnit 5
     }
+
 }
 
 dependencies {
-    implementation(platform("com.google.firebase:firebase-bom:33.4.0"))
-    implementation("com.google.firebase:firebase-firestore")
     implementation ("com.google.firebase:firebase-storage:20.0.1")
     implementation("com.github.bumptech.glide:glide:4.12.0")
     testImplementation("org.robolectric:robolectric:4.6.1")
@@ -64,4 +63,7 @@ dependencies {
     androidTestImplementation(libs.espresso.core)
     implementation ("com.journeyapps:zxing-android-embedded:4.3.0")
     implementation ("com.journeyapps:zxing-android-embedded:4.3.0")
+    implementation(platform("com.google.firebase:firebase-bom:33.4.0"))
+    implementation("com.google.firebase:firebase-firestore")
+    implementation(files("C:/Users/User/AppData/Local/Android/Sdk/platforms/android-34/android.jar"))
 }
