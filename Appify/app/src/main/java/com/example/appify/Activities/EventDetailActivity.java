@@ -207,6 +207,8 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
                     intent.putExtra("maxWaitEntrants", maxWaitEntrants);
                     intent.putExtra("maxSampleEntrants", maxSampleEntrants);
                     intent.putExtra("eventID", eventID);
+                    intent.putExtra("posterUri", posterUriString);
+                    intent.putExtra("isGeolocate", isGeolocate);
                     startActivity(intent);
                 }
             });

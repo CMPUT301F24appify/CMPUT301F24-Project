@@ -39,21 +39,13 @@ public class EventActionsActivity extends AppCompatActivity {
         int maxSampleEntrants = intent.getIntExtra("maxSampleEntrants", 0);
         String posterUriString = intent.getStringExtra("posterUri");
         boolean isGeolocate = intent.getBooleanExtra("isGeolocate", false);
-        // Set up the event ID text view
-        TextView eventIdText = findViewById(R.id.event_id_text);
-        eventIdText.setText("Event ID: " + eventID);
+
+
 
         // Lottery Button
         Button lotteryButton = findViewById(R.id.lottery_button);
         lotteryButton.setOnClickListener(v -> runLotteryTest());
 
-        // Accept Button
-        Button acceptButton = findViewById(R.id.accept_button);
-        acceptButton.setOnClickListener(v -> runAcceptStatusTest());
-
-        // Deny Button
-        Button denyButton = findViewById(R.id.deny_button);
-        denyButton.setOnClickListener(v -> runDenyStatusTest());
         Button backButton = findViewById(R.id.back_button);
         backButton.setOnClickListener(v -> {
             Intent sendIntent = new Intent(EventActionsActivity.this, EventDetailActivity.class);
@@ -65,6 +57,8 @@ public class EventActionsActivity extends AppCompatActivity {
             sendIntent.putExtra("maxWaitEntrants", maxWaitEntrants);
             sendIntent.putExtra("maxSampleEntrants", maxSampleEntrants);
             sendIntent.putExtra("eventID", eventID);
+            sendIntent.putExtra("posterUri", posterUriString);
+            sendIntent.putExtra("isGeolocate", isGeolocate);
             startActivity(sendIntent);
         });
     }
@@ -118,58 +112,5 @@ public class EventActionsActivity extends AppCompatActivity {
                     }
                 })
                 .addOnFailureListener(e -> Log.e(TAG, "Error retrieving event with ID: " + eventID, e));
-    }
-
-
-    // Accept all invited entrants for a specific event
-    public void runAcceptStatusTest() {
-        db.collection("events").document(eventID)
-                .collection("waitingList")
-                .whereEqualTo("status", "invited")
-                .get()
-                .addOnSuccessListener(querySnapshot -> {
-                    for (QueryDocumentSnapshot document : querySnapshot) {
-                        // Retrieve entrant details and create an Entrant object
-                        Entrant entrant = createEntrantFromDocument(document);
-
-                        // Call acceptEvent for each invited entrant
-                        entrant.acceptEvent(db, eventID);
-                    }
-                    Log.d(TAG, "AcceptStatusTest: All invited entrants have been accepted for event ID: " + eventID);
-                })
-                .addOnFailureListener(e -> Log.e(TAG, "Error retrieving invited entrants for event ID: " + eventID, e));
-    }
-
-    // Deny all invited entrants for a specific event
-    public void runDenyStatusTest() {
-        db.collection("events").document(eventID)
-                .collection("waitingList")
-                .whereEqualTo("status", "invited")
-                .get()
-                .addOnSuccessListener(querySnapshot -> {
-                    for (QueryDocumentSnapshot document : querySnapshot) {
-                        // Retrieve entrant details and create an Entrant object
-                        Entrant entrant = createEntrantFromDocument(document);
-
-                        // Call declineEvent for each invited entrant
-                        entrant.declineEvent(db, eventID, new Event());
-                    }
-                    Log.d(TAG, "DenyStatusTest: All invited entrants have been denied for event ID: " + eventID);
-                })
-                .addOnFailureListener(e -> Log.e(TAG, "Error retrieving invited entrants for event ID: " + eventID, e));
-    }
-
-    // Helper method to create an Entrant object from Firestore document data
-    private Entrant createEntrantFromDocument(QueryDocumentSnapshot document) {
-        String entrantId = document.getId();
-        String name = document.getString("name");
-        String phoneNumber = document.getString("phoneNumber");
-        String email = document.getString("email");
-        String profilePictureUrl = document.getString("profilePictureUrl");
-        boolean notifications = document.getBoolean("notifications") != null && document.getBoolean("notifications");
-        String facilityID = document.getString("facilityID");
-        Entrant entrant = new Entrant(entrantId, name, phoneNumber, email, profilePictureUrl, notifications);
-        entrant.setFacilityID(facilityID);
-        return entrant;
     }
 }
