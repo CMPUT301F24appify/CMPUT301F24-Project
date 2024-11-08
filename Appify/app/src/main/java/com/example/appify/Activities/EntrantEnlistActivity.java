@@ -135,7 +135,6 @@ public class EntrantEnlistActivity extends AppCompatActivity {
                      });
          }
          else {
-
              HeaderNavigation headerNavigation = new HeaderNavigation(this);
              headerNavigation.setupNavigation();
 
@@ -184,8 +183,6 @@ public class EntrantEnlistActivity extends AppCompatActivity {
              String androidId = app.getAndroidId();
              // Check if user is already enlisted in the waiting list
              checkUserEnrollmentStatus(eventId,androidId);
-
-
          }
     }
 
@@ -196,7 +193,6 @@ public class EntrantEnlistActivity extends AppCompatActivity {
     //This function was done with major assistance from chatGPT, "Update to show the accept/deny buttons and call the respective methods", 2024-11-06
     private void checkUserEnrollmentStatus(String eventId, String androidId) {
 
-        System.out.println(eventId);
         DocumentReference eventRef = db.collection("events").document(eventId);
         CollectionReference waitingListRef = eventRef.collection("waitingList");
         Button acceptInviteButton = findViewById(R.id.accept_invite_button);;
@@ -205,19 +201,18 @@ public class EntrantEnlistActivity extends AppCompatActivity {
 
         // Check the current status of the waiting list
         eventRef.get().addOnSuccessListener(documentSnapshot -> {
-            System.out.println("Success1");
+
             if (documentSnapshot.exists()) {
                 int maxWaitEntrants = documentSnapshot.getLong("maxWaitEntrants").intValue();
                 boolean isGeolocate = documentSnapshot.getBoolean("geolocate") != null && documentSnapshot.getBoolean("geolocate");
-                System.out.println("Success2");
+
                 waitingListRef.get().addOnSuccessListener(querySnapshot -> {
-                    System.out.println("Success3");
+
                     int currentEntrants = querySnapshot.size();
-                    System.out.println("Success4");
+
                     if (currentEntrants < maxWaitEntrants) {
-                        System.out.println("Success4.1");
+
                         waitingListRef.document(androidId).get().addOnSuccessListener(DocumentSnapshot ->{
-                            System.out.println("Success4.2");
 
                             String status = DocumentSnapshot.getString("status");
 
