@@ -21,7 +21,7 @@ public class Event {
     private String facility;
     private String registrationEndDate;
     private String description;
-    private int maxWishEntrants;
+    private int maxWaitEntrants;
     private int maxSampleEntrants;
     private String posterUri;  // Store URI as String
     private boolean isGeolocate;
@@ -47,7 +47,7 @@ public class Event {
      * @param facility          the facility where the event takes place
      * @param registrationEndDate the registration end date for the event
      * @param description       a description of the event
-     * @param maxWishEntrants   the maximum number of wish-listed entrants
+     * @param maxWaitEntrants   the maximum number of wait-listed entrants
      * @param maxSampleEntrants the maximum number of sample-selected entrants
      * @param posterUri         the URI of the event's poster image
      * @param isGeolocate       whether geolocation is required for this event
@@ -62,7 +62,7 @@ public class Event {
      * @param organizerID       the ID of the organizer
      */
     public Event(String name, String date, String facility, String registrationEndDate,
-                 String description, int maxWishEntrants, int maxSampleEntrants,
+                 String description, int maxWaitEntrants, int maxSampleEntrants,
                  String posterUri, boolean isGeolocate, boolean notifyWaitlisted,
                  boolean notifyEnrolled, boolean notifyCancelled, boolean notifyInvited,
                  String waitlistedMessage, String enrolledMessage,
@@ -73,7 +73,7 @@ public class Event {
         this.registrationEndDate = registrationEndDate;
         this.description = description;
         this.facility = facility;
-        this.maxWishEntrants = maxWishEntrants;
+        this.maxWaitEntrants = maxWaitEntrants;
         this.maxSampleEntrants = maxSampleEntrants;
         this.posterUri = posterUri;
         this.isGeolocate = isGeolocate;
@@ -105,7 +105,7 @@ public class Event {
         String registrationEndDate = document.getString("registrationEndDate");
         String description = document.getString("description");
         String facility = document.getString("facility");
-        int maxWishEntrants = document.getLong("maxWishEntrants").intValue();
+        int maxWaitEntrants = document.getLong("maxWaitEntrants").intValue();
         int maxSampleEntrants = document.getLong("maxSampleEntrants").intValue();
         String posterUri = document.getString("posterUri");
         boolean isGeolocate = document.getBoolean("geolocate") != null ? document.getBoolean("geolocate") : false;
@@ -122,7 +122,7 @@ public class Event {
         String invitedMessage = document.getString("invitedMessage");
 
         Event event = new Event(name, date, facility, registrationEndDate, description,
-                maxWishEntrants, maxSampleEntrants, posterUri, isGeolocate,
+                maxWaitEntrants, maxSampleEntrants, posterUri, isGeolocate,
                 notifyWaitlisted, notifyEnrolled, notifyCancelled, notifyInvited,
                 waitlistedMessage, enrolledMessage, cancelledMessage, invitedMessage, organizerID);
 
@@ -247,12 +247,12 @@ public class Event {
     }
 
     /**
-     * Gets the maximum number of wish-listed entrants allowed for the event.
+     * Gets the maximum number of wait-listed entrants allowed for the event.
      *
-     * @return the maximum number of wish-listed entrants
+     * @return the maximum number of wait-listed entrants
      */
-    public int getMaxWishEntrants() {
-        return maxWishEntrants;
+    public int getMaxWaitEntrants() {
+        return maxWaitEntrants;
     }
 
     /**
@@ -378,8 +378,8 @@ public class Event {
         this.description = description;
     }
 
-    public void setMaxWishEntrants(int maxWishEntrants) {
-        this.maxWishEntrants = maxWishEntrants;
+    public void setMaxWaitEntrants(int maxWaitEntrants) {
+        this.maxWaitEntrants = maxWaitEntrants;
     }
 
     public void setMaxSampleEntrants(int maxSampleEntrants) {

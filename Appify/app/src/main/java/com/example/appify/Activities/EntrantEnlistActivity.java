@@ -69,7 +69,7 @@ public class EntrantEnlistActivity extends AppCompatActivity {
         registrationEndDate = intent.getStringExtra("registrationEndDate");
         facility = intent.getStringExtra("facility");
         String description = intent.getStringExtra("description");
-        int maxWishEntrants = intent.getIntExtra("maxWishEntrants", 0);
+        int maxWaitEntrants = intent.getIntExtra("maxWaitEntrants", 0);
         int maxSampleEntrants = intent.getIntExtra("maxSampleEntrants", 0);
         String posterUriString = intent.getStringExtra("posterUri");
         isGeolocate = intent.getBooleanExtra("geolocate", false);
@@ -124,7 +124,7 @@ public class EntrantEnlistActivity extends AppCompatActivity {
 
 
             if (documentSnapshot.exists()) {
-                int maxWishEntrants = documentSnapshot.getLong("maxWishEntrants").intValue();
+                int maxWaitEntrants = documentSnapshot.getLong("maxWaitEntrants").intValue();
                 boolean isGeolocate = documentSnapshot.getBoolean("geolocate") != null && documentSnapshot.getBoolean("geolocate");
 
 
@@ -134,7 +134,7 @@ public class EntrantEnlistActivity extends AppCompatActivity {
 
 
 
-                    if (currentEntrants >= maxWishEntrants) {
+                    if (currentEntrants >= maxWaitEntrants) {
                         // Waiting list is full
                         enlistLeaveButton.setText("Full");
                         enlistLeaveButton.setOnClickListener(null); // Disable button

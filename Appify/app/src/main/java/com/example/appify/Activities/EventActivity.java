@@ -75,7 +75,7 @@ public class EventActivity extends AppCompatActivity implements AddEventDialogFr
             intent.putExtra("facility", selectedEvent.getFacility() != null ? selectedEvent.getFacility() : "N/A");
             intent.putExtra("registrationEndDate", selectedEvent.getRegistrationEndDate() != null ? selectedEvent.getRegistrationEndDate() : "N/A");
             intent.putExtra("description", selectedEvent.getDescription() != null ? selectedEvent.getDescription() : "N/A");
-            intent.putExtra("maxWishEntrants", selectedEvent.getMaxWishEntrants());
+            intent.putExtra("maxWaitEntrants", selectedEvent.getMaxWaitEntrants());
             intent.putExtra("maxSampleEntrants", selectedEvent.getMaxSampleEntrants());
             intent.putExtra("eventID", selectedEvent.getEventId());
 
@@ -101,7 +101,7 @@ public class EventActivity extends AppCompatActivity implements AddEventDialogFr
 
     @Override
     public void onEventAdded(String name, String date, String facility, String registrationEndDate,
-                             String description, int maxWishEntrants, int maxSampleEntrants,
+                             String description, int maxWaitEntrants, int maxSampleEntrants,
                              String posterUri, boolean isGeolocate,
                              String waitlistedMessage, String enrolledMessage,
                              String cancelledMessage, String invitedMessage) {
@@ -111,7 +111,7 @@ public class EventActivity extends AppCompatActivity implements AddEventDialogFr
 
 
         Event newEvent = new Event(name, date, facility, registrationEndDate, description,
-                maxWishEntrants, maxSampleEntrants, posterUri, isGeolocate,
+                maxWaitEntrants, maxSampleEntrants, posterUri, isGeolocate,
                 false, false, false, false,
                 "", "", "", "",
                 organizerID);

@@ -63,7 +63,7 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
         String facility = intent.getStringExtra("facility");
         String registrationEndDate = intent.getStringExtra("registrationEndDate");
         String description = intent.getStringExtra("description");
-        int maxWishEntrants = intent.getIntExtra("maxWishEntrants", 0);
+        int maxWaitEntrants = intent.getIntExtra("maxWaitEntrants", 0);
         int maxSampleEntrants = intent.getIntExtra("maxSampleEntrants", 0);
         String posterUriString = intent.getStringExtra("posterUri");
         boolean isGeolocate = intent.getBooleanExtra("isGeolocate", false);
@@ -77,7 +77,7 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
         TextView facilityTextView = findViewById(R.id.textViewFacility);
         TextView registrationEndDateTextView = findViewById(R.id.textViewRegistrationEndDate);
         TextView descriptionTextView = findViewById(R.id.textViewDescription);
-        TextView maxWishTextView = findViewById(R.id.textViewMaxWishEntrants);
+        TextView maxWaitTextView = findViewById(R.id.textViewMaxWaitEntrants);
         TextView maxSampleTextView = findViewById(R.id.textViewMaxSampleEntrants);
         ImageView posterImageView = findViewById(R.id.imageViewPoster);
         TextView geolocateTextView = findViewById(R.id.textViewGeolocate);
@@ -122,7 +122,7 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
         facilityTextView.setText(facility);
         registrationEndDateTextView.setText(registrationEndDate);
         descriptionTextView.setText(description);
-        maxWishTextView.setText("Max Wish Entrants: " + maxWishEntrants);
+        maxWaitTextView.setText("Max Waitlist Entrants: " + maxWaitEntrants);
         maxSampleTextView.setText("Max Sample Entrants: " + maxSampleEntrants);
         geolocateTextView.setText(isGeolocate ? "Geo-Location Enabled" : "Geo-Location Disabled");
 
@@ -145,7 +145,7 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
                     intent.putExtra("facility", facility);
                     intent.putExtra("registrationEndDate", registrationEndDate);
                     intent.putExtra("description",description );
-                    intent.putExtra("maxWishEntrants", maxWishEntrants);
+                    intent.putExtra("maxWaitEntrants", maxWaitEntrants);
                     intent.putExtra("maxSampleEntrants", maxSampleEntrants);
                     intent.putExtra("eventID", eventID);
                     startActivity(intent);
@@ -199,7 +199,7 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
 
     @Override
     public void onEventEdited(String name, String date, String facility, String registrationEndDate,
-                             String description, int maxWishEntrants, int maxSampleEntrants,
+                             String description, int maxWaitEntrants, int maxSampleEntrants,
                              String posterUri, boolean isGeolocate,
                              String waitlistedMessage, String enrolledMessage,
                              String cancelledMessage, String invitedMessage) {
@@ -213,7 +213,7 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
         updates.put("facility", facility);
         updates.put("registrationEndDate", registrationEndDate);
         updates.put("description", description);
-        updates.put("maxWishEntrants", maxWishEntrants);
+        updates.put("maxWaitEntrants", maxWaitEntrants);
         updates.put("maxSampleEntrants", maxSampleEntrants);
         updates.put("posterUri", posterUri);
         updates.put("geolocate", isGeolocate);
@@ -228,7 +228,7 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
                 .addOnSuccessListener(aVoid -> {
                     Toast.makeText(this, "Event updated successfully", Toast.LENGTH_SHORT).show();
                     refreshEventUI(name, date, facility, registrationEndDate, description,
-                            maxWishEntrants, maxSampleEntrants, posterUri, isGeolocate);
+                            maxWaitEntrants, maxSampleEntrants, posterUri, isGeolocate);
                 })
                 .addOnFailureListener(e -> {
                     Toast.makeText(this, "Failed to update event: " + e.getMessage(), Toast.LENGTH_SHORT).show();
@@ -236,7 +236,7 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
 
         // Create new Event object with notification messages
         Event updatedEvent = new Event(name, date, facility, registrationEndDate, description,
-                maxWishEntrants, maxSampleEntrants, posterUri, isGeolocate,
+                maxWaitEntrants, maxSampleEntrants, posterUri, isGeolocate,
                 false, false, false, false,
                 "", "", "", "",
                 organizerID);
@@ -245,7 +245,7 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
 
 
     private void refreshEventUI(String name, String date, String facility, String registrationEndDate,
-                                String description, int maxWishEntrants, int maxSampleEntrants,
+                                String description, int maxWaitEntrants, int maxSampleEntrants,
                                 String posterUri, boolean isGeolocate) {
 
         // Bind the updated values to the UI components
@@ -254,7 +254,7 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
         TextView facilityTextView = findViewById(R.id.textViewFacility);
         TextView registrationEndDateTextView = findViewById(R.id.textViewRegistrationEndDate);
         TextView descriptionTextView = findViewById(R.id.textViewDescription);
-        TextView maxWishTextView = findViewById(R.id.textViewMaxWishEntrants);
+        TextView maxWaitTextView = findViewById(R.id.textViewMaxWaitEntrants);
         TextView maxSampleTextView = findViewById(R.id.textViewMaxSampleEntrants);
         ImageView posterImageView = findViewById(R.id.imageViewPoster);
         TextView geolocateTextView = findViewById(R.id.textViewGeolocate);
@@ -265,7 +265,7 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
         facilityTextView.setText(facility);
         registrationEndDateTextView.setText(registrationEndDate);
         descriptionTextView.setText(description);
-        maxWishTextView.setText("Max Wish Entrants: " + maxWishEntrants);
+        maxWaitTextView.setText("Max Waitlist Entrants: " + maxWaitEntrants);
         maxSampleTextView.setText("Max Sample Entrants: " + maxSampleEntrants);
         geolocateTextView.setText(isGeolocate ? "Geo-Location Enabled" : "Geo-Location Disabled");
 

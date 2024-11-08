@@ -15,13 +15,16 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.DialogFragment;
+import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.appify.MyApp;
 import com.example.appify.R;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Locale;
 import java.util.UUID;
 
@@ -29,12 +32,13 @@ public class EditEventDialogFragment extends DialogFragment {
     private static final int PICK_IMAGE_REQUEST = 1;
     private String posterUri;  // Store as String URL
     private EditEventDialogListener listener;
+    private Button uploadPosterButton;
 
     private boolean isGeolocate = false;
 
     public interface EditEventDialogListener {
         void onEventEdited(String name, String date, String facility, String registrationEndDate,
-                           String description, int maxWishEntrants, int maxSampleEntrants,
+                           String description, int maxWaitEntrants, int maxSampleEntrants,
                            String posterUri, boolean isGeolocate,
                            String waitlistedMessage, String enrolledMessage,
                            String cancelledMessage, String invitedMessage);
@@ -56,17 +60,22 @@ public class EditEventDialogFragment extends DialogFragment {
     public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
         AlertDialog.Builder builder = new AlertDialog.Builder(requireActivity());
         LayoutInflater inflater = requireActivity().getLayoutInflater();
-        View view = inflater.inflate(R.layout.add_event_dialog, null); // Reusing the same layout
+        View view = inflater.inflate(R.layout.add_event_dialog, null);
+
+        EditText eventFacility = view.findViewById(R.id.editFacility);
+        MyApp app = (MyApp) requireActivity().getApplication();
+        String facilityName = app.getFacilityName();
+        eventFacility.setText(facilityName);
+        eventFacility.setEnabled(false);
 
         EditText eventName = view.findViewById(R.id.editTextEventName);
         EditText eventDate = view.findViewById(R.id.editDate);
-        EditText eventFacility = view.findViewById(R.id.editFacility);
         EditText eventregistrationEndDate = view.findViewById(R.id.editRegistrationEndDate);
         EditText eventDescription = view.findViewById(R.id.editTextEventDescription);
         Button reminderGeolocation = view.findViewById(R.id.checkGeolocation);
 
-        Button uploadPosterButton = view.findViewById(R.id.buttonUploadPoster);
-        EditText maxWishEntrant = view.findViewById(R.id.maxNumberWishList);
+        uploadPosterButton = view.findViewById(R.id.buttonUploadPoster);
+        EditText maxWaitEntrant = view.findViewById(R.id.maxNumberWaitList);
         EditText maxSampleEntrant = view.findViewById(R.id.maxNumberSample);
 
         // Set OnClickListeners for buttons
@@ -81,25 +90,23 @@ public class EditEventDialogFragment extends DialogFragment {
         builder.setView(view)
                 .setTitle("Edit Event")
                 .setPositiveButton("SAVE", (dialog, id) -> {
-                    if (validateInputs(eventName, eventDate, eventFacility, eventregistrationEndDate, maxWishEntrant, maxSampleEntrant)) {
+                    if (validateInputs(eventName, eventDate, eventFacility, eventregistrationEndDate, maxWaitEntrant, maxSampleEntrant)) {
                         String name = eventName.getText().toString();
                         String date = eventDate.getText().toString();
-                        String facility = eventFacility.getText().toString();
+                        String facility = app.getFacilityName();
                         String registrationEndDate = eventregistrationEndDate.getText().toString();
                         String description = eventDescription.getText().toString();
 
-                        int wish_max = parseInteger(maxWishEntrant.getText().toString());
+                        int wait_max = parseInteger(maxWaitEntrant.getText().toString());
                         int sample_max = parseInteger(maxSampleEntrant.getText().toString());
 
                         listener.onEventEdited(name, date, facility, registrationEndDate, description,
-                                wish_max, sample_max, posterUri, isGeolocate,
+                                wait_max, sample_max, posterUri, isGeolocate,
                                 "", "", "", "");
                     } else {
                         Toast.makeText(getContext(), "Please correct the highlighted fields", Toast.LENGTH_SHORT).show();
                     }
-
                 })
-
                 .setNegativeButton("CANCEL", (dialog, id) -> dialog.dismiss());
 
         return builder.create();
@@ -107,45 +114,74 @@ public class EditEventDialogFragment extends DialogFragment {
 
 
     // Method to validate inputs
-    private boolean validateInputs(EditText eventName, EditText eventDate, EditText eventFacility, EditText eventRegistrationEndDate, EditText maxWishEntrant, EditText maxSampleEntrant) {
+    private boolean validateInputs(EditText eventName, EditText eventDate, EditText eventFacility, EditText eventRegistrationEndDate, EditText maxWaitEntrant, EditText maxSampleEntrant) {
         boolean isValid = true;
+        StringBuilder errorMessage = new StringBuilder();
 
         // Check for non-empty event name
         if (eventName.getText().toString().trim().isEmpty()) {
             eventName.setError("Event name is required");
-            isValid = false;
-        }
-
-        // Validate date format (assuming yyyy-MM-dd format)
-        if (!isValidDate(eventDate.getText().toString())) {
-            eventDate.setError("Enter date in 'MMM dd, yyyy' format (e.g., Nov 10, 2022)");
-            isValid = false;
-        }
-
-        // Validate registration end date format
-        if (!isValidDate(eventRegistrationEndDate.getText().toString())) {
-            eventRegistrationEndDate.setError("Enter date in 'MMM dd, yyyy' format (e.g., Nov 10, 2022)");
+            Toast.makeText(getContext(), "Event name is required.", Toast.LENGTH_SHORT).show();
             isValid = false;
         }
 
         // Check for non-empty facility
         if (eventFacility.getText().toString().trim().isEmpty()) {
             eventFacility.setError("Facility name is required");
+            Toast.makeText(getContext(), "Event facility is required", Toast.LENGTH_SHORT).show();
+            isValid = false;
+        }
+
+        // Validate date format (assuming yyyy-MM-dd format)
+        if (!isValidDate(eventDate.getText().toString())) {
+            eventDate.setError("Enter date in 'MMM dd, yyyy' format (e.g., Nov 10, 2022)");
+            Toast.makeText(getContext(), "Enter date in 'MMM dd, yyyy' format for the event date.", Toast.LENGTH_SHORT).show();
+            isValid = false;
+        }
+
+        // Validate registration end date format
+        if (!isValidDate(eventRegistrationEndDate.getText().toString())) {
+            eventRegistrationEndDate.setError("Enter date in 'MMM dd, yyyy' format (e.g., Nov 10, 2022)");
+            Toast.makeText(getContext(), "Enter date in 'MMM dd, yyyy' format for the registration end date.", Toast.LENGTH_SHORT).show();
+            isValid = false;
+        }
+
+        if (!isRegistrationEndDateBeforeEventDate(eventDate.getText().toString(), eventRegistrationEndDate.getText().toString())) {
+            eventRegistrationEndDate.setError("Registration end date must be before the event date");
+            Toast.makeText(getContext(), "Registration end date must be before the event date.", Toast.LENGTH_SHORT).show();
             isValid = false;
         }
 
         // Validate max entrants as integers within a reasonable range
-        if (!isPositiveInteger(maxWishEntrant.getText().toString())) {
-            maxWishEntrant.setError("Enter a positive number");
+        if (!isPositiveInteger(maxWaitEntrant.getText().toString())) {
+            maxWaitEntrant.setError("Enter a positive number");
+            Toast.makeText(getContext(), "Max wait entrants must be a positive number.", Toast.LENGTH_SHORT).show();
             isValid = false;
         }
 
         if (!isPositiveInteger(maxSampleEntrant.getText().toString())) {
             maxSampleEntrant.setError("Enter a positive number");
+            Toast.makeText(getContext(), "Max sample entrants must be a positive number.", Toast.LENGTH_SHORT).show();
             isValid = false;
         }
 
+        if (!isValid) {
+            Toast.makeText(getContext(), errorMessage.toString().trim(), Toast.LENGTH_LONG).show();
+        }
+
         return isValid;
+    }
+
+    private boolean isRegistrationEndDateBeforeEventDate(String eventDateStr, String registrationEndDateStr) {
+        SimpleDateFormat sdf = new SimpleDateFormat("MMM dd, yyyy", Locale.getDefault());
+        sdf.setLenient(false); // Strict date parsing
+        try {
+            Date eventDate = sdf.parse(eventDateStr);
+            Date registrationEndDate = sdf.parse(registrationEndDateStr);
+            return registrationEndDate.before(eventDate); // Check if registration end date is before event date
+        } catch (ParseException e) {
+            return false; // Invalid date format
+        }
     }
 
     // Utility to check if a string is a valid positive integer
@@ -201,6 +237,7 @@ public class EditEventDialogFragment extends DialogFragment {
 
         if (requestCode == PICK_IMAGE_REQUEST && resultCode == getActivity().RESULT_OK && data != null && data.getData() != null) {
             uploadImageToFirebase(data.getData());
+            uploadPosterButton.setBackgroundColor(getResources().getColor(android.R.color.holo_blue_light));
         }
     }
 

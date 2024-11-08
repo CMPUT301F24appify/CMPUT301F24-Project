@@ -48,7 +48,11 @@ public class MyApp extends Application {
                 .get()
                 .addOnSuccessListener(documentSnapshot -> {
                     facilityID = documentSnapshot.getString("facilityID");
-                    retrieveFacilityName();
+                    if (facilityID != null && !facilityID.isEmpty()) {
+                        retrieveFacilityName();
+                    } else {
+                        Log.w("MyApp", "No facilityID found for this Android ID");
+                    }
                 })
                 .addOnFailureListener(e -> Log.w("MyApp", "Failed to retrieve facilityID", e));
     }
@@ -59,6 +63,10 @@ public class MyApp extends Application {
                 .get()
                 .addOnSuccessListener(documentSnapshot -> {
                     facilityName = documentSnapshot.getString("name");
+                    if (facilityName == null) {
+                        Log.w("MyApp", "Facility name not found for facilityID: " + facilityID);
+                        facilityName = "No facility assigned";
+                    }
                 })
                 .addOnFailureListener(e -> Log.w("MyApp", "Failed to retrieve facility name", e));
     }
