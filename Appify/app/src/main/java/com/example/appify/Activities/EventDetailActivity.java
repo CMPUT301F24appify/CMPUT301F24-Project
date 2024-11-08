@@ -135,6 +135,7 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
         });
 
 
+
         organizerActionsButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
