@@ -46,7 +46,6 @@ public class EventActionsActivity extends AppCompatActivity {
         Button lotteryButton = findViewById(R.id.lottery_button);
         lotteryButton.setOnClickListener(v -> runLotteryTest());
 
-
         Button backButton = findViewById(R.id.back_button);
         backButton.setOnClickListener(v -> {
             Intent sendIntent = new Intent(EventActionsActivity.this, EventDetailActivity.class);
