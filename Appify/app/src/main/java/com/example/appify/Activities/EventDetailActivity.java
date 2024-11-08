@@ -21,10 +21,6 @@ import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.widget.ImageView;
 import androidx.appcompat.app.AppCompatActivity;
-import com.google.zxing.BarcodeFormat;
-import com.google.zxing.WriterException;
-import com.google.zxing.common.BitMatrix;
-import com.google.zxing.qrcode.QRCodeWriter;
 
 public class EventDetailActivity extends AppCompatActivity {
     private ImageView qrCodeImageView;
@@ -50,11 +46,6 @@ public class EventDetailActivity extends AppCompatActivity {
 
 
         Uri posterUri = posterUriString != null && !posterUriString.isEmpty() ? Uri.parse(posterUriString) : null;
-
-//        qrCodeImageView = findViewById(R.id.qr_code);
-//        String textToEncode = "myapp://openEntrantEnlistActivity";
-//        Bitmap qrBitmap = generateQRCode(textToEncode);
-//        qrCodeImageView.setImageBitmap(qrBitmap);
 
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         // Bind data to views
@@ -141,24 +132,6 @@ public class EventDetailActivity extends AppCompatActivity {
 //            posterImageView.setImageResource(R.drawable.placeholder_image);  // Set a placeholder if no image is available
         }
     }
-
-//    public Bitmap generateQRCode(String text) {
-//        QRCodeWriter qrCodeWriter = new QRCodeWriter();
-//        int size = 500;
-//        try {
-//            BitMatrix bitMatrix = qrCodeWriter.encode(text, BarcodeFormat.QR_CODE, size, size);
-//            Bitmap bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.RGB_565);
-//            for (int x = 0; x < size; x++) {
-//                for (int y = 0; y < size; y++) {
-//                    bitmap.setPixel(x, y, bitMatrix.get(x, y) ? android.graphics.Color.BLACK : android.graphics.Color.WHITE);
-//                }
-//            }
-//            return bitmap;
-//        } catch (WriterException e) {
-//            e.printStackTrace();
-//            return null;
-//        }
-//    }
 
 }
 
