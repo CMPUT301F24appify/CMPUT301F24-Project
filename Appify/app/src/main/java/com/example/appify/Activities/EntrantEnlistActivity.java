@@ -10,6 +10,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.appify.Model.Entrant;
+import com.example.appify.Model.Event;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -38,11 +40,15 @@ public class EntrantEnlistActivity extends AppCompatActivity {
     private String androidId;
     private FirebaseFirestore db;
     private Button enlistLeaveButton;
+    private Button lotteryButton;
+    private Button acceptInviteButton;
+    private Button declineInviteButton;
     private String name;
     private String date;
     private String registrationEndDate;
     private String facility;
     private boolean isGeolocate;
+    private boolean isOrganizer = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,6 +79,11 @@ public class EntrantEnlistActivity extends AppCompatActivity {
         TextView eventRegistrationEnd = findViewById(R.id.registration_date);
         TextView eventGeolocate = findViewById(R.id.geolocationText);
 
+        enlistLeaveButton = findViewById(R.id.enlist_leave_button);
+        lotteryButton = findViewById(R.id.lottery_button);
+        acceptInviteButton = findViewById(R.id.accept_invite_button);
+        declineInviteButton = findViewById(R.id.decline_invite_button);
+
         eventName.setText(name);
         eventDate.setText(date);
         eventDescription.setText(description);
@@ -97,45 +108,99 @@ public class EntrantEnlistActivity extends AppCompatActivity {
     }
 
     /**
+     * Checks if the user is the organizer by querying the database.
+     * If the user is the organizer, show only the lottery button.
+     */
+    //This function is from chatGPT, "If user is the organizer - show the lottery button", 2024-11-07
+    private void checkOrganizerStatus() {
+        db.collection("events").document(eventId).get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        String organizerID = documentSnapshot.getString("organizerID");
+                        isOrganizer = organizerID != null && organizerID.equals(androidId);
+
+                        if (isOrganizer) {
+                            // If the user is the organizer, only show the lottery button
+                            lotteryButton.setVisibility(View.VISIBLE);
+                            acceptInviteButton.setVisibility(View.GONE);
+                            declineInviteButton.setVisibility(View.GONE);
+                            enlistLeaveButton.setVisibility(View.GONE);
+
+                            // Set lottery button action
+                            lotteryButton.setOnClickListener(v -> {
+                                // Fetch event details to create an Event instance
+                                db.collection("events").document(eventId).get()
+                                        .addOnSuccessListener(eventDoc -> {
+                                            if (eventDoc.exists()) {
+                                                Event event = new Event(
+                                                        eventDoc.getString("name"),
+                                                        eventDoc.getString("date"),
+                                                        eventDoc.getString("facility"),
+                                                        eventDoc.getString("registrationEndDate"),
+                                                        eventDoc.getString("description"),
+                                                        eventDoc.getLong("maxWishEntrants").intValue(),
+                                                        eventDoc.getLong("maxSampleEntrants").intValue(),
+                                                        eventDoc.getString("posterUri"),
+                                                        eventDoc.getBoolean("geolocate") != null && eventDoc.getBoolean("geolocate"),
+                                                        eventDoc.getBoolean("notifyWaitlisted") != null && eventDoc.getBoolean("notifyWaitlisted"),
+                                                        eventDoc.getBoolean("notifyEnrolled") != null && eventDoc.getBoolean("notifyEnrolled"),
+                                                        eventDoc.getBoolean("notifyCancelled") != null && eventDoc.getBoolean("notifyCancelled"),
+                                                        eventDoc.getBoolean("notifyInvited") != null && eventDoc.getBoolean("notifyInvited"),
+                                                        eventDoc.getString("waitlistedMessage"),
+                                                        eventDoc.getString("enrolledMessage"),
+                                                        eventDoc.getString("cancelledMessage"),
+                                                        eventDoc.getString("invitedMessage"),
+                                                        eventDoc.getString("organizerID")
+                                                );
+
+                                                // Run lottery with the fetched Event object
+                                                event.lottery(db, eventId);
+                                            }
+                                        })
+                                        .addOnFailureListener(e ->
+                                                Toast.makeText(this, "Error fetching event details for lottery.", Toast.LENGTH_SHORT).show()
+                                        );
+                            });
+                        } else {
+                            // Proceed to check enrollment status for non-organizers
+                            checkUserEnrollmentStatus();
+                        }
+                    }
+                })
+                .addOnFailureListener(e -> Toast.makeText(this, "Error fetching organizer status.", Toast.LENGTH_SHORT).show());
+    }
+
+
+
+    /**
      * Checks if the user is already enlisted in the event's waiting list and updates
      * the enlistLeaveButton text and action accordingly.
      */
+    //This function was done with major assistance from chatGPT, "Update to show the accept/deny buttons and call the respective methods", 2024-11-06
     private void checkUserEnrollmentStatus() {
         DocumentReference eventRef = db.collection("events").document(eventId);
         CollectionReference waitingListRef = eventRef.collection("waitingList");
         Button acceptInviteButton = findViewById(R.id.accept_invite_button);
         Button declineInviteButton = findViewById(R.id.decline_invite_button);
+
         // Check the current status of the waiting list
         eventRef.get().addOnSuccessListener(documentSnapshot -> {
-
-
-
-//                    db.collection("Android ID").document(entrantID).collection("waitListedEvents").document(eventID).get().addOnSuccessListener(DocumentSnapshot -> {
-//                        String status = DocumentSnapshot.getString("status");
-
-
             if (documentSnapshot.exists()) {
                 int maxWishEntrants = documentSnapshot.getLong("maxWishEntrants").intValue();
                 boolean isGeolocate = documentSnapshot.getBoolean("geolocate") != null && documentSnapshot.getBoolean("geolocate");
 
-
-
                 waitingListRef.get().addOnSuccessListener(querySnapshot -> {
                     int currentEntrants = querySnapshot.size();
-
-
 
                     if (currentEntrants >= maxWishEntrants) {
                         // Waiting list is full
                         enlistLeaveButton.setText("Full");
                         enlistLeaveButton.setOnClickListener(null); // Disable button
                     } else {
+                        waitingListRef.document(androidId).get().addOnSuccessListener(docSnapshot -> {
+                            String status = docSnapshot.getString("status");
 
-                        waitingListRef.document(androidId).get().addOnSuccessListener(DocumentSnapshot ->{
-
-                            String status = DocumentSnapshot.getString("status");
-
-                            if(Objects.equals(status, "enrolled")){
+                            if (Objects.equals(status, "enrolled")) {
                                 isUserEnlisted = true;
                                 enlistLeaveButton.setText("Leave");
                                 enlistLeaveButton.setOnClickListener(v -> leaveEvent(eventId));
@@ -144,8 +209,6 @@ public class EntrantEnlistActivity extends AppCompatActivity {
                                 enlistLeaveButton.setText("Accepted");
                                 enlistLeaveButton.setOnClickListener(null);
                                 enlistLeaveButton.setBackgroundColor(Color.parseColor("#00FF00"));
-
-
                             } else if (Objects.equals(status, "rejected")) {
                                 isUserEnlisted = true;
                                 enlistLeaveButton.setText("Rejected");
@@ -155,11 +218,75 @@ public class EntrantEnlistActivity extends AppCompatActivity {
                             } else if (Objects.equals(status, "invited")) {
                                 isUserEnlisted = true;
                                 enlistLeaveButton.setText("Invited");
-                                acceptInviteButton.setVisibility(View.VISIBLE);
-                                declineInviteButton.setVisibility(View.VISIBLE);
                                 enlistLeaveButton.setOnClickListener(null);
 
+                                // Display accept and decline buttons for invited users
+                                acceptInviteButton.setVisibility(View.VISIBLE);
+                                declineInviteButton.setVisibility(View.VISIBLE);
 
+                                // Set up actions for the accept and decline buttons
+                                acceptInviteButton.setOnClickListener(v -> {
+                                    // Fetch Entrant data from the "Android ID" collection
+                                    db.collection("Android ID").document(androidId).get().addOnSuccessListener(entrantDoc -> {
+                                        if (entrantDoc.exists()) {
+                                            // Create Entrant object with fetched data
+                                            Entrant entrant = new Entrant(
+                                                    entrantDoc.getString("id"),
+                                                    entrantDoc.getString("name"),
+                                                    entrantDoc.getString("phoneNumber"),
+                                                    entrantDoc.getString("email"),
+                                                    entrantDoc.getString("profilePictureUrl"),
+                                                    entrantDoc.getBoolean("notifications") != null && entrantDoc.getBoolean("notifications")
+                                            );
+                                            entrant.acceptEvent(db, eventId);
+                                        }
+                                    });
+                                });
+
+                                declineInviteButton.setOnClickListener(v -> {
+                                    // Fetch Entrant and Event data from the Firestore database
+                                    db.collection("Android ID").document(androidId).get().addOnSuccessListener(entrantDoc -> {
+                                        if (entrantDoc.exists()) {
+                                            Entrant entrant = new Entrant(
+                                                    entrantDoc.getString("id"),
+                                                    entrantDoc.getString("name"),
+                                                    entrantDoc.getString("phoneNumber"),
+                                                    entrantDoc.getString("email"),
+                                                    entrantDoc.getString("profilePictureUrl"),
+                                                    entrantDoc.getBoolean("notifications") != null && entrantDoc.getBoolean("notifications")
+                                            );
+
+                                            // Fetch the Event document and initialize the Event object
+                                            eventRef.get().addOnSuccessListener(eventDoc -> {
+                                                if (eventDoc.exists()) {
+                                                    Event event = new Event(
+                                                            eventDoc.getString("name"),
+                                                            eventDoc.getString("date"),
+                                                            eventDoc.getString("facility"),
+                                                            eventDoc.getString("registrationEndDate"),
+                                                            eventDoc.getString("description"),
+                                                            eventDoc.getLong("maxWishEntrants").intValue(),
+                                                            eventDoc.getLong("maxSampleEntrants").intValue(),
+                                                            eventDoc.getString("posterUri"),
+                                                            eventDoc.getBoolean("geolocate") != null && eventDoc.getBoolean("geolocate"),
+                                                            eventDoc.getBoolean("notifyWaitlisted") != null && eventDoc.getBoolean("notifyWaitlisted"),
+                                                            eventDoc.getBoolean("notifyEnrolled") != null && eventDoc.getBoolean("notifyEnrolled"),
+                                                            eventDoc.getBoolean("notifyCancelled") != null && eventDoc.getBoolean("notifyCancelled"),
+                                                            eventDoc.getBoolean("notifyInvited") != null && eventDoc.getBoolean("notifyInvited"),
+                                                            eventDoc.getString("waitlistedMessage"),
+                                                            eventDoc.getString("enrolledMessage"),
+                                                            eventDoc.getString("cancelledMessage"),
+                                                            eventDoc.getString("invitedMessage"),
+                                                            eventDoc.getString("organizerID")
+                                                    );
+
+                                                    // Call declineEvent with the fetched Event object
+                                                    entrant.declineEvent(db, eventId, event);
+                                                }
+                                            });
+                                        }
+                                    });
+                                });
                             } else {
                                 // User is not enlisted
                                 isUserEnlisted = false;
@@ -180,6 +307,8 @@ public class EntrantEnlistActivity extends AppCompatActivity {
             }
         }).addOnFailureListener(e -> Toast.makeText(this, "Error fetching event data.", Toast.LENGTH_SHORT).show());
     }
+
+
 
     /**
      * Shows a confirmation dialog to inform the user that the event requires geolocation.

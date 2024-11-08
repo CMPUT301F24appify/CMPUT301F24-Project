@@ -149,26 +149,34 @@ public class Entrant {
      *
      */
     public void acceptEvent(FirebaseFirestore db, String eventID) {
-        // Update status to "accepted" in the event's waiting list
-        db.collection("events").document(eventID)
-                .collection("waitingList").document(this.id)
+        // Update status to "accepted" in the entrant's Android ID collection for the specific event
+        db.collection("Android ID").document(this.id)
+                .collection("waitListedEvents").document(eventID)
                 .update("status", "accepted")
-                .addOnSuccessListener(aVoid -> {
-                    Log.d("Entrant", "Status updated to 'accepted' in waiting list for entrant " + this.id);
+                .addOnSuccessListener(innerVoid -> {
+                    Log.d("Entrant", "Status updated to 'accepted' in Android ID collection for entrant " + this.id);
 
-                    // Update status to "accepted" in the Android ID collection for the specific event
-                    db.collection("Android ID").document(this.id)
-                            .collection("waitListedEvents").document(eventID)
-                            .update("status", "accepted")
-                            .addOnSuccessListener(innerVoid -> {
-                                Log.d("Entrant", "Status updated to 'accepted' in Android ID collection for entrant " + this.id);
+                    // Move the entrant's ID from waitingList to acceptedList in the event's collection
+                    db.collection("events").document(eventID)
+                            .collection("waitingList").document(this.id)
+                            .delete()
+                            .addOnSuccessListener(aVoid -> {
+                                db.collection("events").document(eventID)
+                                        .collection("acceptedList").document(this.id)
+                                        .set(new Object()) // Adding the ID without additional data
+                                        .addOnSuccessListener(moveSuccess -> {
+                                            Log.d("Entrant", "Entrant " + this.id + " moved to acceptedList in event " + eventID);
+                                        })
+                                        .addOnFailureListener(e -> {
+                                            Log.w("Entrant", "Error moving entrant to acceptedList in event " + eventID, e);
+                                        });
                             })
                             .addOnFailureListener(e -> {
-                                Log.w("Entrant", "Error updating status in Android ID collection for entrant " + this.id, e);
+                                Log.w("Entrant", "Error removing entrant from waitingList in event " + eventID, e);
                             });
                 })
                 .addOnFailureListener(e -> {
-                    Log.w("Entrant", "Error updating status in waiting list for entrant " + this.id, e);
+                    Log.w("Entrant", "Error updating status in Android ID collection for entrant " + this.id, e);
                 });
     }
     /**
@@ -182,29 +190,37 @@ public class Entrant {
 
      */
     public void declineEvent(FirebaseFirestore db, String eventID, Event event) {
-        // Update status to "declined" in the event's waiting list
-        db.collection("events").document(eventID)
-                .collection("waitingList").document(this.id)
+        // Update status to "rejected" in the entrant's Android ID collection for the specific event
+        db.collection("Android ID").document(this.id)
+                .collection("waitListedEvents").document(eventID)
                 .update("status", "rejected")
-                .addOnSuccessListener(aVoid -> {
-                    Log.d("Entrant", "Status updated to 'declined' in waiting list for entrant " + this.id);
+                .addOnSuccessListener(innerVoid -> {
+                    Log.d("Entrant", "Status updated to 'rejected' in Android ID collection for entrant " + this.id);
 
-                    // Update status to "declined" in the Android ID collection for the specific event
-                    db.collection("Android ID").document(this.id)
-                            .collection("waitListedEvents").document(eventID)
-                            .update("status", "rejected")
-                            .addOnSuccessListener(innerVoid -> {
-                                Log.d("Entrant", "Status updated to 'rejected' in Android ID collection for entrant " + this.id);
+                    // Move the entrant's ID from waitingList to cancelledList in the event's collection
+                    db.collection("events").document(eventID)
+                            .collection("waitingList").document(this.id)
+                            .delete()
+                            .addOnSuccessListener(aVoid -> {
+                                db.collection("events").document(eventID)
+                                        .collection("cancelledList").document(this.id)
+                                        .set(new Object()) // Adding the ID without additional data
+                                        .addOnSuccessListener(moveSuccess -> {
+                                            Log.d("Entrant", "Entrant " + this.id + " moved to cancelledList in event " + eventID);
 
-                                // Run the lottery again to select a replacement entrant
-                                event.lottery(db, eventID);
+                                            // Re-run the lottery to select a replacement entrant
+                                            event.lottery(db, eventID);
+                                        })
+                                        .addOnFailureListener(e -> {
+                                            Log.w("Entrant", "Error moving entrant to cancelledList in event " + eventID, e);
+                                        });
                             })
                             .addOnFailureListener(e -> {
-                                Log.w("Entrant", "Error updating status in Android ID collection for entrant " + this.id, e);
+                                Log.w("Entrant", "Error removing entrant from waitingList in event " + eventID, e);
                             });
                 })
                 .addOnFailureListener(e -> {
-                    Log.w("Entrant", "Error updating status in waiting list for entrant " + this.id, e);
+                    Log.w("Entrant", "Error updating status in Android ID collection for entrant " + this.id, e);
                 });
     }
 }
