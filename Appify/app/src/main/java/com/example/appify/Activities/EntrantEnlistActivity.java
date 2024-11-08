@@ -3,6 +3,7 @@ package com.example.appify.Activities;
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.graphics.Color;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -60,11 +61,20 @@ public class EntrantEnlistActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.enlist_page);
 
+         Intent intent = getIntent();
+//         if (intent != null && Intent.ACTION_VIEW.equals(intent.getAction())) {
+//             // Handle the intent data if needed
+//             Uri data = intent.getData();
+//             if (data != null && "myapp".equals(data.getScheme()) && "openEntrantEnlistActivity".equals(data.getHost())) {
+//                 System.out.println("QR SUCCESS");
+//             }
+//         }
+
         HeaderNavigation headerNavigation = new HeaderNavigation(this);
         headerNavigation.setupNavigation();
 
         // Retrieve event details from the intent
-        Intent intent = getIntent();
+
         eventId = intent.getStringExtra("eventId");
         name = intent.getStringExtra("name");
         date = intent.getStringExtra("date");

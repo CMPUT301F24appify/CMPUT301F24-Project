@@ -28,14 +28,13 @@
         <activity android:name=".Activities.EntrantHomePageActivity" />
         <activity
             android:name=".Activities.EntrantEnlistActivity"
-            android:exported="true">
-        <intent-filter>
-            <action android:name="android.intent.action.VIEW" />
-            <category android:name="android.intent.category.DEFAULT" />
-            <category android:name="android.intent.category.BROWSABLE" />
-            <data android:scheme="myapp" android:host="openEntrantEnlistActivity"
-                tools:ignore="AppLinkUrlError" />
-        </intent-filter>
+            >
+<!--        <intent-filter>-->
+<!--            <action android:name="android.intent.action.VIEW" />-->
+<!--            <category android:name="android.intent.category.DEFAULT" />-->
+<!--            <category android:name="android.intent.category.BROWSABLE" />-->
+<!--            <data android:scheme="myapp" android:host="open_entrant_enlist_activity" />-->
+<!--        </intent-filter>-->
         </activity>
         <activity android:name=".Activities.EventEntrantsActivity" />
         <activity android:name=".Activities.EventDetailActivity" />
