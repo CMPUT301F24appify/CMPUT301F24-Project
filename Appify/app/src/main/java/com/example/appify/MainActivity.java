@@ -151,80 +151,6 @@ public class MainActivity extends AppCompatActivity {
         // Start the animation
         firstSet.start();
     }
-    //The 2 commented functions below are from chatGPT, "Write test for (lottery/accept) from
-    //MainActivity", 2024-11-05
-    //Function to run the lottery from the main activity for a specific even. Test/admin tool
-    //public void runLotteryTest(FirebaseFirestore db) {
-        // Retrieve the event document from Firestore by TEST_EVENT_ID
-        //db.collection("events").document(TEST_EVENT_ID)
-         //       .get()
-         //       .addOnSuccessListener(documentSnapshot -> {
-         //           if (documentSnapshot.exists()) {
-         //               // Retrieve event details to create an Event instance
-         //               String name = documentSnapshot.getString("name");
-         //               String date = documentSnapshot.getString("date");
-         //               String registrationEndDate = documentSnapshot.getString("registrationEndDate");
-         //               String description = documentSnapshot.getString("description");
-         //               String facility = documentSnapshot.getString("facility");
-         //               int maxWaitEntrants = documentSnapshot.getLong("maxWaitEntrants").intValue();
-         //               int maxSampleEntrants = documentSnapshot.getLong("maxSampleEntrants").intValue();
-         //               String posterUri = documentSnapshot.getString("posterUri");
-          //              boolean isGeolocate = documentSnapshot.getBoolean("isGeolocate") != null
-          //                      && documentSnapshot.getBoolean("isGeolocate");
-//
-//                        // Create the Event object
-//                        Event testEvent = new Event(name, date, registrationEndDate, description, facility,
- //                               maxWaitEntrants, maxSampleEntrants, posterUri, isGeolocate);
-
-                        // Run the lottery function for the event
- //                       testEvent.lottery(db, TEST_EVENT_ID);
-
-                        // Log to confirm the test execution
-  //                      Log.d(TAG, "Lottery test run completed for event ID: " + TEST_EVENT_ID);
-  //                  } else {
-  //                      Log.w(TAG, "No event found with ID: " + TEST_EVENT_ID);
-   //                 }
-    //            })
-    //            .addOnFailureListener(e -> {
-    //                Log.e(TAG, "Error retrieving event with ID: " + TEST_EVENT_ID, e);
-    //            });
-   // }
-
-
-
-//Function to run the accept function from the main activity for a specific event for all users in it.
-// Test/admin tool
-  //  public void runAcceptStatusTest(FirebaseFirestore db) {
-  //      db.collection("events").document(TEST_EVENT_ID)
-  //              .collection("waitingList")
-  //              .whereEqualTo("status", "invited") // Filter for entrants with "invited" status
-  //              .get()
-  //              .addOnSuccessListener(querySnapshot -> {
-  //                  for (QueryDocumentSnapshot document : querySnapshot) {
-   //                     // Retrieve entrant ID and other necessary fields
-   //                     String entrantId = document.getId();
-   //                     String name = document.getString("name");
-   //                     String phoneNumber = document.getString("phoneNumber");
-    //                    String email = document.getString("email");
-    //                    String profilePictureUrl = document.getString("profilePictureUrl");
-    //                    boolean notifications = document.getBoolean("notifications") != null && document.getBoolean("notifications");
-//
-//                        // Create an Entrant object
- //                       Entrant entrant = new Entrant(entrantId, name, phoneNumber, email, profilePictureUrl, notifications);
-//
- //                       // Call acceptEvent for each invited entrant
- //                       entrant.acceptEvent(db, TEST_EVENT_ID);
- //                   }
-//
-//                    Log.d(TAG, "AcceptStatusTest: All invited entrants have been accepted for event ID: " + TEST_EVENT_ID);
- //               })
- //               .addOnFailureListener(e -> {
-  //                  Log.e(TAG, "Error retrieving invited entrants for event ID: " + TEST_EVENT_ID, e);
-  //              });
-  //  }
-
-
-
 
     /**
      * Checks if the user exists in Firestore and navigates accordingly.
@@ -276,6 +202,7 @@ public class MainActivity extends AppCompatActivity {
         Intent intent = new Intent(MainActivity.this, EntrantHomePageActivity.class);
         intent.putExtra("Android ID", androidId);
         startActivity(intent);
+
         finish(); // Prevent user from returning to MainActivity
     }
 }
