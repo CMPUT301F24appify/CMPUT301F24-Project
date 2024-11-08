@@ -3,8 +3,10 @@ package com.example.appify;
 import android.app.Application;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.util.Log;
 import android.widget.ImageView;
 
+import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
@@ -15,6 +17,8 @@ import com.google.firebase.storage.StorageReference;
  */
 public class MyApp extends Application {
     private String androidId;
+    private String facilityID;
+    private String facilityName;
 
     /**
      * Retrieves the Android ID, a unique identifier for the device.
@@ -31,6 +35,9 @@ public class MyApp extends Application {
      *
      * @param androidId The unique Android ID to set for the application.
      */
-    public void setAndroidId(String androidId) { this.androidId = androidId; }
+    public void setAndroidId(String androidId) {
+        this.androidId = androidId;
+    }
+
 }
 

@@ -1,8 +1,10 @@
 package com.example.appify.Model;
 
-import android.content.Context;
+
 import android.util.Log;
 
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
@@ -21,7 +23,7 @@ public class Event {
     private String facility;
     private String registrationEndDate;
     private String description;
-    private int maxWishEntrants;
+    private int maxWaitEntrants;
     private int maxSampleEntrants;
     private String posterUri;  // Store URI as String
     private boolean isGeolocate;
@@ -47,7 +49,7 @@ public class Event {
      * @param facility          the facility where the event takes place
      * @param registrationEndDate the registration end date for the event
      * @param description       a description of the event
-     * @param maxWishEntrants   the maximum number of wish-listed entrants
+     * @param maxWaitEntrants   the maximum number of wait-listed entrants
      * @param maxSampleEntrants the maximum number of sample-selected entrants
      * @param posterUri         the URI of the event's poster image
      * @param isGeolocate       whether geolocation is required for this event
@@ -62,7 +64,7 @@ public class Event {
      * @param organizerID       the ID of the organizer
      */
     public Event(String name, String date, String facility, String registrationEndDate,
-                 String description, int maxWishEntrants, int maxSampleEntrants,
+                 String description, int maxWaitEntrants, int maxSampleEntrants,
                  String posterUri, boolean isGeolocate, boolean notifyWaitlisted,
                  boolean notifyEnrolled, boolean notifyCancelled, boolean notifyInvited,
                  String waitlistedMessage, String enrolledMessage,
@@ -73,7 +75,7 @@ public class Event {
         this.registrationEndDate = registrationEndDate;
         this.description = description;
         this.facility = facility;
-        this.maxWishEntrants = maxWishEntrants;
+        this.maxWaitEntrants = maxWaitEntrants;
         this.maxSampleEntrants = maxSampleEntrants;
         this.posterUri = posterUri;
         this.isGeolocate = isGeolocate;
@@ -89,47 +91,13 @@ public class Event {
         this.organizerID = organizerID;
     }
 
-    // No-argument constructor (required for Firebase)
+    /**
+     * No-argument constructor required by Firestore.
+     */
     public Event() {
     }
 
-    /**
-     * Creates an Event object from a Firestore document.
-     *
-     * @param document the Firestore document representing the event
-     * @return an Event object populated with data from the Firestore document
-     */
-    public static Event fromFirestore(QueryDocumentSnapshot document) {
-        String name = document.getString("name");
-        String date = document.getString("date");
-        String registrationEndDate = document.getString("registrationEndDate");
-        String description = document.getString("description");
-        String facility = document.getString("facility");
-        int maxWishEntrants = document.getLong("maxWishEntrants").intValue();
-        int maxSampleEntrants = document.getLong("maxSampleEntrants").intValue();
-        String posterUri = document.getString("posterUri");
-        boolean isGeolocate = document.getBoolean("geolocate") != null ? document.getBoolean("geolocate") : false;
-        boolean notifyWaitlisted = document.getBoolean("notifyWaitlisted") != null ? document.getBoolean("notifyWaitlisted") : false;
-        boolean notifyEnrolled = document.getBoolean("notifyEnrolled") != null ? document.getBoolean("notifyEnrolled") : false;
-        boolean notifyCancelled = document.getBoolean("notifyCancelled") != null ? document.getBoolean("notifyCancelled") : false;
-        boolean notifyInvited = document.getBoolean("notifyInvited") != null ? document.getBoolean("notifyInvited") : false;
-        String organizerID = document.getString("organizerID");
 
-        // Retrieve notification messages
-        String waitlistedMessage = document.getString("waitlistedMessage");
-        String enrolledMessage = document.getString("enrolledMessage");
-        String cancelledMessage = document.getString("cancelledMessage");
-        String invitedMessage = document.getString("invitedMessage");
-
-        Event event = new Event(name, date, facility, registrationEndDate, description,
-                maxWishEntrants, maxSampleEntrants, posterUri, isGeolocate,
-                notifyWaitlisted, notifyEnrolled, notifyCancelled, notifyInvited,
-                waitlistedMessage, enrolledMessage, cancelledMessage, invitedMessage, organizerID);
-
-        event.eventId = document.getId(); // Use Firestore ID if available
-
-        return event;
-    }
     //The function below was done with major assistance from chatGPT, "Help make the lottery function
     //(provided explanation of how the database is structured), (explained that
     //need to update in both waitlists)", 2024-11-05
@@ -216,12 +184,6 @@ public class Event {
                     Log.e("Lottery", "Error retrieving accepted entrants for event " + eventID, e);
                 });
     }
-
-
-
-
-
-
     // Getters
 
     /**
@@ -270,12 +232,12 @@ public class Event {
     }
 
     /**
-     * Gets the maximum number of wish-listed entrants allowed for the event.
+     * Gets the maximum number of wait-listed entrants allowed for the event.
      *
-     * @return the maximum number of wish-listed entrants
+     * @return the maximum number of wait-listed entrants
      */
-    public int getMaxWishEntrants() {
-        return maxWishEntrants;
+    public int getMaxWaitEntrants() {
+        return maxWaitEntrants;
     }
 
     /**
@@ -323,18 +285,38 @@ public class Event {
         return isGeolocate;
     }
 
+    /**
+     * Indicates if notifications for waitlisted entrants are enabled.
+     *
+     * @return true if waitlisted notifications are enabled, otherwise false
+     */
     public boolean isNotifyWaitlisted() {
         return notifyWaitlisted;
     }
 
+    /**
+     * Indicates if notifications for enrolled entrants are enabled.
+     *
+     * @return true if enrolled notifications are enabled, otherwise false
+     */
     public boolean isNotifyEnrolled() {
         return notifyEnrolled;
     }
 
+    /**
+     * Indicates if notifications for cancelled entrants are enabled.
+     *
+     * @return true if cancelled notifications are enabled, otherwise false
+     */
     public boolean isNotifyCancelled() {
         return notifyCancelled;
     }
 
+    /**
+     * Indicates if notifications for invited entrants are enabled.
+     *
+     * @return true if invited notifications are enabled, otherwise false
+     */
     public boolean isNotifyInvited() {
         return notifyInvited;
     }
@@ -375,22 +357,200 @@ public class Event {
         return invitedMessage;
     }
 
-    // Setters (if needed)
+    // Setters
 
+    /**
+     * Sets whether geolocation is required for the event.
+     *
+     * @param geolocate true if geolocation is required, false otherwise
+     */
     public void setGeolocate(boolean geolocate) {
         this.isGeolocate = geolocate;
     }
 
+    /**
+     * Sets the name of the event.
+     *
+     * @param name the new name of the event
+     */
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    /**
+     * Sets the date of the event.
+     *
+     * @param date the new date of the event
+     */
+    public void setDate(String date) {
+        this.date = date;
+    }
+
+    /**
+     * Sets the facility for the event.
+     *
+     * @param facility the new facility for the event
+     */
+    public void setFacility(String facility) {
+        this.facility = facility;
+    }
+
+    /**
+     * Sets the registration end date for the event.
+     *
+     * @param registrationEndDate the new registration end date for the event
+     */
+    public void setRegistrationEndDate(String registrationEndDate) {
+        this.registrationEndDate = registrationEndDate;
+    }
+
+    /**
+     * Sets the description of the event.
+     *
+     * @param description the new description of the event
+     */
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    /**
+     * Sets the maximum number of wait-listed entrants for the event.
+     *
+     * @param maxWaitEntrants the new maximum wait-listed entrants
+     */
+    public void setMaxWaitEntrants(int maxWaitEntrants) {
+        this.maxWaitEntrants = maxWaitEntrants;
+    }
+
+    /**
+     * Sets the maximum number of sample-selected entrants for the event.
+     *
+     * @param maxSampleEntrants the new maximum sample-selected entrants
+     */
+    public void setMaxSampleEntrants(int maxSampleEntrants) {
+        this.maxSampleEntrants = maxSampleEntrants;
+    }
+
+    /**
+     * Sets the URI of the event's poster image.
+     *
+     * @param posterUri the new URI of the event's poster
+     */
+    public void setPosterUri(String posterUri) {
+        this.posterUri = posterUri;
+    }
+
+    /**
+     * Sets whether to notify waitlisted entrants.
+     *
+     * @param notifyWaitlisted true to enable waitlisted notifications, false otherwise
+     */
+    public void setNotifyWaitlisted(boolean notifyWaitlisted) {
+        this.notifyWaitlisted = notifyWaitlisted;
+    }
+
+    /**
+     * Sets whether to notify enrolled entrants.
+     *
+     * @param notifyEnrolled true to enable enrolled notifications, false otherwise
+     */
+    public void setNotifyEnrolled(boolean notifyEnrolled) {
+        this.notifyEnrolled = notifyEnrolled;
+    }
+
+    /**
+     * Sets whether to notify cancelled entrants.
+     *
+     * @param notifyCancelled true to enable cancelled notifications, false otherwise
+     */
+    public void setNotifyCancelled(boolean notifyCancelled) {
+        this.notifyCancelled = notifyCancelled;
+    }
+
+    /**
+     * Sets whether to notify invited entrants.
+     *
+     * @param notifyInvited true to enable invited notifications, false otherwise
+     */
+    public void setNotifyInvited(boolean notifyInvited) {
+        this.notifyInvited = notifyInvited;
+    }
+
+    /**
+     * Sets the notification message for waitlisted entrants.
+     *
+     * @param waitlistedMessage the new waitlisted notification message
+     */
+    public void setWaitlistedMessage(String waitlistedMessage) {
+        this.waitlistedMessage = waitlistedMessage;
+    }
+
+    /**
+     * Sets the notification message for enrolled entrants.
+     *
+     * @param enrolledMessage the new enrolled notification message
+     */
+    public void setEnrolledMessage(String enrolledMessage) {
+        this.enrolledMessage = enrolledMessage;
+    }
+
+    /**
+     * Sets the notification message for cancelled entrants.
+     *
+     * @param cancelledMessage the new cancelled notification message
+     */
+    public void setCancelledMessage(String cancelledMessage) {
+        this.cancelledMessage = cancelledMessage;
+    }
+
+    /**
+     * Sets the notification message for invited entrants.
+     *
+     * @param invitedMessage the new invited notification message
+     */
+    public void setInvitedMessage(String invitedMessage) {
+        this.invitedMessage = invitedMessage;
+    }
+
+    /**
+     * Sets the Firestore database instance for this event.
+     *
+     * @param db the Firestore database instance
+     */
+    public void setDb(FirebaseFirestore db) {
+        this.db = db;
+    }
+
+    /**
+     * Sets the ID of the organizer for this event.
+     *
+     * @param organizerID the new organizer ID
+     */
+    public void setOrganizerID(String organizerID) {
+        this.organizerID = organizerID;
+    }
+
+    /**
+     * Sets the unique ID of the event.
+     *
+     * @param eventId the new event ID
+     */
     public void setEventId(String eventId) {
         this.eventId = eventId;
     }
 
-    // EventAddCallback interface remains unchanged
+    /**
+     * Interface for callback after adding an event to Firestore.
+     */
     public interface EventAddCallback {
         void onEventAdded(Event event);
     }
 
-    // Modify your addToFirestore method if necessary
+    /**
+     * Adds this event to Firestore.
+     *
+     * @param callback The callback to handle the event addition result.
+     */
     public void addToFirestore(EventAddCallback callback) {
         db.collection("events").document(this.eventId).set(this)
                 .addOnSuccessListener(aVoid -> {

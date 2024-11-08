@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
@@ -15,7 +16,7 @@
         android:id="@+id/editDate"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Date" />
+        android:hint="Date: MMM DD, YYYY" />
 
     <EditText
         android:id="@+id/editFacility"
@@ -27,7 +28,7 @@
         android:id="@+id/editRegistrationEndDate"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="RegistrationEndDate" />
+        android:hint="Reg End Date: MMM DD, YYYY" />
 
     <EditText
         android:id="@+id/editTextEventDescription"
@@ -35,8 +36,6 @@
         android:layout_height="wrap_content"
         android:hint="Event Description" />
 
-    <!-- CheckBox or Button for Geolocation -->
-    <!-- If you intended to change this to a Button, update it accordingly -->
     <CheckBox
         android:id="@+id/checkGeolocation"
         android:layout_width="match_parent"
@@ -53,67 +52,24 @@
         android:id="@+id/buttonUploadPoster"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:textColor="@color/black"
+        app:backgroundTint="@color/buttons"
+        app:strokeColor="#FF8C00"
+        app:strokeWidth="1dp"
         android:text="Upload Poster" />
 
     <EditText
-        android:id="@+id/maxNumberWishList"
+        android:id="@+id/maxNumberWaitList"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:hint="Max Entrants For WishList:" />
+        android:hint="Max Entrants For WaitList:"
+        android:inputType="number" />
 
     <EditText
         android:id="@+id/maxNumberSample"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:hint="Max Entrants For Sample:" />
+        android:hint="Max Entrants For Sample:"
+        android:inputType="number" />
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:paddingTop="16dp">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Notifications"
-            android:textSize="18sp"
-            android:paddingEnd="16dp"
-            android:textStyle="bold" />
-
-        <LinearLayout
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:layout_weight="1">
-
-            <!-- Replaced CheckBoxes with Buttons -->
-            <Button
-                android:id="@+id/buttonWaitlisted"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Notify Waitlisted" />
-
-            <Button
-                android:id="@+id/buttonEnrolled"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Notify Enrolled" />
-
-            <Button
-                android:id="@+id/buttonCancelled"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Notify Cancelled" />
-
-            <Button
-                android:id="@+id/buttonInvited"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Notify Invited" />
-
-        </LinearLayout> <!-- Closing tag for inner LinearLayout -->
-
-    </LinearLayout> <!-- Closing tag for outer LinearLayout -->
-
-</LinearLayout> <!-- Closing tag for root LinearLayout -->
+</LinearLayout>

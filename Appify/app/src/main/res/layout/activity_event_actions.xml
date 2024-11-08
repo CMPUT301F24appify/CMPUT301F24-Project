@@ -7,14 +7,6 @@
     android:padding="16dp">
 
     <!-- Display the Event ID -->
-    <TextView
-        android:id="@+id/event_id_text"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Event ID: 8b0f2eb9-e96f-48ee-84c0-8002a676f5ca"
-        android:textSize="18sp"
-        android:layout_gravity="center_horizontal"
-        android:padding="8dp" />
 
     <!-- Lottery Button -->
     <Button
@@ -28,39 +20,16 @@
         app:strokeWidth="1dp"
         android:layout_marginTop="16dp" />
 
-    <!-- Accept Button -->
-    <Button
-        android:id="@+id/accept_button"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Accept All Invited"
-        android:textColor="@color/black"
-        app:backgroundTint="@color/buttons"
-        app:strokeColor="#FF8C00"
-        app:strokeWidth="1dp"
-        android:layout_marginTop="8dp" />
-
-    <!-- Deny Button -->
-    <Button
-        android:id="@+id/deny_button"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Deny All Invited"
-        android:textColor="@color/black"
-        app:backgroundTint="@color/buttons"
-        app:strokeColor="#FF8C00"
-        app:strokeWidth="1dp"
-        android:layout_marginTop="8dp" />
 
     <Button
-        android:layout_marginTop="400dp"
         android:id="@+id/back_button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="400dp"
+        android:text="Back"
         android:textColor="@color/black"
         app:backgroundTint="@color/buttons"
         app:strokeColor="#FF8C00"
-        app:strokeWidth="1dp"
-        android:text="Back" />
+        app:strokeWidth="1dp" />
 
 </LinearLayout>

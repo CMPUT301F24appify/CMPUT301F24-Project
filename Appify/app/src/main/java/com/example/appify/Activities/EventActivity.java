@@ -1,3 +1,20 @@
+/**
+ * EventActivity.java
+ *
+ * This class manages the main screen for event organizers. It displays a list of events,
+ * allows organizers to add new events, and provides options for managing event details
+ * and facilities. Events are loaded from Firebase Firestore and displayed using a custom
+ * adapter.
+ *
+ * Outstanding Issues:
+ * 1. Data Duplication Prevention: When loading events from Firestore, the event list should
+ *    be cleared to avoid duplicating entries upon subsequent data fetches.
+ * 2. Error Handling Improvements: Current error messages for Firestore operations are basic;
+ *    additional logging and detailed feedback would improve user experience.
+ * 3. Null Checks: The use of null checks for Intent extras is crucial to prevent crashes if
+ *    data fields are missing or not set.
+ */
+
 package com.example.appify.Activities;
 
 import android.content.Intent;
@@ -22,64 +39,73 @@ import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
 
+/**
+ * EventActivity manages the displaying and interactions of organizer events.
+ * It displays a list of events, allows the organizer to add a new event, and navigate to event management and detail screens.
+ */
 public class EventActivity extends AppCompatActivity implements AddEventDialogFragment.AddEventDialogListener {
-    private FirebaseFirestore db;
-    private static final int REQUEST_READ_EXTERNAL_STORAGE = 1;
-    ListView eventListView;
-    CustomEventAdapter eventAdapter;
-    ArrayList<Event> eventList = new ArrayList<>();
 
+    private FirebaseFirestore db;  // Instance of Firebase Firestore for database interactions
+    private static final int REQUEST_READ_EXTERNAL_STORAGE = 1;
+    ListView eventListView;  // ListView for displaying events
+    CustomEventAdapter eventAdapter;  // Custom adapter for event list items
+    ArrayList<Event> eventList = new ArrayList<>();  // List to store Event objects
+
+    /**
+     * Initializes the EventActivity, setting up the user interface and loading events from Firestore.
+     *
+     * @param savedInstanceState The previously saved state of the activity, if available.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.event);
 
-
-        // HeaderNavigation
+        // Setup header navigation and highlight the 'Organize' tab
         HeaderNavigation headerNavigation = new HeaderNavigation(this);
         headerNavigation.setupNavigation();
         TextView organizeText = findViewById(R.id.organizeText_navBar);
         organizeText.setTextColor(Color.parseColor("#800080"));
         organizeText.setTypeface(organizeText.getTypeface(), Typeface.BOLD);
 
-
-        db = FirebaseFirestore.getInstance();
+        db = FirebaseFirestore.getInstance();  // Initialize Firestore instance
 
         eventListView = findViewById(R.id.event_list);
         eventAdapter = new CustomEventAdapter(this, eventList, true);
         eventListView.setAdapter(eventAdapter);
 
-        loadEventsFromFirestore();
+        loadEventsFromFirestore();  // Load events from Firestore
 
+        // Set up 'Add Event' button listener to open the AddEventDialogFragment
         Button addEventButton = findViewById(R.id.button_add);
         addEventButton.setOnClickListener(v -> {
             AddEventDialogFragment dialog = new AddEventDialogFragment();
             dialog.show(getSupportFragmentManager(), "AddEventDialogFragment");
         });
 
+        // Set up 'Manage Facility' button listener to navigate to ManageFacilityActivity
         Button manageFacilityButton = findViewById(R.id.button_manage);
         manageFacilityButton.setOnClickListener(v -> {
             Intent intent = new Intent(EventActivity.this, ManageFacilityActivity.class);
             startActivity(intent);
         });
 
-        // Set an item click listener to open the EventDetailActivity
+        // Set up item click listener for eventListView to navigate to EventDetailActivity
         eventListView.setOnItemClickListener((parent, view, position, id) -> {
             Event selectedEvent = eventList.get(position);
-
             Intent intent = new Intent(EventActivity.this, EventDetailActivity.class);
 
-            // Add extra checks for null values to prevent crashes
+            // Pass event details with null checks to prevent crashes
             intent.putExtra("name", selectedEvent.getName() != null ? selectedEvent.getName() : "N/A");
             intent.putExtra("date", selectedEvent.getDate() != null ? selectedEvent.getDate() : "N/A");
             intent.putExtra("facility", selectedEvent.getFacility() != null ? selectedEvent.getFacility() : "N/A");
             intent.putExtra("registrationEndDate", selectedEvent.getRegistrationEndDate() != null ? selectedEvent.getRegistrationEndDate() : "N/A");
             intent.putExtra("description", selectedEvent.getDescription() != null ? selectedEvent.getDescription() : "N/A");
-            intent.putExtra("maxWishEntrants", selectedEvent.getMaxWishEntrants());
+            intent.putExtra("maxWaitEntrants", selectedEvent.getMaxWaitEntrants());
             intent.putExtra("maxSampleEntrants", selectedEvent.getMaxSampleEntrants());
             intent.putExtra("eventID", selectedEvent.getEventId());
 
-            // Poster URI might be null, so check before passing
+            // Check for null posterUri before passing
             String posterUriString = selectedEvent.getPosterUri() != null ? selectedEvent.getPosterUri() : "";
             intent.putExtra("posterUri", posterUriString);
 
@@ -89,19 +115,36 @@ public class EventActivity extends AppCompatActivity implements AddEventDialogFr
             intent.putExtra("notifyCancelled", selectedEvent.isNotifyCancelled());
             intent.putExtra("notifyInvited", selectedEvent.isNotifyInvited());
 
-            // Pass notification messages
-            intent.putExtra("waitlistedMessage", selectedEvent.getWaitlistedMessage());
-            intent.putExtra("enrolledMessage", selectedEvent.getEnrolledMessage());
-            intent.putExtra("cancelledMessage", selectedEvent.getCancelledMessage());
-            intent.putExtra("invitedMessage", selectedEvent.getInvitedMessage());
+            // Pass notification messages with null checks
+            intent.putExtra("waitlistedMessage", selectedEvent.getWaitlistedMessage() != null ? selectedEvent.getWaitlistedMessage() : "");
+            intent.putExtra("enrolledMessage", selectedEvent.getEnrolledMessage() != null ? selectedEvent.getEnrolledMessage() : "");
+            intent.putExtra("cancelledMessage", selectedEvent.getCancelledMessage() != null ? selectedEvent.getCancelledMessage() : "");
+            intent.putExtra("invitedMessage", selectedEvent.getInvitedMessage() != null ? selectedEvent.getInvitedMessage() : "");
 
             startActivity(intent);
         });
     }
 
+    /**
+     * Callback method for adding a new event from the AddEventDialogFragment.
+     *
+     * @param name              The name of the event.
+     * @param date              The date of the event.
+     * @param facility          The facility where the event takes place.
+     * @param registrationEndDate The registration end date for the event.
+     * @param description       A description of the event.
+     * @param maxWaitEntrants   Maximum number of waitlist entrants allowed.
+     * @param maxSampleEntrants Maximum number of sample entrants allowed.
+     * @param posterUri         URI of the event poster.
+     * @param isGeolocate       Whether geolocation is enabled for the event.
+     * @param waitlistedMessage Notification message for waitlisted entrants.
+     * @param enrolledMessage   Notification message for enrolled entrants.
+     * @param cancelledMessage  Notification message for cancelled entrants.
+     * @param invitedMessage    Notification message for invited entrants.
+     */
     @Override
     public void onEventAdded(String name, String date, String facility, String registrationEndDate,
-                             String description, int maxWishEntrants, int maxSampleEntrants,
+                             String description, int maxWaitEntrants, int maxSampleEntrants,
                              String posterUri, boolean isGeolocate,
                              String waitlistedMessage, String enrolledMessage,
                              String cancelledMessage, String invitedMessage) {
@@ -109,20 +152,14 @@ public class EventActivity extends AppCompatActivity implements AddEventDialogFr
         MyApp app = (MyApp) getApplication();
         String organizerID = app.getAndroidId();
 
-        // Determine notification booleans based on message presence
-        boolean notifyWaitlisted = waitlistedMessage != null && !waitlistedMessage.isEmpty();
-        boolean notifyEnrolled = enrolledMessage != null && !enrolledMessage.isEmpty();
-        boolean notifyCancelled = cancelledMessage != null && !cancelledMessage.isEmpty();
-        boolean notifyInvited = invitedMessage != null && !invitedMessage.isEmpty();
-
-        // Create new Event object with notification messages
+        // Create new Event object with details from the dialog
         Event newEvent = new Event(name, date, facility, registrationEndDate, description,
-                maxWishEntrants, maxSampleEntrants, posterUri, isGeolocate,
-                notifyWaitlisted, notifyEnrolled, notifyCancelled, notifyInvited,
-                waitlistedMessage, enrolledMessage, cancelledMessage, invitedMessage,
+                maxWaitEntrants, maxSampleEntrants, posterUri, isGeolocate,
+                false, false, false, false,
+                "", "", "", "",
                 organizerID);
 
-        // Use the addToFirestore method in Event
+        // Add the new event to Firestore and update the local list on success
         newEvent.addToFirestore(event -> {
             Toast.makeText(EventActivity.this, "Event added: " + event.getName(), Toast.LENGTH_SHORT).show();
             eventList.add(event);
@@ -130,18 +167,23 @@ public class EventActivity extends AppCompatActivity implements AddEventDialogFr
         });
     }
 
+    /**
+     * Loads events from Firestore based on the organizer's ID and populates the event list.
+     * Clears the existing list to prevent duplicate entries before fetching data.
+     */
     private void loadEventsFromFirestore() {
         MyApp app = (MyApp) getApplication();
         String organizerID = app.getAndroidId();
+
+        // Clear the existing list to avoid duplicate entries
+        eventList.clear();
 
         db.collection("events")
                 .whereEqualTo("organizerID", organizerID)
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
-                    // eventList.clear();  // Clear existing data to avoid duplicates
-
+                    // Iterate through Firestore documents and add them to the event list
                     for (DocumentSnapshot document : queryDocumentSnapshots) {
-                        // Convert Firestore document to an Event object
                         Event event = document.toObject(Event.class);
                         eventList.add(event);
                     }
