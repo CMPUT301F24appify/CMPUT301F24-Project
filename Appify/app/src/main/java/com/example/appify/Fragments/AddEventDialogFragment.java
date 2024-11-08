@@ -66,6 +66,7 @@ public class AddEventDialogFragment extends DialogFragment {
         String facilityName = app.getFacilityName();
         eventFacility.setText(facilityName);
         eventFacility.setEnabled(false);
+        eventFacility.setBackgroundColor(getResources().getColor(android.R.color.darker_gray));
 
 
         EditText eventName = view.findViewById(R.id.editTextEventName);

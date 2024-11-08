@@ -28,6 +28,10 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * EventDetailActivity displays details of a selected event and provides options to edit, notify, and manage the event.
+ * Allows organizers to update event details and manage notifications for attendees.
+ */
 public class EventDetailActivity extends AppCompatActivity implements EditEventDialogFragment.EditEventDialogListener {
     private FirebaseFirestore db;
     private String eventID;
@@ -38,6 +42,12 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
     private String cancelledMessage = "";
     private String invitedMessage = "";
 
+
+    /**
+     * Initializes the EventDetailActivity, setting up the user interface and loading event details.
+     *
+     * @param savedInstanceState The previously saved state of the activity, if available.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -139,7 +149,6 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
         organizerActionsButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
                     Intent intent = new Intent(EventDetailActivity.this, EventActionsActivity.class);
                     intent.putExtra("name", name );
                     intent.putExtra("date", date);
@@ -152,16 +161,16 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
                     startActivity(intent);
                 }
             });
-        Button entrantListButton = findViewById(R.id.entrant_list_button);
 
-
+        // Setup edit event button
         Button editEventButton = findViewById(R.id.buttonEditEvent);
         editEventButton.setOnClickListener(v -> {
             EditEventDialogFragment dialog = new EditEventDialogFragment();
             dialog.show(getSupportFragmentManager(), "EditEventDialogFragment");
         });
 
-
+        // Setup entrant list button
+        Button entrantListButton = findViewById(R.id.entrant_list_button);
         entrantListButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -197,7 +206,23 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
     }
 
 
-
+    /**
+     * Updates the event details in Firestore and refreshes the UI.
+     *
+     * @param name              The name of the event.
+     * @param date              The date of the event.
+     * @param facility          The facility where the event takes place.
+     * @param registrationEndDate The registration end date for the event.
+     * @param description       A description of the event.
+     * @param maxWaitEntrants   Maximum number of waitlist entrants allowed.
+     * @param maxSampleEntrants Maximum number of sample entrants allowed.
+     * @param posterUri         URI of the event poster.
+     * @param isGeolocate       Whether geolocation is enabled for the event.
+     * @param waitlistedMessage Notification message for waitlisted attendees.
+     * @param enrolledMessage   Notification message for enrolled attendees.
+     * @param cancelledMessage  Notification message for cancelled attendees.
+     * @param invitedMessage    Notification message for invited attendees.
+     */
     @Override
     public void onEventEdited(String name, String date, String facility, String registrationEndDate,
                              String description, int maxWaitEntrants, int maxSampleEntrants,
