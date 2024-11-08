@@ -7,7 +7,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -17,7 +16,6 @@ import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.FieldValue;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -36,9 +34,7 @@ import java.util.Objects;
  */
 public class EntrantEnlistActivity extends AppCompatActivity {
 
-    private boolean isUserEnlisted; // Track if the user is in the waiting list
-    private String eventId;
-    private String androidId;
+
     private FirebaseFirestore db;
     private Button enlistLeaveButton;
     private Button acceptInviteButton;
@@ -48,7 +44,7 @@ public class EntrantEnlistActivity extends AppCompatActivity {
     private String registrationEndDate;
     private String facility;
     private boolean isGeolocate;
-    private boolean isOrganizer = false;
+    private String description;
 
     /**
      * Initializes the activity, sets up the navigation header, retrieves event details from
@@ -65,63 +61,132 @@ public class EntrantEnlistActivity extends AppCompatActivity {
         setContentView(R.layout.enlist_page);
 
          Intent intent = getIntent();
-//         if (intent != null && Intent.ACTION_VIEW.equals(intent.getAction())) {
-//             // Handle the intent data if needed
-//             Uri data = intent.getData();
-//             if (data != null && "myapp".equals(data.getScheme()) && "openEntrantEnlistActivity".equals(data.getHost())) {
-//                 System.out.println("QR SUCCESS");
-//             }
-//         }
 
-        HeaderNavigation headerNavigation = new HeaderNavigation(this);
-        headerNavigation.setupNavigation();
+         db = FirebaseFirestore.getInstance();
 
-        // Retrieve event details from the intent
+         Uri data = intent.getData();
+         if (data != null && "myapp".equals(data.getScheme())) {
+             List<String> params = data.getPathSegments();
+             String eventId = params.get(0);
 
-        eventId = intent.getStringExtra("eventId");
-        name = intent.getStringExtra("name");
-        date = intent.getStringExtra("date");
-        registrationEndDate = intent.getStringExtra("registrationEndDate");
-        facility = intent.getStringExtra("facility");
-        String description = intent.getStringExtra("description");
-        int maxWaitEntrants = intent.getIntExtra("maxWaitEntrants", 0);
-        int maxSampleEntrants = intent.getIntExtra("maxSampleEntrants", 0);
-        String posterUriString = intent.getStringExtra("posterUri");
-        isGeolocate = intent.getBooleanExtra("geolocate", false);
+             // Fetch event details using eventId
+             FirebaseFirestore db = FirebaseFirestore.getInstance();
+             db.collection("events").document(eventId)
+                     .get()
+                     .addOnSuccessListener(documentSnapshot -> {
+                         if (documentSnapshot.exists()) {
 
-        // Find views in the layout and set data
-        TextView eventName = findViewById(R.id.event_name);
-        TextView eventDate = findViewById(R.id.event_date);
-        TextView eventDescription = findViewById(R.id.event_description);
-        TextView eventFacility = findViewById(R.id.facility_name);
-        TextView eventRegistrationEnd = findViewById(R.id.registration_date);
-        TextView eventGeolocate = findViewById(R.id.geolocationText);
+                             HeaderNavigation headerNavigation = new HeaderNavigation(this);
+                             headerNavigation.setupNavigation();
 
-        enlistLeaveButton = findViewById(R.id.enlist_leave_button);
-        acceptInviteButton = findViewById(R.id.accept_invite_button);
-        declineInviteButton = findViewById(R.id.decline_invite_button);
+                             // Get the users Android ID
+                             MyApp app = (MyApp) getApplication();
+                             String androidId = app.getAndroidId();
 
-        eventName.setText(name);
-        eventDate.setText(date);
-        eventDescription.setText(description);
-        eventRegistrationEnd.setText(registrationEndDate);
-        eventFacility.setText(facility);
+                             // Find Views in the layout
+                             TextView eventName = findViewById(R.id.event_name);
+                             TextView eventDate = findViewById(R.id.event_date);
+                             TextView eventDescription = findViewById(R.id.event_description);
+                             TextView eventFacility = findViewById(R.id.facility_name);
+                             TextView eventRegistrationEnd = findViewById(R.id.registration_date);
+                             TextView eventGeolocate = findViewById(R.id.geolocationText);
 
-        // Show Geolocation Requirement
-        if (isGeolocate) {
-            eventGeolocate.setText("IMPORTANT: Registering for this event REQUIRES geolocation.");
-        } else {
-            eventGeolocate.setText("IMPORTANT: Registering for this event DOES NOT REQUIRE geolocation.");
-        }
+                             enlistLeaveButton = findViewById(R.id.enlist_leave_button);
+                             acceptInviteButton = findViewById(R.id.accept_invite_button);
+                             declineInviteButton = findViewById(R.id.decline_invite_button);
 
-        // Handle Enlist and Leave buttons
-        enlistLeaveButton = findViewById(R.id.enlist_leave_button);
+                             db.collection("events").document(eventId).get().addOnCompleteListener(task ->{
+                                 if (task.isSuccessful()){
 
-        db = FirebaseFirestore.getInstance();
-        MyApp app = (MyApp) getApplication();
-        androidId = app.getAndroidId();
-        // Check if user is already enlisted in the waiting list
-        checkUserEnrollmentStatus();
+                                     DocumentSnapshot eventData = task.getResult();
+                                     name = eventData.getString("name");
+
+                                     date = eventData.getString("date");
+                                     description = eventData.getString("description");
+                                     facility = eventData.getString("facility");
+                                     registrationEndDate = eventData.getString("registrationEndDate");
+                                     isGeolocate = eventData.getBoolean("geolocate");
+
+                                     eventName.setText(name);
+                                     eventDate.setText(date);
+                                     eventDescription.setText(description);
+                                     eventRegistrationEnd.setText(registrationEndDate);
+                                     eventFacility.setText(facility);
+
+
+                                     // Show Geolocation Requirement
+                                     if (isGeolocate) {
+                                         eventGeolocate.setText("IMPORTANT: Registering for this event REQUIRES geolocation.");
+                                     } else {
+                                         eventGeolocate.setText("IMPORTANT: Registering for this event DOES NOT REQUIRE geolocation.");
+                                     }
+
+                                     // Handle Enlist and Leave buttons
+                                     enlistLeaveButton = findViewById(R.id.enlist_leave_button);
+
+                                     // Check if user is already enlisted in the waiting list
+
+                                     checkUserEnrollmentStatus(eventId, androidId);
+
+                                 }
+                             });
+
+                         }
+                     });
+         }
+         else {
+
+             HeaderNavigation headerNavigation = new HeaderNavigation(this);
+             headerNavigation.setupNavigation();
+
+             // Retrieve event details from the intent
+             String eventId = intent.getStringExtra("eventId");
+             name = intent.getStringExtra("name");
+             date = intent.getStringExtra("date");
+             registrationEndDate = intent.getStringExtra("registrationEndDate");
+             facility = intent.getStringExtra("facility");
+             String description = intent.getStringExtra("description");
+             int maxWishEntrants = intent.getIntExtra("maxWishEntrants", 0);
+             int maxSampleEntrants = intent.getIntExtra("maxSampleEntrants", 0);
+             String posterUriString = intent.getStringExtra("posterUri");
+             isGeolocate = intent.getBooleanExtra("geolocate", false);
+
+             // Find views in the layout and set data
+             TextView eventName = findViewById(R.id.event_name);
+             TextView eventDate = findViewById(R.id.event_date);
+             TextView eventDescription = findViewById(R.id.event_description);
+             TextView eventFacility = findViewById(R.id.facility_name);
+             TextView eventRegistrationEnd = findViewById(R.id.registration_date);
+             TextView eventGeolocate = findViewById(R.id.geolocationText);
+
+             enlistLeaveButton = findViewById(R.id.enlist_leave_button);
+             acceptInviteButton = findViewById(R.id.accept_invite_button);
+             declineInviteButton = findViewById(R.id.decline_invite_button);
+
+             eventName.setText(name);
+             eventDate.setText(date);
+             eventDescription.setText(description);
+             eventRegistrationEnd.setText(registrationEndDate);
+             eventFacility.setText(facility);
+
+             // Show Geolocation Requirement
+             if (isGeolocate) {
+                 eventGeolocate.setText("IMPORTANT: Registering for this event REQUIRES geolocation.");
+             } else {
+                 eventGeolocate.setText("IMPORTANT: Registering for this event DOES NOT REQUIRE geolocation.");
+             }
+
+             // Handle Enlist and Leave buttons
+             enlistLeaveButton = findViewById(R.id.enlist_leave_button);
+
+             db = FirebaseFirestore.getInstance();
+             MyApp app = (MyApp) getApplication();
+             String androidId = app.getAndroidId();
+             // Check if user is already enlisted in the waiting list
+             checkUserEnrollmentStatus(eventId,androidId);
+
+
+         }
     }
 
     /**
@@ -129,43 +194,46 @@ public class EntrantEnlistActivity extends AppCompatActivity {
      * the enlistLeaveButton text and action accordingly.
      */
     //This function was done with major assistance from chatGPT, "Update to show the accept/deny buttons and call the respective methods", 2024-11-06
-    private void checkUserEnrollmentStatus() {
+    private void checkUserEnrollmentStatus(String eventId, String androidId) {
+
+        System.out.println(eventId);
         DocumentReference eventRef = db.collection("events").document(eventId);
         CollectionReference waitingListRef = eventRef.collection("waitingList");
-        Button acceptInviteButton = findViewById(R.id.accept_invite_button);
+        Button acceptInviteButton = findViewById(R.id.accept_invite_button);;
         Button declineInviteButton = findViewById(R.id.decline_invite_button);
+
 
         // Check the current status of the waiting list
         eventRef.get().addOnSuccessListener(documentSnapshot -> {
+            System.out.println("Success1");
             if (documentSnapshot.exists()) {
                 int maxWaitEntrants = documentSnapshot.getLong("maxWaitEntrants").intValue();
                 boolean isGeolocate = documentSnapshot.getBoolean("geolocate") != null && documentSnapshot.getBoolean("geolocate");
-
+                System.out.println("Success2");
                 waitingListRef.get().addOnSuccessListener(querySnapshot -> {
+                    System.out.println("Success3");
                     int currentEntrants = querySnapshot.size();
-
+                    System.out.println("Success4");
                     if (currentEntrants < maxWaitEntrants) {
+                        System.out.println("Success4.1");
                         waitingListRef.document(androidId).get().addOnSuccessListener(DocumentSnapshot ->{
+                            System.out.println("Success4.2");
 
                             String status = DocumentSnapshot.getString("status");
 
                             if(Objects.equals(status, "enrolled")){
-                                isUserEnlisted = true;
                                 enlistLeaveButton.setText("Leave");
                                 enlistLeaveButton.setOnClickListener(v -> leaveEvent(eventId));
                             } else if (Objects.equals(status, "accepted")) {
-                                isUserEnlisted = true;
                                 enlistLeaveButton.setText("Accepted");
                                 enlistLeaveButton.setOnClickListener(null);
                                 enlistLeaveButton.setBackgroundColor(Color.parseColor("#00FF00"));
                             } else if (Objects.equals(status, "rejected")) {
-                                isUserEnlisted = true;
                                 enlistLeaveButton.setText("Rejected");
                                 enlistLeaveButton.setOnClickListener(null);
                                 enlistLeaveButton.setBackgroundColor(Color.parseColor("#FF0000"));
                                 enlistLeaveButton.setTextColor(Color.parseColor("#FFFFFF"));
                             } else if (Objects.equals(status, "invited")) {
-                                isUserEnlisted = true;
                                 enlistLeaveButton.setText("Invited");
                                 enlistLeaveButton.setOnClickListener(null);
 
@@ -291,14 +359,14 @@ public class EntrantEnlistActivity extends AppCompatActivity {
                                     });
                                 });
                             } else {
+
                                 // User is not enlisted
-                                isUserEnlisted = false;
                                 enlistLeaveButton.setText("Enlist");
                                 enlistLeaveButton.setOnClickListener(v -> {
                                     if (isGeolocate) {
-                                        showGeolocationConfirmationDialog(() -> enlistInEvent(eventId));
+                                        showGeolocationConfirmationDialog(() -> enlistInEvent(eventId, name, date, registrationEndDate, facility, isGeolocate, androidId));
                                     } else {
-                                        enlistInEvent(eventId);
+                                        enlistInEvent(eventId, name, date, registrationEndDate, facility, isGeolocate, androidId);
                                     }
                                 });
                             }
@@ -343,7 +411,7 @@ public class EntrantEnlistActivity extends AppCompatActivity {
      *
      * @param eventId The unique ID of the event the user wishes to join.
      */
-    private void enlistInEvent(String eventId) {
+    private void enlistInEvent(String eventId, String name, String date, String registrationEndDate, String facility, boolean isGeolocate, String androidId) {
         DocumentReference eventRef = db.collection("events").document(eventId);
         CollectionReference waitingListRef = eventRef.collection("waitingList");
 
@@ -372,7 +440,7 @@ public class EntrantEnlistActivity extends AppCompatActivity {
                                 intent.putExtra("facility", facility);
                                 intent.putExtra("geolocate", isGeolocate);
                                 startActivity(intent);
-                                finish();
+//                                finish();
                             })
                             .addOnFailureListener(e -> Toast.makeText(this, "Failed to add event to your waitlisted events.", Toast.LENGTH_SHORT).show());
                 })
@@ -390,6 +458,8 @@ public class EntrantEnlistActivity extends AppCompatActivity {
         CollectionReference waitingListRef = eventRef.collection("waitingList");
 
         // Remove user from waiting list
+        MyApp app = (MyApp) getApplication();
+        String androidId = app.getAndroidId();
         waitingListRef.document(androidId).delete()
                 .addOnSuccessListener(aVoid -> {
                     // Remove event from user's waitListedEvents

@@ -23,6 +23,22 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <activity
+            android:name=".Activities.EntrantEnlistActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data android:scheme="myapp" android:host="event" />
+            </intent-filter>
+        </activity>
+
         <activity android:name=".Activities.editUserActivity" />
         <activity android:name=".Activities.userProfileActivity" />
         <activity android:name=".Activities.EntrantHomePageActivity" />
@@ -33,20 +49,7 @@
         <activity android:name=".Activities.EventActionsActivity" />
         <activity android:name=".Activities.ManageFacilityActivity" />
 
-        <activity android:name=".Activities.TargetActivity"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
 
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-
-                <data
-                    android:scheme="myapp"
-                    android:host="launch"
-                    android:path="/target" />
-            </intent-filter>
-        </activity>
 
     </application>
 
