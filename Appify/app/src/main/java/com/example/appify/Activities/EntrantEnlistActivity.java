@@ -190,7 +190,6 @@ public class EntrantEnlistActivity extends AppCompatActivity {
      * Checks if the user is already enlisted in the event's waiting list and updates
      * the enlistLeaveButton text and action accordingly.
      */
-    //This function was done with major assistance from chatGPT, "Update to show the accept/deny buttons and call the respective methods", 2024-11-06
     private void checkUserEnrollmentStatus(String eventId, String androidId) {
 
         DocumentReference eventRef = db.collection("events").document(eventId);

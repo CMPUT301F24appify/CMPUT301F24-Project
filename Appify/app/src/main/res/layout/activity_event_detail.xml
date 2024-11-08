@@ -264,13 +264,13 @@
                     android:id="@+id/organizerActions"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
                     android:layout_weight="1"
-                    android:text="Organizer Actions"
+                    android:text="Run Lottery"
                     android:textColor="@color/black"
                     app:backgroundTint="@color/buttons"
                     app:strokeColor="#FF8C00"
-                    app:strokeWidth="1dp"
-                    android:layout_marginStart="8dp" />
+                    app:strokeWidth="1dp" />
             </LinearLayout>
 
             <!-- Notifications Header -->
