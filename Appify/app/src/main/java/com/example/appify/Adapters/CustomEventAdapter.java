@@ -1,3 +1,16 @@
+/**
+ * CustomEventAdapter.java
+ *
+ * This adapter is used to populate the event list view with event data.
+ * It changes the display icon of each event based on its status and visibility requirements.
+ * It uses Firebase to retrieve the user's status in relation to each event (e.g., enrolled, invited).
+ *
+ * Outstanding Issues:
+ * 1. Performance: Repeated Firebase calls in `getView()` may lead to performance issues in large lists.
+ *    Consider caching status data or using a listener to improve efficiency.
+ * 2. Null Safety: Ensure null handling for event details, especially in Firebase responses, to avoid crashes.
+ */
+
 package com.example.appify.Adapters;
 
 import android.content.Context;
@@ -21,11 +34,22 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 
+/**
+ * CustomEventAdapter extends ArrayAdapter to handle the display of events in a ListView.
+ * It binds event data to a custom layout and retrieves status information for each event.
+ */
 public class CustomEventAdapter extends ArrayAdapter<Event> {
     private Context context;
     private List<Event> eventList;
     private boolean isOrganizePage;
 
+    /**
+     * Constructor for CustomEventAdapter.
+     *
+     * @param context       The current context.
+     * @param eventList     The list of events to be displayed.
+     * @param isOrganizePage Boolean indicating if the adapter is used on the organizer's page.
+     */
     public CustomEventAdapter(Context context, List<Event> eventList, boolean isOrganizePage){
         super(context, 0, eventList);
         this.context = context;
@@ -33,6 +57,16 @@ public class CustomEventAdapter extends ArrayAdapter<Event> {
         this.isOrganizePage = isOrganizePage;
     }
 
+
+    /**
+     * Provides a view for an AdapterView (ListView) for each event.
+     * Sets event details in the view and fetches status data from Firebase for display.
+     *
+     * @param position     Position of the item within the adapter's data set.
+     * @param convertView  The old view to reuse, if possible.
+     * @param parent       The parent that this view will eventually be attached to.
+     * @return The View corresponding to the data at the specified position.
+     */
     @NonNull
     @Override
     public View getView(int position, View convertView, @NonNull ViewGroup parent){

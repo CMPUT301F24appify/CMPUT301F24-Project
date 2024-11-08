@@ -1,3 +1,21 @@
+/**
+ * EventActivity.java
+ *
+ * This class manages the main screen for event organizers. It displays a list of events,
+ * allows organizers to add new events, and provides options for managing event details
+ * and facilities. Events are loaded from Firebase Firestore and displayed using a custom
+ * adapter.
+ *
+ * Outstanding Issues:
+ * 1. Data Duplication Prevention: When loading events from Firestore, the event list should
+ *    be cleared to avoid duplicating entries upon subsequent data fetches.
+ * 2. Error Handling Improvements: Current error messages for Firestore operations are basic;
+ *    additional logging and detailed feedback would improve user experience.
+ * 3. Null Checks: The use of null checks for Intent extras is crucial to prevent crashes if
+ *    data fields are missing or not set.
+ */
+
+
 package com.example.appify.Activities;
 
 import android.content.Intent;
@@ -158,6 +176,9 @@ public class EventActivity extends AppCompatActivity implements AddEventDialogFr
     private void loadEventsFromFirestore() {
         MyApp app = (MyApp) getApplication();
         String organizerID = app.getAndroidId();
+
+        // Clear the existing list to avoid duplicate entries
+        eventList.clear();
 
         db.collection("events")
                 .whereEqualTo("organizerID", organizerID)
