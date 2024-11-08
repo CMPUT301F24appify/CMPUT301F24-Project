@@ -30,7 +30,6 @@ public class userProfileActivity extends AppCompatActivity {
     private ListenerRegistration listenerRegistration;
     private Button editButton;
 
-
     /**
      * Called when the activity is first created.
      * Sets up the layout, initializes views, retrieves user data, and displays the profile picture.
