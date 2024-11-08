@@ -129,7 +129,7 @@ public class EntrantEnlistActivity extends AppCompatActivity {
                     int currentEntrants = querySnapshot.size();
 
 
-                    if (currentEntrants <= maxWishEntrants) {
+                    if (currentEntrants < maxWishEntrants) {
                         waitingListRef.document(androidId).get().addOnSuccessListener(DocumentSnapshot ->{
 
                             String status = DocumentSnapshot.getString("status");
