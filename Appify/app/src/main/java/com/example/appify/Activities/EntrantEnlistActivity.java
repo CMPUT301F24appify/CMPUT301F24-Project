@@ -118,7 +118,6 @@ public class EntrantEnlistActivity extends AppCompatActivity {
      * Checks if the user is already enlisted in the event's waiting list and updates
      * the enlistLeaveButton text and action accordingly.
      */
-    //This function was done with major assistance from chatGPT, "Update to show the accept/deny buttons and call the respective methods", 2024-11-06
     private void checkUserEnrollmentStatus() {
         DocumentReference eventRef = db.collection("events").document(eventId);
         CollectionReference waitingListRef = eventRef.collection("waitingList");
@@ -176,6 +175,8 @@ public class EntrantEnlistActivity extends AppCompatActivity {
                                                     entrantDoc.getBoolean("notifications") != null && entrantDoc.getBoolean("notifications")
                                             );
                                             entrant.acceptEvent(db, eventId);
+                                            Intent intent = new Intent(EntrantEnlistActivity.this, EntrantHomePageActivity.class);
+                                            startActivity(intent);
                                         }
                                     });
                                 });
@@ -216,70 +217,73 @@ public class EntrantEnlistActivity extends AppCompatActivity {
                                                     );
 
                                                     entrant.declineEvent(db, eventId, event);
+                                                    Intent intent = new Intent(EntrantEnlistActivity.this, EntrantHomePageActivity.class);
+                                                    startActivity(intent);
                                                 }
                                             });
+
                                         }
                                     });
                                 });
 
-                                // Set up actions for the accept and decline buttons
-                                acceptInviteButton.setOnClickListener(v -> {
-                                    db.collection("Android ID").document(androidId).get().addOnSuccessListener(entrantDoc -> {
-                                        if (entrantDoc.exists()) {
-                                            Entrant entrant = new Entrant(
-                                                    entrantDoc.getString("id"),
-                                                    entrantDoc.getString("name"),
-                                                    entrantDoc.getString("phoneNumber"),
-                                                    entrantDoc.getString("email"),
-                                                    entrantDoc.getString("profilePictureUrl"),
-                                                    entrantDoc.getBoolean("notifications") != null && entrantDoc.getBoolean("notifications")
-                                            );
-                                            entrant.acceptEvent(db, eventId);
-                                        }
-                                    });
-                                });
-
-                                declineInviteButton.setOnClickListener(v -> {
-                                    db.collection("Android ID").document(androidId).get().addOnSuccessListener(entrantDoc -> {
-                                        if (entrantDoc.exists()) {
-                                            Entrant entrant = new Entrant(
-                                                    entrantDoc.getString("id"),
-                                                    entrantDoc.getString("name"),
-                                                    entrantDoc.getString("phoneNumber"),
-                                                    entrantDoc.getString("email"),
-                                                    entrantDoc.getString("profilePictureUrl"),
-                                                    entrantDoc.getBoolean("notifications") != null && entrantDoc.getBoolean("notifications")
-                                            );
-
-                                            eventRef.get().addOnSuccessListener(eventDoc -> {
-                                                if (eventDoc.exists()) {
-                                                    Event event = new Event(
-                                                            eventDoc.getString("name"),
-                                                            eventDoc.getString("date"),
-                                                            eventDoc.getString("facility"),
-                                                            eventDoc.getString("registrationEndDate"),
-                                                            eventDoc.getString("description"),
-                                                            eventDoc.getLong("maxWaitEntrants").intValue(),
-                                                            eventDoc.getLong("maxSampleEntrants").intValue(),
-                                                            eventDoc.getString("posterUri"),
-                                                            eventDoc.getBoolean("geolocate") != null && eventDoc.getBoolean("geolocate"),
-                                                            eventDoc.getBoolean("notifyWaitlisted") != null && eventDoc.getBoolean("notifyWaitlisted"),
-                                                            eventDoc.getBoolean("notifyEnrolled") != null && eventDoc.getBoolean("notifyEnrolled"),
-                                                            eventDoc.getBoolean("notifyCancelled") != null && eventDoc.getBoolean("notifyCancelled"),
-                                                            eventDoc.getBoolean("notifyInvited") != null && eventDoc.getBoolean("notifyInvited"),
-                                                            eventDoc.getString("waitlistedMessage"),
-                                                            eventDoc.getString("enrolledMessage"),
-                                                            eventDoc.getString("cancelledMessage"),
-                                                            eventDoc.getString("invitedMessage"),
-                                                            eventDoc.getString("organizerID")
-                                                    );
-
-                                                    entrant.declineEvent(db, eventId, event);
-                                                }
-                                            });
-                                        }
-                                    });
-                                });
+//                                // Set up actions for the accept and decline buttons
+//                                acceptInviteButton.setOnClickListener(v -> {
+//                                    db.collection("Android ID").document(androidId).get().addOnSuccessListener(entrantDoc -> {
+//                                        if (entrantDoc.exists()) {
+//                                            Entrant entrant = new Entrant(
+//                                                    entrantDoc.getString("id"),
+//                                                    entrantDoc.getString("name"),
+//                                                    entrantDoc.getString("phoneNumber"),
+//                                                    entrantDoc.getString("email"),
+//                                                    entrantDoc.getString("profilePictureUrl"),
+//                                                    entrantDoc.getBoolean("notifications") != null && entrantDoc.getBoolean("notifications")
+//                                            );
+//                                            entrant.acceptEvent(db, eventId);
+//                                        }
+//                                    });
+//                                });
+//
+//                                declineInviteButton.setOnClickListener(v -> {
+//                                    db.collection("Android ID").document(androidId).get().addOnSuccessListener(entrantDoc -> {
+//                                        if (entrantDoc.exists()) {
+//                                            Entrant entrant = new Entrant(
+//                                                    entrantDoc.getString("id"),
+//                                                    entrantDoc.getString("name"),
+//                                                    entrantDoc.getString("phoneNumber"),
+//                                                    entrantDoc.getString("email"),
+//                                                    entrantDoc.getString("profilePictureUrl"),
+//                                                    entrantDoc.getBoolean("notifications") != null && entrantDoc.getBoolean("notifications")
+//                                            );
+//
+//                                            eventRef.get().addOnSuccessListener(eventDoc -> {
+//                                                if (eventDoc.exists()) {
+//                                                    Event event = new Event(
+//                                                            eventDoc.getString("name"),
+//                                                            eventDoc.getString("date"),
+//                                                            eventDoc.getString("facility"),
+//                                                            eventDoc.getString("registrationEndDate"),
+//                                                            eventDoc.getString("description"),
+//                                                            eventDoc.getLong("maxWaitEntrants").intValue(),
+//                                                            eventDoc.getLong("maxSampleEntrants").intValue(),
+//                                                            eventDoc.getString("posterUri"),
+//                                                            eventDoc.getBoolean("geolocate") != null && eventDoc.getBoolean("geolocate"),
+//                                                            eventDoc.getBoolean("notifyWaitlisted") != null && eventDoc.getBoolean("notifyWaitlisted"),
+//                                                            eventDoc.getBoolean("notifyEnrolled") != null && eventDoc.getBoolean("notifyEnrolled"),
+//                                                            eventDoc.getBoolean("notifyCancelled") != null && eventDoc.getBoolean("notifyCancelled"),
+//                                                            eventDoc.getBoolean("notifyInvited") != null && eventDoc.getBoolean("notifyInvited"),
+//                                                            eventDoc.getString("waitlistedMessage"),
+//                                                            eventDoc.getString("enrolledMessage"),
+//                                                            eventDoc.getString("cancelledMessage"),
+//                                                            eventDoc.getString("invitedMessage"),
+//                                                            eventDoc.getString("organizerID")
+//                                                    );
+//
+//                                                    entrant.declineEvent(db, eventId, event);
+//                                                }
+//                                            });
+//                                        }
+//                                    });
+//                                });
                             } else {
                                 // User is not enlisted
                                 isUserEnlisted = false;
