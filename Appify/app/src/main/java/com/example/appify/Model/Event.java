@@ -161,33 +161,41 @@ public class Event {
                         eligibleEntrants.add(document.getId());
                     }
 
-                    // Continue selecting entrants until maxSampleEntrants is reached or we run out of eligible entrants
+                    // Loop while there are eligible entrants and we have not reached maxSampleEntrants
                     while (chosenCount.get() < maxSampleEntrants && !eligibleEntrants.isEmpty()) {
                         int randomIndex = random.nextInt(eligibleEntrants.size());
                         String selectedEntrantId = eligibleEntrants.remove(randomIndex);
 
-                        // Update the selected entrant's status to "invited" in the waiting list of the event
-                        db.collection("events").document(eventID)
-                                .collection("waitingList").document(selectedEntrantId)
-                                .update("status", "invited")
-                                .addOnSuccessListener(aVoid -> {
-                                    Log.d("Lottery", "Entrant " + selectedEntrantId + " invited successfully.");
-                                    chosenCount.incrementAndGet(); // Increment the count of invited entrants
+                        // Check if we've reached the limit
+                        if (chosenCount.get() < maxSampleEntrants) {
+                            // Update the selected entrant's status to "invited" in the waiting list of the event
+                            db.collection("events").document(eventID)
+                                    .collection("waitingList").document(selectedEntrantId)
+                                    .update("status", "invited")
+                                    .addOnSuccessListener(aVoid -> {
+                                        chosenCount.incrementAndGet(); // Increment count after successful invitation
+                                        Log.d("Lottery", "Entrant " + selectedEntrantId + " invited successfully.");
 
-                                    // Update the entrant's status in their Android ID collection as well
-                                    db.collection("Android ID").document(selectedEntrantId)
-                                            .collection("waitListedEvents").document(eventID)
-                                            .update("status", "invited")
-                                            .addOnSuccessListener(innerVoid -> {
-                                                Log.d("Lottery", "Entrant " + selectedEntrantId + " status updated in Android ID collection for event " + eventID);
-                                            })
-                                            .addOnFailureListener(e -> {
-                                                Log.w("Lottery", "Error updating entrant " + selectedEntrantId + " status in Android ID collection for event " + eventID, e);
-                                            });
-                                })
-                                .addOnFailureListener(e -> {
-                                    Log.w("Lottery", "Error inviting entrant " + selectedEntrantId, e);
-                                });
+                                        // Update the entrant's status in their Android ID collection as well
+                                        db.collection("Android ID").document(selectedEntrantId)
+                                                .collection("waitListedEvents").document(eventID)
+                                                .update("status", "invited")
+                                                .addOnSuccessListener(innerVoid -> {
+                                                    Log.d("Lottery", "Entrant " + selectedEntrantId + " status updated in Android ID collection for event " + eventID);
+                                                })
+                                                .addOnFailureListener(e -> {
+                                                    Log.w("Lottery", "Error updating entrant " + selectedEntrantId + " status in Android ID collection for event " + eventID, e);
+                                                });
+
+                                        // Stop if we've reached the max limit
+                                        if (chosenCount.get() >= maxSampleEntrants) {
+                                            Log.d("Lottery", "Reached max sample entrants. Stopping the lottery.");
+                                        }
+                                    })
+                                    .addOnFailureListener(e -> {
+                                        Log.w("Lottery", "Error inviting entrant " + selectedEntrantId, e);
+                                    });
+                        }
                     }
 
                     Log.d("Lottery", "Lottery completed. Total invited entrants: " + chosenCount.get());
@@ -196,6 +204,7 @@ public class Event {
                     Log.e("Lottery", "Error retrieving waiting list for event " + eventID, e);
                 });
     }
+
 
 
 
