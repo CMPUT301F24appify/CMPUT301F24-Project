@@ -1,6 +1,7 @@
 package com.example.appify.Activities;
 
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.net.Uri;
@@ -24,6 +25,10 @@ import com.example.appify.MyApp;
 import com.example.appify.R;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.WriterException;
+import com.google.zxing.common.BitMatrix;
+import com.google.zxing.qrcode.QRCodeWriter;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -56,6 +61,32 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
         // Retrieve event ID from the intent
         eventID = getIntent().getStringExtra("eventID");
 
+        // QR CODE STUFF
+
+        ImageView qrImageView = findViewById(R.id.qr_code);
+        String qrContent = "myapp://event/" + eventID;
+        QRCodeWriter qrCodeWriter = new QRCodeWriter();
+        try {
+            BitMatrix bitMatrix = qrCodeWriter.encode(qrContent, BarcodeFormat.QR_CODE, 200, 200);
+            int width = bitMatrix.getWidth();
+            int height = bitMatrix.getHeight();
+            Bitmap qrBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565);
+
+            for (int x = 0; x < width; x++) {
+                for (int y = 0; y < height; y++) {
+                    qrBitmap.setPixel(x, y, bitMatrix.get(x, y) ? Color.BLACK : Color.WHITE);
+                }
+            }
+
+            // Now you have the QR code as a Bitmap (qrBitmap) which you can use or display
+            qrImageView.setImageBitmap(qrBitmap);
+        } catch (WriterException e) {
+            e.printStackTrace();
+            // Handle the exception, e.g., show an error message to the user
+        }
+
+        // END QR CODE STUFF
+
         // Retrieve data from the Intent
         Intent intent = getIntent();
         String name = intent.getStringExtra("name");
@@ -67,10 +98,12 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
         int maxSampleEntrants = intent.getIntExtra("maxSampleEntrants", 0);
         String posterUriString = intent.getStringExtra("posterUri");
         boolean isGeolocate = intent.getBooleanExtra("isGeolocate", false);
+        String eventID = intent.getStringExtra("eventID");
 
 
         Uri posterUri = posterUriString != null && !posterUriString.isEmpty() ? Uri.parse(posterUriString) : null;
 
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
         // Bind data to views
         TextView nameTextView = findViewById(R.id.textViewName);
         TextView dateTextView = findViewById(R.id.textViewDate);
@@ -135,7 +168,6 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
         });
 
 
-
         organizerActionsButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -184,8 +216,12 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
                         }
                     }
                 });
+
+
+
             }
         });
+
 
         // Display the image if the URI is valid
         if (posterUri != null) {
@@ -329,5 +365,4 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
                 .addOnFailureListener(e -> Toast.makeText(this, "Failed to update notification: " + e.getMessage(), Toast.LENGTH_SHORT).show());
     }
 }
-
 

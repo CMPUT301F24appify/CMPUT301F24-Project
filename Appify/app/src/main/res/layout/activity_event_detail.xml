@@ -81,6 +81,13 @@
             android:scaleType="centerCrop"
             android:paddingTop="16dp" />
 
+        <ImageView
+            android:id="@+id/qr_code"
+            android:layout_width="200dp"
+            android:layout_height="200dp"
+            android:layout_gravity="center"
+            android:contentDescription="@string/qr_code_image"/>
+
         <TextView
             android:id="@+id/textViewGeolocate"
             android:layout_width="wrap_content"

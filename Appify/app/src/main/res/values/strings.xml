@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Appify</string>
+    <string name="qr_code_image">QR Code Image</string>
 </resources>
