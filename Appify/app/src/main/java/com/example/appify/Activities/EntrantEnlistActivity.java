@@ -10,6 +10,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.appify.Model.Entrant;
+import com.example.appify.Model.Event;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -164,9 +166,70 @@ public class EntrantEnlistActivity extends AppCompatActivity {
                             } else if (Objects.equals(status, "invited")) {
                                 isUserEnlisted = true;
                                 enlistLeaveButton.setText("Invited");
+                                enlistLeaveButton.setOnClickListener(null);
+
+                                // Display accept and decline buttons for invited users
                                 acceptInviteButton.setVisibility(View.VISIBLE);
                                 declineInviteButton.setVisibility(View.VISIBLE);
-                                enlistLeaveButton.setOnClickListener(null);
+
+                                // Set up actions for the accept and decline buttons
+                                acceptInviteButton.setOnClickListener(v -> {
+                                    db.collection("Android ID").document(androidId).get().addOnSuccessListener(entrantDoc -> {
+                                        if (entrantDoc.exists()) {
+                                            Entrant entrant = new Entrant(
+                                                    entrantDoc.getString("id"),
+                                                    entrantDoc.getString("name"),
+                                                    entrantDoc.getString("phoneNumber"),
+                                                    entrantDoc.getString("email"),
+                                                    entrantDoc.getString("profilePictureUrl"),
+                                                    entrantDoc.getBoolean("notifications") != null && entrantDoc.getBoolean("notifications")
+                                            );
+                                            entrant.acceptEvent(db, eventId);
+                                        }
+                                    });
+                                });
+
+                                declineInviteButton.setOnClickListener(v -> {
+                                    db.collection("Android ID").document(androidId).get().addOnSuccessListener(entrantDoc -> {
+                                        if (entrantDoc.exists()) {
+                                            Entrant entrant = new Entrant(
+                                                    entrantDoc.getString("id"),
+                                                    entrantDoc.getString("name"),
+                                                    entrantDoc.getString("phoneNumber"),
+                                                    entrantDoc.getString("email"),
+                                                    entrantDoc.getString("profilePictureUrl"),
+                                                    entrantDoc.getBoolean("notifications") != null && entrantDoc.getBoolean("notifications")
+                                            );
+
+                                            eventRef.get().addOnSuccessListener(eventDoc -> {
+                                                if (eventDoc.exists()) {
+                                                    Event event = new Event(
+                                                            eventDoc.getString("name"),
+                                                            eventDoc.getString("date"),
+                                                            eventDoc.getString("facility"),
+                                                            eventDoc.getString("registrationEndDate"),
+                                                            eventDoc.getString("description"),
+                                                            eventDoc.getLong("maxWishEntrants").intValue(),
+                                                            eventDoc.getLong("maxSampleEntrants").intValue(),
+                                                            eventDoc.getString("posterUri"),
+                                                            eventDoc.getBoolean("geolocate") != null && eventDoc.getBoolean("geolocate"),
+                                                            eventDoc.getBoolean("notifyWaitlisted") != null && eventDoc.getBoolean("notifyWaitlisted"),
+                                                            eventDoc.getBoolean("notifyEnrolled") != null && eventDoc.getBoolean("notifyEnrolled"),
+                                                            eventDoc.getBoolean("notifyCancelled") != null && eventDoc.getBoolean("notifyCancelled"),
+                                                            eventDoc.getBoolean("notifyInvited") != null && eventDoc.getBoolean("notifyInvited"),
+                                                            eventDoc.getString("waitlistedMessage"),
+                                                            eventDoc.getString("enrolledMessage"),
+                                                            eventDoc.getString("cancelledMessage"),
+                                                            eventDoc.getString("invitedMessage"),
+                                                            eventDoc.getString("organizerID")
+                                                    );
+
+                                                    entrant.declineEvent(db, eventId, event);
+                                                }
+                                            });
+                                        }
+                                    });
+                                });
 
                             } else {
                                 // User is not enlisted
