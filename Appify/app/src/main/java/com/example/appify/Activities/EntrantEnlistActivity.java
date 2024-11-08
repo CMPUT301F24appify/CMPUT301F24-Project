@@ -35,7 +35,7 @@ import java.util.Objects;
  */
 public class EntrantEnlistActivity extends AppCompatActivity {
 
-    private boolean isUserEnlisted = false; // Track if the user is in the waiting list
+    private boolean isUserEnlisted; // Track if the user is in the waiting list
     private String eventId;
     private String androidId;
     private FirebaseFirestore db;
@@ -119,12 +119,6 @@ public class EntrantEnlistActivity extends AppCompatActivity {
         // Check the current status of the waiting list
         eventRef.get().addOnSuccessListener(documentSnapshot -> {
 
-
-
-//                    db.collection("Android ID").document(entrantID).collection("waitListedEvents").document(eventID).get().addOnSuccessListener(DocumentSnapshot -> {
-//                        String status = DocumentSnapshot.getString("status");
-
-
             if (documentSnapshot.exists()) {
                 int maxWishEntrants = documentSnapshot.getLong("maxWishEntrants").intValue();
                 boolean isGeolocate = documentSnapshot.getBoolean("geolocate") != null && documentSnapshot.getBoolean("geolocate");
@@ -135,13 +129,7 @@ public class EntrantEnlistActivity extends AppCompatActivity {
                     int currentEntrants = querySnapshot.size();
 
 
-
-                    if (currentEntrants >= maxWishEntrants) {
-                        // Waiting list is full
-                        enlistLeaveButton.setText("Full");
-                        enlistLeaveButton.setOnClickListener(null); // Disable button
-                    } else {
-
+                    if (currentEntrants <= maxWishEntrants) {
                         waitingListRef.document(androidId).get().addOnSuccessListener(DocumentSnapshot ->{
 
                             String status = DocumentSnapshot.getString("status");
@@ -244,6 +232,10 @@ public class EntrantEnlistActivity extends AppCompatActivity {
                                 });
                             }
                         });
+                    } else {
+                        // Waiting list is full
+                        enlistLeaveButton.setText("Full");
+                        enlistLeaveButton.setOnClickListener(null); // Disable button
                     }
                 }).addOnFailureListener(e -> Toast.makeText(this, "Error fetching waiting list data.", Toast.LENGTH_SHORT).show());
             } else {
