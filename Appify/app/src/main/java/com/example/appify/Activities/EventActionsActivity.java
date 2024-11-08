@@ -15,12 +15,23 @@ import com.example.appify.R;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
+/**
+ * EventActionsActivity handles the actions related to an event, such as running a lottery test
+ * and navigating back to the event details screen.
+ * It retrieves event data passed through an Intent and interacts with Firebase Firestore to retrieve event details.
+ */
 public class EventActionsActivity extends AppCompatActivity {
 
     private static final String TAG = "LotteryTestActivity";
     private String eventID;
     private FirebaseFirestore db;
 
+    /**
+     * Initializes the activity, sets up the layout, and retrieves event details from the Intent.
+     * It also configures buttons for running the lottery and navigating back to the event detail page.
+     *
+     * @param savedInstanceState The saved instance state.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -63,7 +74,12 @@ public class EventActionsActivity extends AppCompatActivity {
         });
     }
 
-    // Runs the lottery for a specific event
+    /**
+     * Runs a lottery test for the specified event.
+     * Retrieves event details from Firebase Firestore using the event ID.
+     * If the event document exists, constructs an Event object and triggers the lottery function.
+     * Logs a success message if the test completes successfully, or an error message if retrieval fails.
+     */
     public void runLotteryTest() {
         db.collection("events").document(eventID)
                 .get()
