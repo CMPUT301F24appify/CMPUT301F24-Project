@@ -1,17 +1,3 @@
-/**
- * AddEventDialogFragment.java
- *
- * This fragment provides the dialog interface for adding a new event.
- * It allows organizers to input details for an event, validates the inputs, and uploads an optional poster image.
- * The validated event data is passed back to the parent activity with a callback interface.
- *
- * Outstanding Issues:
- * 1. Input Validation: Error messages could be further customized based on invalid input specifics.
- * 2. Firebase Storage Handling: Potential improvements in handling large images or slow network conditions.
- * 3. Geolocation Toggle Appearance: Button appearance updates for geolocation toggle could be enhanced with additional styling.
- */
-
-
 package com.example.appify.Fragments;
 
 import android.app.Dialog;
@@ -45,17 +31,17 @@ import java.util.UUID;
 
 /**
  * Fragment dialog for adding an event, allowing organizers to input event details.
- * This fragment performs input validation and image uploading to Firebase storage.
+ * This fragment performs input validation and uploads images to Firebase storage.
  */
 public class AddEventDialogFragment extends DialogFragment {
     private static final int Pick_Image_Request = 1;
-    private String posterUri;
-    private AddEventDialogListener listener;
-    private Button uploadPosterButton;
-    private boolean isGeolocate = false;
-    private String facilityID;
-    private String facilityName;
-    private EditText eventFacility;
+    private String posterUri;  // URI for the poster image
+    private AddEventDialogListener listener;  // Listener for communicating with parent activity
+    private Button uploadPosterButton;  // Button to trigger poster image upload
+    private boolean isGeolocate = false;  // Flag to indicate geolocation status
+    private String facilityID;  // ID for the facility
+    private String facilityName;  // Name of the facility
+    private EditText eventFacility;  // EditText for facility name input
 
     /**
      * Interface for communicating the added event details to the parent activity.
@@ -114,8 +100,7 @@ public class AddEventDialogFragment extends DialogFragment {
         LayoutInflater inflater = requireActivity().getLayoutInflater();
         View view = inflater.inflate(R.layout.add_event_dialog, null);
 
-        // Retrieve and set facility name from MyApp
-//        MyApp app = (MyApp) requireActivity().getApplication();
+        // Retrieve and set facility name from MyApp based on the device's Android ID
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         MyApp app = (MyApp) requireActivity().getApplication();
         String androidId = app.getAndroidId();
@@ -128,7 +113,6 @@ public class AddEventDialogFragment extends DialogFragment {
                                 .get()
                                 .addOnSuccessListener(documentSnapshot2 -> {
                                     facilityName = documentSnapshot2.getString("name");
-                                    System.out.println(facilityName);
                                     eventFacility = view.findViewById(R.id.editFacility);
                                     eventFacility.setText(facilityName);
                                     eventFacility.setEnabled(false);
@@ -144,19 +128,15 @@ public class AddEventDialogFragment extends DialogFragment {
                     }
                 })
                 .addOnFailureListener(e -> Log.w("MyApp", "Failed to retrieve facilityID", e));
-        System.out.println(facilityName);
 
-
-
-
+        // Initialize form input fields
         EditText eventName = view.findViewById(R.id.editTextEventName);
         EditText eventDate = view.findViewById(R.id.editDate);
         EditText eventregistrationEndDate = view.findViewById(R.id.editRegistrationEndDate);
         EditText eventDescription = view.findViewById(R.id.editTextEventDescription);
 
-        // Update variable type and ID
+        // Set up geolocation toggle button and file upload button
         Button reminderGeolocation = view.findViewById(R.id.checkGeolocation);
-
         uploadPosterButton = view.findViewById(R.id.buttonUploadPoster);
         EditText maxWaitEntrant = view.findViewById(R.id.maxNumberWaitList);
         EditText maxSampleEntrant = view.findViewById(R.id.maxNumberSample);
@@ -171,6 +151,7 @@ public class AddEventDialogFragment extends DialogFragment {
         builder.setView(view)
                 .setTitle("Add Event")
                 .setPositiveButton("CONFIRM", (dialog, id) -> {
+                    // Validate inputs before confirming the dialog
                     if (validateInputs(eventName, eventDate, eventFacility, eventregistrationEndDate, maxWaitEntrant, maxSampleEntrant)) {
                         String name = eventName.getText().toString();
                         String date = eventDate.getText().toString();
@@ -184,10 +165,10 @@ public class AddEventDialogFragment extends DialogFragment {
                         listener.onEventAdded(name, date, facility, registrationEndDate, description,
                                 wait_max, sample_max, posterUri, isGeolocate,
                                 "", "", "", "");
-                        } else {
-                            Toast.makeText(getContext(), "Please correct the highlighted fields", Toast.LENGTH_SHORT).show();
-                        }
-                    })
+                    } else {
+                        Toast.makeText(getContext(), "Please correct the highlighted fields", Toast.LENGTH_SHORT).show();
+                    }
+                })
                 .setNegativeButton("CANCEL", (dialog, id) -> dialog.dismiss());
 
         return builder.create();
@@ -206,7 +187,6 @@ public class AddEventDialogFragment extends DialogFragment {
      */
     private boolean validateInputs(EditText eventName, EditText eventDate, EditText eventFacility, EditText eventRegistrationEndDate, EditText maxWaitEntrant, EditText maxSampleEntrant) {
         boolean isValid = true;
-        StringBuilder errorMessage = new StringBuilder();
 
         // Check for non-empty event name
         if (eventName.getText().toString().trim().isEmpty()) {
@@ -222,7 +202,7 @@ public class AddEventDialogFragment extends DialogFragment {
             isValid = false;
         }
 
-        // Validate date format (assuming yyyy-MM-dd format)
+        // Validate event date format (expects format "MMM dd, yyyy")
         if (!isValidDate(eventDate.getText().toString())) {
             eventDate.setError("Enter date in 'MMM dd, yyyy' format (e.g., Nov 10, 2022)");
             Toast.makeText(getContext(), "Enter date in 'MMM dd, yyyy' format for the event date.", Toast.LENGTH_SHORT).show();
@@ -236,13 +216,14 @@ public class AddEventDialogFragment extends DialogFragment {
             isValid = false;
         }
 
+        // Check if the registration end date is before the event date
         if (!isRegistrationEndDateBeforeEventDate(eventDate.getText().toString(), eventRegistrationEndDate.getText().toString())) {
             eventRegistrationEndDate.setError("Registration end date must be before the event date");
             Toast.makeText(getContext(), "Registration end date must be before the event date.", Toast.LENGTH_SHORT).show();
             isValid = false;
         }
 
-        // Validate max entrants as integers within a reasonable range
+        // Validate max entrants as positive integers
         if (!isPositiveInteger(maxWaitEntrant.getText().toString())) {
             maxWaitEntrant.setError("Enter a positive number");
             Toast.makeText(getContext(), "Max waitlist entrants must be a positive number.", Toast.LENGTH_SHORT).show();
@@ -253,10 +234,6 @@ public class AddEventDialogFragment extends DialogFragment {
             maxSampleEntrant.setError("Enter a positive number");
             Toast.makeText(getContext(), "Max sample entrants must be a positive number.", Toast.LENGTH_SHORT).show();
             isValid = false;
-        }
-
-        if (!isValid) {
-            Toast.makeText(getContext(), errorMessage.toString().trim(), Toast.LENGTH_LONG).show();
         }
 
         return isValid;
@@ -388,6 +365,4 @@ public class AddEventDialogFragment extends DialogFragment {
             Toast.makeText(getContext(), "Failed to upload poster: " + e.getMessage(), Toast.LENGTH_SHORT).show();
         });
     }
-
-
 }

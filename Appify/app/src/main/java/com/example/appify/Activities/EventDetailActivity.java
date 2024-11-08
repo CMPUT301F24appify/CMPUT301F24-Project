@@ -1,18 +1,3 @@
-/**
- * EventDetailActivity.java
- *
- * This class represents the activity for displaying detailed information about an event.
- * It allows the user to view event details, edit the event, and send notifications to
- * participants. The class retrieves event data from Firebase Firestore and updates
- * both UI elements and the database as needed.
- *
- * Outstanding Issues:
- * 1. Image Loading Placeholder: A placeholder image should be shown if the poster URI is invalid or missing.
- * 2. Event Data Refresh: The UI does not automatically refresh event data when edited from other activities.
- * 3. Firebase Error Handling: Improved error handling for Firebase operations is required for better user feedback.
- */
-
-
 package com.example.appify.Activities;
 
 import android.content.Intent;
@@ -49,47 +34,44 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * The EventDetailActivity class displays and manages the details of the selected event.
- * It allows viewing, editing, and sending notifications to participants.
+ * The EventDetailActivity class displays and manages the details of a selected event.
+ * This class allows users to view, edit, and send notifications to participants.
  */
 public class EventDetailActivity extends AppCompatActivity implements EditEventDialogFragment.EditEventDialogListener {
     private FirebaseFirestore db;
     private String eventID;
 
-    // Variables to store notification messages
+    // Variables to store different notification messages for participants
     private String waitlistedMessage = "";
     private String enrolledMessage = "";
     private String cancelledMessage = "";
     private String invitedMessage = "";
 
-
     /**
-     * This is called when the activity is created. It sets up the UI and initializes data fields.
+     * Called when the activity is created. Sets up the UI and initializes data fields.
      *
-     * @param savedInstanceState If the activity is being re-initialized after previously
-     *                           being shut down, this Bundle contains the most recent
-     *                           data; otherwise, it is null.
+     * @param savedInstanceState If the activity is re-initialized after being shut down,
+     *                           this Bundle contains the most recent data; otherwise, it is null.
      */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_event_detail);
 
-        // HeaderNavigation
+        // Initialize header navigation with highlighting for the "Organize" section
         HeaderNavigation headerNavigation = new HeaderNavigation(this);
         headerNavigation.setupNavigation();
         TextView organizeText = findViewById(R.id.organizeText_navBar);
         organizeText.setTextColor(Color.parseColor("#800080"));
         organizeText.setTypeface(organizeText.getTypeface(), Typeface.BOLD);
 
+        // Initialize Firebase Firestore instance
         db = FirebaseFirestore.getInstance();
 
-
-        // Retrieve event ID from the intent
+        // Retrieve event ID from intent extras
         eventID = getIntent().getStringExtra("eventID");
 
-        // QR CODE STUFF
-
+        // QR code generation for event-specific content
         ImageView qrImageView = findViewById(R.id.qr_code);
         String qrContent = "myapp://event/" + eventID;
         QRCodeWriter qrCodeWriter = new QRCodeWriter();
@@ -105,16 +87,14 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
                 }
             }
 
-            // Now you have the QR code as a Bitmap (qrBitmap) which you can use or display
+            // Set the QR code bitmap to the ImageView
             qrImageView.setImageBitmap(qrBitmap);
         } catch (WriterException e) {
             e.printStackTrace();
-            // Handle the exception, e.g., show an error message to the user
+            // Display error if QR code generation fails
         }
 
-        // END QR CODE STUFF
-
-        // Retrieve data from the Intent
+        // Retrieve event data from intent extras
         Intent intent = getIntent();
         String name = intent.getStringExtra("name");
         String date = intent.getStringExtra("date");
@@ -125,13 +105,9 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
         int maxSampleEntrants = intent.getIntExtra("maxSampleEntrants", 0);
         String posterUriString = intent.getStringExtra("posterUri");
         boolean isGeolocate = intent.getBooleanExtra("isGeolocate", false);
-        String eventID = intent.getStringExtra("eventID");
-
-
         Uri posterUri = posterUriString != null && !posterUriString.isEmpty() ? Uri.parse(posterUriString) : null;
 
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-        // Bind data to views
+        // Bind event data to UI elements
         TextView nameTextView = findViewById(R.id.textViewName);
         TextView dateTextView = findViewById(R.id.textViewDate);
         TextView facilityTextView = findViewById(R.id.textViewFacility);
@@ -143,19 +119,18 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
         TextView geolocateTextView = findViewById(R.id.textViewGeolocate);
         Button organizerActionsButton = findViewById(R.id.organizerActions);
 
-        // Set up notification button click listeners
+        // Initialize notification button click listeners
         Button notifyWaitlisted = findViewById(R.id.buttonWaitlisted);
         Button notifyEnrolled = findViewById(R.id.buttonEnrolled);
         Button notifyCancelled = findViewById(R.id.buttonCancelled);
         Button notifyInvited = findViewById(R.id.buttonInvited);
 
-
+        // Set up click listeners for notification buttons
         notifyWaitlisted.setOnClickListener(v -> showNotificationInputDialog("Waitlisted Notification", waitlistedMessage, message -> {
             waitlistedMessage = message;
             updateNotificationMessage("waitlistedMessage", message, "notifyWaitlisted");
             updateButtonAppearance(notifyWaitlisted, !message.isEmpty());
         }));
-
 
         notifyEnrolled.setOnClickListener(v -> showNotificationInputDialog("Enrolled Notification", enrolledMessage, message -> {
             enrolledMessage = message;
@@ -163,13 +138,11 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
             updateButtonAppearance(notifyEnrolled, !message.isEmpty());
         }));
 
-
         notifyCancelled.setOnClickListener(v -> showNotificationInputDialog("Cancelled Notification", cancelledMessage, message -> {
             cancelledMessage = message;
             updateNotificationMessage("cancelledMessage", message, "notifyCancelled");
             updateButtonAppearance(notifyCancelled, !message.isEmpty());
         }));
-
 
         notifyInvited.setOnClickListener(v -> showNotificationInputDialog("Invited Notification", invitedMessage, message -> {
             invitedMessage = message;
@@ -177,6 +150,7 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
             updateButtonAppearance(notifyInvited, !message.isEmpty());
         }));
 
+        // Bind retrieved data to respective UI components
         nameTextView.setText(name);
         dateTextView.setText(date);
         facilityTextView.setText(facility);
@@ -186,15 +160,15 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
         maxSampleTextView.setText("Max Sample Entrants: " + maxSampleEntrants);
         geolocateTextView.setText(isGeolocate ? "Geo-Location Enabled" : "Geo-Location Disabled");
 
+        // Set up the back button to return to EventActivity
         Button backButton = findViewById(R.id.buttonBackToEvents);
         backButton.setOnClickListener(v -> {
             Intent intent2 = new Intent(EventDetailActivity.this, EventActivity.class);
             intent2.putExtra("eventID", eventID);
             startActivity(intent2);
-
         });
 
-
+        // Set up organizer actions button to navigate to EventActionsActivity
         organizerActionsButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -213,14 +187,14 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
                 }
             });
 
-        // Setup edit event button
+        // Set up edit event button to open EditEventDialogFragment
         Button editEventButton = findViewById(R.id.buttonEditEvent);
         editEventButton.setOnClickListener(v -> {
             EditEventDialogFragment dialog = new EditEventDialogFragment();
             dialog.show(getSupportFragmentManager(), "EditEventDialogFragment");
         });
 
-        // Setup entrant list button
+        // Set up entrant list button to display entrants or show a message if none exist
         Button entrantListButton = findViewById(R.id.entrant_list_button);
         entrantListButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -250,24 +224,19 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
             }
         });
 
-
-        // Display the image if the URI is valid
+        // Display poster image if URI is valid, using Glide library
         if (posterUri != null) {
-            // Use Glide to load the image from the Firebase URL
             Glide.with(this).load(posterUri).into(posterImageView);
-        } else {
-//            posterImageView.setImageResource(R.drawable.placeholder_image);  // Set a placeholder if no image is available
         }
     }
 
-
     /**
-     * Updates the event data with the edited values when edited through the edit event dialog.
+     * Updates the event data with edited values from the EditEventDialogFragment.
      *
-     * @param name Name of the event
-     * @param date Date of the event
+     * @param name Event name
+     * @param date Event date
      * @param facility Event location
-     * @param registrationEndDate Registration end date
+     * @param registrationEndDate Event registration end date
      * @param description Event description
      * @param maxWaitEntrants Maximum waitlist entrants
      * @param maxSampleEntrants Maximum sample entrants
@@ -275,19 +244,20 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
      * @param isGeolocate Geo-location status of the event
      * @param waitlistedMessage Notification message for waitlisted participants
      * @param enrolledMessage Notification message for enrolled participants
-     * @param cancelledMessage Notification message for canceled events
+     * @param cancelledMessage Notification message for cancelled events
      * @param invitedMessage Notification message for invited participants
      */
     @Override
     public void onEventEdited(String name, String date, String facility, String registrationEndDate,
-                             String description, int maxWaitEntrants, int maxSampleEntrants,
-                             String posterUri, boolean isGeolocate,
-                             String waitlistedMessage, String enrolledMessage,
-                             String cancelledMessage, String invitedMessage) {
+                              String description, int maxWaitEntrants, int maxSampleEntrants,
+                              String posterUri, boolean isGeolocate,
+                              String waitlistedMessage, String enrolledMessage,
+                              String cancelledMessage, String invitedMessage) {
 
         MyApp app = (MyApp) getApplication();
         String organizerID = app.getAndroidId();
 
+        // Update event details in Firestore
         Map<String, Object> updates = new HashMap<>();
         updates.put("name", name);
         updates.put("date", date);
@@ -303,7 +273,7 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
         updates.put("cancelledMessage", cancelledMessage);
         updates.put("invitedMessage", invitedMessage);
 
-        // Update specific fields in Firestore
+        // Firestore update with success and failure listeners
         db.collection("events").document(eventID)
                 .update(updates)
                 .addOnSuccessListener(aVoid -> {
@@ -323,12 +293,11 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
                 organizerID);
     }
 
-
     /**
-     * Method to refresh the UI to update event details.
+     * Refreshes the UI with updated event details.
      *
-     * @param name Name of the event
-     * @param date Date of the event
+     * @param name Event name
+     * @param date Event date
      * @param facility Event facility
      * @param registrationEndDate Registration end date
      * @param description Event description
@@ -341,7 +310,7 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
                                 String description, int maxWaitEntrants, int maxSampleEntrants,
                                 String posterUri, boolean isGeolocate) {
 
-        // Bind the updated values to the UI components
+        // Update UI components with new event details
         TextView nameTextView = findViewById(R.id.textViewName);
         TextView dateTextView = findViewById(R.id.textViewDate);
         TextView facilityTextView = findViewById(R.id.textViewFacility);
@@ -352,7 +321,6 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
         ImageView posterImageView = findViewById(R.id.imageViewPoster);
         TextView geolocateTextView = findViewById(R.id.textViewGeolocate);
 
-        // Update each component with the new values
         nameTextView.setText(name);
         dateTextView.setText(date);
         facilityTextView.setText(facility);
@@ -362,20 +330,16 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
         maxSampleTextView.setText("Max Sample Entrants: " + maxSampleEntrants);
         geolocateTextView.setText(isGeolocate ? "Geo-Location Enabled" : "Geo-Location Disabled");
 
-        // Update the poster image if available
         if (posterUri != null && !posterUri.isEmpty()) {
             Glide.with(this).load(posterUri).into(posterImageView);
-        } else {
-//            posterImageView.setImageResource(R.drawable.placeholder_image);  // Set a placeholder if no image is available
         }
     }
 
-
     /**
-     * Changes the appearance of a button based on its active state.
+     * Updates the appearance of a button based on whether it is active.
      *
      * @param button The button to update
-     * @param isActive True if the button is active, false otherwise
+     * @param isActive True if the button should appear active, false otherwise
      */
     private void updateButtonAppearance(Button button, boolean isActive) {
         if (isActive) {
@@ -386,31 +350,25 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
     }
 
     /**
-     * Callback interface for setting notification messages.
-     * Used to handle message input and pass the result to the calling method.
+     * Callback interface for notification message input.
      */
     private interface NotificationMessageCallback {
-        /**
-         * Called when a notification message is set.
-         *
-         * @param message The message set by the user
-         */
         void onMessageSet(String message);
     }
 
     /**
-     * Displays a dialog box for entering or editing a notification message.
+     * Shows a dialog for the user to enter or edit a notification message.
      *
      * @param title Title of the dialog
-     * @param existingMessage Existing notification message
-     * @param callback Callback for when the message is set
+     * @param existingMessage Existing message text to be displayed in the dialog
+     * @param callback Callback function to handle the message once set
      */
     private void showNotificationInputDialog(String title, String existingMessage, NotificationMessageCallback callback) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle(title);
 
         final EditText input = new EditText(this);
-        input.setText(existingMessage);  // Set existing message if available
+        input.setText(existingMessage);
         builder.setView(input);
 
         builder.setPositiveButton("Confirm", (dialog, which) -> {
@@ -426,13 +384,12 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
         builder.show();
     }
 
-
     /**
-     * Updates the notification message in Firestore for the specific event.
+     * Updates notification messages in Firestore for a specific event.
      *
-     * @param messageField The Firestore field for the message
+     * @param messageField Firestore field to store the message
      * @param message The notification message
-     * @param notifyField The Firestore field indicating notification status
+     * @param notifyField Field indicating whether to send the notification
      */
     private void updateNotificationMessage(String messageField, String message, String notifyField) {
         boolean shouldNotify = !message.isEmpty();
@@ -447,4 +404,3 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
                 .addOnFailureListener(e -> Toast.makeText(this, "Failed to update notification: " + e.getMessage(), Toast.LENGTH_SHORT).show());
     }
 }
-

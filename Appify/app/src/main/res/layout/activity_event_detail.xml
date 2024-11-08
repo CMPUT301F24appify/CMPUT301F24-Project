@@ -45,9 +45,6 @@
                 app:layout_constraintStart_toStartOf="parent" />
 
 
-            <!-- Registration Date and Event Date -->
-
-            <!-- Facility -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -124,7 +121,6 @@
                     android:textSize="14sp" />
             </LinearLayout>
 
-            <!-- Max Waitlist and Max Sample -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -176,7 +172,6 @@
                     android:textSize="14sp" />
             </LinearLayout>
 
-            <!-- Geo-location -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -240,7 +235,6 @@
                 android:adjustViewBounds="true" />
 
 
-            <!-- Edit Event and Organizer Actions Buttons in Horizontal Layout -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -273,7 +267,6 @@
                     app:strokeWidth="1dp" />
             </LinearLayout>
 
-            <!-- Notifications Header -->
             <TextView
                 android:id="@+id/notificationsHeader"
                 android:layout_width="wrap_content"
@@ -285,7 +278,6 @@
                 android:gravity="center_horizontal"
                 android:paddingBottom="4dp" />
 
-            <!-- Notifications Buttons in a 2x2 Grid with Grey Background and Black Border -->
             <GridLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -297,7 +289,6 @@
                 android:layout_gravity="center"
                 android:background="@drawable/border_black">
 
-                <!-- Notify Waitlisted Button -->
                 <Button
                     android:id="@+id/buttonWaitlisted"
                     android:layout_width="0dp"
@@ -309,7 +300,6 @@
                     app:strokeColor="#FF8C00"
                     app:strokeWidth="1dp" />
 
-                <!-- Notify Enrolled Button -->
                 <Button
                     android:id="@+id/buttonEnrolled"
                     android:layout_width="0dp"
@@ -321,7 +311,6 @@
                     app:strokeColor="#FF8C00"
                     app:strokeWidth="1dp" />
 
-                <!-- Notify Cancelled Button -->
                 <Button
                     android:id="@+id/buttonCancelled"
                     android:layout_width="0dp"
@@ -333,7 +322,6 @@
                     app:strokeColor="#FF8C00"
                     app:strokeWidth="1dp" />
 
-                <!-- Notify Invited Button -->
                 <Button
                     android:id="@+id/buttonInvited"
                     android:layout_width="0dp"
@@ -346,7 +334,6 @@
                     app:strokeWidth="1dp" />
             </GridLayout>
 
-            <!-- Navigation Buttons Section for Back to Events and View Entrants -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
