@@ -63,7 +63,7 @@ public class EventActivity extends AppCompatActivity implements AddEventDialogFr
             startActivity(intent);
         });
 
-        // Set an item click listener to open the EventDetailActivity
+
         eventListView.setOnItemClickListener((parent, view, position, id) -> {
             Event selectedEvent = eventList.get(position);
 
@@ -75,7 +75,7 @@ public class EventActivity extends AppCompatActivity implements AddEventDialogFr
             intent.putExtra("facility", selectedEvent.getFacility() != null ? selectedEvent.getFacility() : "N/A");
             intent.putExtra("registrationEndDate", selectedEvent.getRegistrationEndDate() != null ? selectedEvent.getRegistrationEndDate() : "N/A");
             intent.putExtra("description", selectedEvent.getDescription() != null ? selectedEvent.getDescription() : "N/A");
-            intent.putExtra("maxWishEntrants", selectedEvent.getMaxWishEntrants());
+            intent.putExtra("maxWaitEntrants", selectedEvent.getMaxWaitEntrants());
             intent.putExtra("maxSampleEntrants", selectedEvent.getMaxSampleEntrants());
             intent.putExtra("eventID", selectedEvent.getEventId());
 
@@ -101,7 +101,7 @@ public class EventActivity extends AppCompatActivity implements AddEventDialogFr
 
     @Override
     public void onEventAdded(String name, String date, String facility, String registrationEndDate,
-                             String description, int maxWishEntrants, int maxSampleEntrants,
+                             String description, int maxWaitEntrants, int maxSampleEntrants,
                              String posterUri, boolean isGeolocate,
                              String waitlistedMessage, String enrolledMessage,
                              String cancelledMessage, String invitedMessage) {
@@ -109,20 +109,14 @@ public class EventActivity extends AppCompatActivity implements AddEventDialogFr
         MyApp app = (MyApp) getApplication();
         String organizerID = app.getAndroidId();
 
-        // Determine notification booleans based on message presence
-        boolean notifyWaitlisted = waitlistedMessage != null && !waitlistedMessage.isEmpty();
-        boolean notifyEnrolled = enrolledMessage != null && !enrolledMessage.isEmpty();
-        boolean notifyCancelled = cancelledMessage != null && !cancelledMessage.isEmpty();
-        boolean notifyInvited = invitedMessage != null && !invitedMessage.isEmpty();
 
-        // Create new Event object with notification messages
         Event newEvent = new Event(name, date, facility, registrationEndDate, description,
-                maxWishEntrants, maxSampleEntrants, posterUri, isGeolocate,
-                notifyWaitlisted, notifyEnrolled, notifyCancelled, notifyInvited,
-                waitlistedMessage, enrolledMessage, cancelledMessage, invitedMessage,
+                maxWaitEntrants, maxSampleEntrants, posterUri, isGeolocate,
+                false, false, false, false,
+                "", "", "", "",
                 organizerID);
 
-        // Use the addToFirestore method in Event
+
         newEvent.addToFirestore(event -> {
             Toast.makeText(EventActivity.this, "Event added: " + event.getName(), Toast.LENGTH_SHORT).show();
             eventList.add(event);
@@ -152,4 +146,6 @@ public class EventActivity extends AppCompatActivity implements AddEventDialogFr
                     Toast.makeText(EventActivity.this, "Failed to load events: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                 });
     }
+
+
 }

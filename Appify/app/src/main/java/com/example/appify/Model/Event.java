@@ -1,6 +1,6 @@
 package com.example.appify.Model;
 
-import android.content.Context;
+
 import android.util.Log;
 
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -21,7 +21,7 @@ public class Event {
     private String facility;
     private String registrationEndDate;
     private String description;
-    private int maxWishEntrants;
+    private int maxWaitEntrants;
     private int maxSampleEntrants;
     private String posterUri;  // Store URI as String
     private boolean isGeolocate;
@@ -47,7 +47,7 @@ public class Event {
      * @param facility          the facility where the event takes place
      * @param registrationEndDate the registration end date for the event
      * @param description       a description of the event
-     * @param maxWishEntrants   the maximum number of wish-listed entrants
+     * @param maxWaitEntrants   the maximum number of wait-listed entrants
      * @param maxSampleEntrants the maximum number of sample-selected entrants
      * @param posterUri         the URI of the event's poster image
      * @param isGeolocate       whether geolocation is required for this event
@@ -62,7 +62,7 @@ public class Event {
      * @param organizerID       the ID of the organizer
      */
     public Event(String name, String date, String facility, String registrationEndDate,
-                 String description, int maxWishEntrants, int maxSampleEntrants,
+                 String description, int maxWaitEntrants, int maxSampleEntrants,
                  String posterUri, boolean isGeolocate, boolean notifyWaitlisted,
                  boolean notifyEnrolled, boolean notifyCancelled, boolean notifyInvited,
                  String waitlistedMessage, String enrolledMessage,
@@ -73,7 +73,7 @@ public class Event {
         this.registrationEndDate = registrationEndDate;
         this.description = description;
         this.facility = facility;
-        this.maxWishEntrants = maxWishEntrants;
+        this.maxWaitEntrants = maxWaitEntrants;
         this.maxSampleEntrants = maxSampleEntrants;
         this.posterUri = posterUri;
         this.isGeolocate = isGeolocate;
@@ -105,7 +105,7 @@ public class Event {
         String registrationEndDate = document.getString("registrationEndDate");
         String description = document.getString("description");
         String facility = document.getString("facility");
-        int maxWishEntrants = document.getLong("maxWishEntrants").intValue();
+        int maxWaitEntrants = document.getLong("maxWaitEntrants").intValue();
         int maxSampleEntrants = document.getLong("maxSampleEntrants").intValue();
         String posterUri = document.getString("posterUri");
         boolean isGeolocate = document.getBoolean("geolocate") != null ? document.getBoolean("geolocate") : false;
@@ -122,7 +122,7 @@ public class Event {
         String invitedMessage = document.getString("invitedMessage");
 
         Event event = new Event(name, date, facility, registrationEndDate, description,
-                maxWishEntrants, maxSampleEntrants, posterUri, isGeolocate,
+                maxWaitEntrants, maxSampleEntrants, posterUri, isGeolocate,
                 notifyWaitlisted, notifyEnrolled, notifyCancelled, notifyInvited,
                 waitlistedMessage, enrolledMessage, cancelledMessage, invitedMessage, organizerID);
 
@@ -145,7 +145,8 @@ public class Event {
      *
      */
     public void lottery(FirebaseFirestore db, String eventID) {
-        AtomicInteger chosenCount = new AtomicInteger(0); // Track the number of invited entrants
+        ArrayList<String> eligibleEntrants = new ArrayList<>();
+        ArrayList<String> selectedEntrants = new ArrayList<>(); // List for randomly chosen entrants
         Random random = new Random();
 
         // Retrieve the waiting list for the event
@@ -154,48 +155,51 @@ public class Event {
                 .whereEqualTo("status", "enrolled") // Only consider entrants with "enrolled" status
                 .get()
                 .addOnSuccessListener(querySnapshot -> {
-                    ArrayList<String> eligibleEntrants = new ArrayList<>();
-
-                    // Collect the IDs of all eligible entrants
+                    // Collect all eligible entrants' IDs
                     for (QueryDocumentSnapshot document : querySnapshot) {
                         eligibleEntrants.add(document.getId());
                     }
 
-                    // Continue selecting entrants until maxSampleEntrants is reached or we run out of eligible entrants
-                    while (chosenCount.get() < maxSampleEntrants && !eligibleEntrants.isEmpty()) {
+                    // Randomly select entrants until reaching maxSampleEntrants or list is empty
+                    while (selectedEntrants.size() < maxSampleEntrants && !eligibleEntrants.isEmpty()) {
                         int randomIndex = random.nextInt(eligibleEntrants.size());
-                        String selectedEntrantId = eligibleEntrants.remove(randomIndex);
+                        String selectedEntrantId = eligibleEntrants.remove(randomIndex); // Remove to avoid re-selection
+                        selectedEntrants.add(selectedEntrantId); // Add to selected list
+                    }
 
-                        // Update the selected entrant's status to "invited" in the waiting list of the event
+                    // Invite only the selected entrants
+                    for (String entrantId : selectedEntrants) {
+                        // Update the entrant's status to "invited" in the waiting list of the event
                         db.collection("events").document(eventID)
-                                .collection("waitingList").document(selectedEntrantId)
+                                .collection("waitingList").document(entrantId)
                                 .update("status", "invited")
                                 .addOnSuccessListener(aVoid -> {
-                                    Log.d("Lottery", "Entrant " + selectedEntrantId + " invited successfully.");
-                                    chosenCount.incrementAndGet(); // Increment the count of invited entrants
+                                    Log.d("Lottery", "Entrant " + entrantId + " invited successfully.");
 
                                     // Update the entrant's status in their Android ID collection as well
-                                    db.collection("Android ID").document(selectedEntrantId)
+                                    db.collection("Android ID").document(entrantId)
                                             .collection("waitListedEvents").document(eventID)
                                             .update("status", "invited")
                                             .addOnSuccessListener(innerVoid -> {
-                                                Log.d("Lottery", "Entrant " + selectedEntrantId + " status updated in Android ID collection for event " + eventID);
+                                                Log.d("Lottery", "Entrant " + entrantId + " status updated in Android ID collection for event " + eventID);
                                             })
                                             .addOnFailureListener(e -> {
-                                                Log.w("Lottery", "Error updating entrant " + selectedEntrantId + " status in Android ID collection for event " + eventID, e);
+                                                Log.w("Lottery", "Error updating entrant " + entrantId + " status in Android ID collection for event " + eventID, e);
                                             });
                                 })
                                 .addOnFailureListener(e -> {
-                                    Log.w("Lottery", "Error inviting entrant " + selectedEntrantId, e);
+                                    Log.w("Lottery", "Error inviting entrant " + entrantId, e);
                                 });
                     }
 
-                    Log.d("Lottery", "Lottery completed. Total invited entrants: " + chosenCount.get());
+                    Log.d("Lottery", "Lottery completed. Total invited entrants: " + selectedEntrants.size());
                 })
                 .addOnFailureListener(e -> {
                     Log.e("Lottery", "Error retrieving waiting list for event " + eventID, e);
                 });
     }
+
+
 
 
 
@@ -247,12 +251,12 @@ public class Event {
     }
 
     /**
-     * Gets the maximum number of wish-listed entrants allowed for the event.
+     * Gets the maximum number of wait-listed entrants allowed for the event.
      *
-     * @return the maximum number of wish-listed entrants
+     * @return the maximum number of wait-listed entrants
      */
-    public int getMaxWishEntrants() {
-        return maxWishEntrants;
+    public int getMaxWaitEntrants() {
+        return maxWaitEntrants;
     }
 
     /**
@@ -358,6 +362,70 @@ public class Event {
         this.isGeolocate = geolocate;
     }
 
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setDate(String date) {
+        this.date = date;
+    }
+
+    public void setFacility(String facility) {
+        this.facility = facility;
+    }
+
+    public void setRegistrationEndDate(String registrationEndDate) {
+        this.registrationEndDate = registrationEndDate;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public void setMaxWaitEntrants(int maxWaitEntrants) {
+        this.maxWaitEntrants = maxWaitEntrants;
+    }
+
+    public void setMaxSampleEntrants(int maxSampleEntrants) {
+        this.maxSampleEntrants = maxSampleEntrants;
+    }
+
+    public void setPosterUri(String posterUri) {
+        this.posterUri = posterUri;
+    }
+
+    public void setNotifyWaitlisted(boolean notifyWaitlisted) {
+        this.notifyWaitlisted = notifyWaitlisted;
+    }
+
+    public void setNotifyEnrolled(boolean notifyEnrolled) {
+        this.notifyEnrolled = notifyEnrolled;
+    }
+
+    public void setNotifyCancelled(boolean notifyCancelled) {
+        this.notifyCancelled = notifyCancelled;
+    }
+
+    public void setNotifyInvited(boolean notifyInvited) {
+        this.notifyInvited = notifyInvited;
+    }
+
+    public void setWaitlistedMessage(String waitlistedMessage) {
+        this.waitlistedMessage = waitlistedMessage;
+    }
+
+    public void setEnrolledMessage(String enrolledMessage) {
+        this.enrolledMessage = enrolledMessage;
+    }
+
+    public void setCancelledMessage(String cancelledMessage) {
+        this.cancelledMessage = cancelledMessage;
+    }
+
+    public void setInvitedMessage(String invitedMessage) {
+        this.invitedMessage = invitedMessage;
+    }
+
     public void setEventId(String eventId) {
         this.eventId = eventId;
     }
@@ -365,6 +433,11 @@ public class Event {
     // EventAddCallback interface remains unchanged
     public interface EventAddCallback {
         void onEventAdded(Event event);
+    }
+
+    // EventAddCallback interface remains unchanged
+    public interface EventEditCallback {
+        void onEventEdited(Event event);
     }
 
     // Modify your addToFirestore method if necessary

@@ -81,7 +81,7 @@ public class EntrantHomePageActivity extends AppCompatActivity {
             intent.putExtra("registrationEndDate", selectedEvent.getRegistrationEndDate());
             intent.putExtra("facility", selectedEvent.getFacility());
             intent.putExtra("description", selectedEvent.getDescription());
-            intent.putExtra("maxWishEntrants", selectedEvent.getMaxWishEntrants());
+            intent.putExtra("maxWaitEntrants", selectedEvent.getMaxWaitEntrants());
             intent.putExtra("maxSampleEntrants", selectedEvent.getMaxSampleEntrants());
             intent.putExtra("posterUri", selectedEvent.getPosterUri());
             intent.putExtra("geolocate", selectedEvent.isGeolocate());
