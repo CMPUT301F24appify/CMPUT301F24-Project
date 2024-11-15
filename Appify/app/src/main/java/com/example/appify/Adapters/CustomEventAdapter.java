@@ -14,6 +14,8 @@
 package com.example.appify.Adapters;
 
 import android.content.Context;
+import android.content.res.ColorStateList;
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,6 +25,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.constraintlayout.widget.ConstraintLayout;
 
 import com.example.appify.Model.Event;
 import com.example.appify.MyApp;
@@ -79,11 +82,11 @@ public class CustomEventAdapter extends ArrayAdapter<Event> {
         Event event = eventList.get(position);
 
         TextView eventTitle = convertView.findViewById(R.id.event_title);
-        TextView eventDesc = convertView.findViewById(R.id.event_desc);
+//        TextView eventDesc = convertView.findViewById(R.id.event_desc);
         TextView eventRegistrationEndDate = convertView.findViewById(R.id.registration_date);
         TextView eventStartDate = convertView.findViewById(R.id.event_date);
         ImageView statusIcon = convertView.findViewById(R.id.statusIcon);
-
+        ConstraintLayout eventCard = convertView.findViewById(R.id.event_information);
 
         FirebaseFirestore db = FirebaseFirestore.getInstance();
 
@@ -91,14 +94,19 @@ public class CustomEventAdapter extends ArrayAdapter<Event> {
             String status = DocumentSnapshot.getString("status");
 
             statusIcon.setVisibility(View.VISIBLE);
+
             // Change the icon based off the status
             if (Objects.equals(status, "enrolled")) {
                 statusIcon.setImageResource(R.drawable.waiting_list_icon);
+                eventCard.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#FFDBBB")));
             } else if (Objects.equals(status, "invited")) {
                 statusIcon.setImageResource(R.drawable.invited_icon);
+                eventCard.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#add8e6")));
             } else if (Objects.equals(status, "accepted")) {
                 statusIcon.setImageResource(R.drawable.accepted_icon);
+                eventCard.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#a6ffa6")));
             } else if (Objects.equals(status, "rejected")) {
+                eventCard.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#ffc0c0")));
                 statusIcon.setImageResource(R.drawable.rejected_icon);
             } else {
                 statusIcon.setVisibility(View.INVISIBLE);
@@ -107,7 +115,7 @@ public class CustomEventAdapter extends ArrayAdapter<Event> {
 
 
         eventTitle.setText(event.getName());
-        eventDesc.setText(event.getDescription());
+//        eventDesc.setText(event.getDescription());
         eventRegistrationEndDate.setText(event.getRegistrationEndDate());
         eventStartDate.setText(event.getDate());
 
