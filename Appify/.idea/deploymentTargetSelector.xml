@@ -4,7 +4,7 @@
     <selectionStates>
       <SelectionState runConfigName="app">
         <option name="selectionMode" value="DROPDOWN" />
-        <DropdownSelection timestamp="2024-11-08T19:54:22.017938100Z">
+        <DropdownSelection timestamp="2024-11-15T23:28:50.469173500Z">
           <Target type="DEFAULT_BOOT">
             <handle>
               <DeviceId pluginId="LocalEmulator" identifier="path=C:\Users\Mohammad\.android\avd\Pixel_8_Pro_API_35.avd" />
@@ -13,6 +13,7 @@
         </DropdownSelection>
         <DialogSelection />
       </SelectionState>
+      <SelectionState runConfigName="testBackButtonFunctionality()">
       <SelectionState runConfigName="EventFunctionalityTest">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>

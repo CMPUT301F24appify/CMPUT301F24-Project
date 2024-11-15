@@ -35,7 +35,7 @@
 
     <LinearLayout
         android:id="@+id/navbar"
-        android:layout_width="411dp"
+        android:layout_width="match_parent"
         android:layout_height="30dp"
         android:background="@color/navbar"
         android:orientation="horizontal"
