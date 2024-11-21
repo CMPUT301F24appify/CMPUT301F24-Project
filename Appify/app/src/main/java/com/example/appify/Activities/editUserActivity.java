@@ -48,6 +48,7 @@ public class editUserActivity extends AppCompatActivity {
     private CheckBox notifications;
     private String facilityID = null;
     private Bitmap bitmapImage = null;
+    private boolean defaultFlag = true;
     private ActivityResultLauncher<Intent> activityResultLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
             result -> {
@@ -109,6 +110,7 @@ public class editUserActivity extends AppCompatActivity {
         removeButton.setOnClickListener(v -> {
             profileImageView.setImageResource(R.drawable.default_profile);  // Reset to default image
             imageUri = null;
+            defaultFlag = true;
         });
 
         submitButton.setOnClickListener(v -> {
@@ -130,7 +132,7 @@ public class editUserActivity extends AppCompatActivity {
                 // Generate profile picture
                 if (imageUri == null) {
                     String firstLetter = String.valueOf(name.charAt(0)).toUpperCase();
-                    if(bitmapImage == null) {
+                    if(defaultFlag == true) {
                         Bitmap profilePicture = generateProfilePicture(firstLetter);
                         profileImageView.setImageBitmap(profilePicture);
                     }
@@ -291,6 +293,7 @@ public class editUserActivity extends AppCompatActivity {
         storageRef.getBytes(size)
                 .addOnSuccessListener(bytes -> {
                     // Convert the byte array to a Bitmap
+                    defaultFlag = false;
                     bitmapImage = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
                     profileImageView.setImageBitmap(bitmapImage);
                 });
