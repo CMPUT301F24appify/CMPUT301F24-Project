@@ -85,25 +85,19 @@ public class userProfileActivity extends AppCompatActivity {
                                         // Update button color and show a success message
                                         if (newAdminState) {
                                             adminButton.setBackgroundColor(Color.GREEN);
-                                            Toast.makeText(this, "User is now an Admin", Toast.LENGTH_SHORT).show();
                                         } else {
                                             adminButton.setBackgroundColor(Color.RED);
-                                            Toast.makeText(this, "User is no longer an Admin", Toast.LENGTH_SHORT).show();
                                         }
-                                    })
-                                    .addOnFailureListener(e -> Toast.makeText(this, "Failed to update admin status", Toast.LENGTH_SHORT).show());
+                                    });
                         } else {
                             // If the document doesn't exist, set isAdmin to true
                             db.collection("Android ID").document(android_id)
                                     .set(Collections.singletonMap("isAdmin", true), SetOptions.merge())
                                     .addOnSuccessListener(aVoid -> {
                                         adminButton.setBackgroundColor(Color.GREEN);
-                                        Toast.makeText(this, "User is now an Admin", Toast.LENGTH_SHORT).show();
-                                    })
-                                    .addOnFailureListener(e -> Toast.makeText(this, "Failed to create admin status", Toast.LENGTH_SHORT).show());
+                                    });
                         }
-                    })
-                    .addOnFailureListener(e -> Toast.makeText(this, "Error fetching admin status", Toast.LENGTH_SHORT).show());
+                    });
         });
 
         //Retrieve and display user data

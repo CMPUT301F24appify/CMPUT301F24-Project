@@ -48,6 +48,7 @@
         <activity android:name=".Activities.EnlistConfirmationActivity" />
         <activity android:name=".Activities.EventActionsActivity" />
         <activity android:name=".Activities.ManageFacilityActivity" />
+        <activity android:name=".Activities.FacilitiesListActivity" />
 
 
 

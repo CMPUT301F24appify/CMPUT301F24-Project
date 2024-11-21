@@ -191,7 +191,7 @@ public class EntrantEnlistActivity extends AppCompatActivity {
      * Checks if the user is already enlisted in the event's waiting list and updates
      * the enlistLeaveButton text and action accordingly.
      */
-    private void checkUserEnrollmentStatus(String eventId, String androidId) {
+    public void checkUserEnrollmentStatus(String eventId, String androidId) {
 
         DocumentReference eventRef = db.collection("events").document(eventId);
         CollectionReference waitingListRef = eventRef.collection("waitingList");
