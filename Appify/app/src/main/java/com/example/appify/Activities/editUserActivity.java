@@ -41,12 +41,13 @@ import java.util.Random;
 public class editUserActivity extends AppCompatActivity {
     private FirebaseFirestore db;
     private ImageView profileImageView;
-    private Uri imageUri;
+    private Uri imageUri = null;
     private String android_id;
     private byte[] profilePictureByte;
     private EditText nameEditText, phoneEditText, emailEditText;
     private CheckBox notifications;
     private String facilityID = null;
+    private Bitmap bitmapImage = null;
     private ActivityResultLauncher<Intent> activityResultLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
             result -> {
@@ -74,6 +75,7 @@ public class editUserActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.edit_user);
         android_id = getIntent().getStringExtra("Android ID");
+        bitmapImage = (Bitmap) getIntent().getExtras().get("Image Bitmap");
         boolean firstEntry = getIntent().getBooleanExtra("firstEntry", false);
         HeaderNavigation headerNavigation = new HeaderNavigation(this);
         headerNavigation.setupNavigation();
@@ -128,8 +130,13 @@ public class editUserActivity extends AppCompatActivity {
                 // Generate profile picture
                 if (imageUri == null) {
                     String firstLetter = String.valueOf(name.charAt(0)).toUpperCase();
-                    Bitmap profilePicture = generateProfilePicture(firstLetter);
-                    profileImageView.setImageBitmap(profilePicture);
+                    if(bitmapImage == null) {
+                        Bitmap profilePicture = generateProfilePicture(firstLetter);
+                        profileImageView.setImageBitmap(profilePicture);
+                    }
+                    else{
+                        profileImageView.setImageBitmap(bitmapImage);
+                    }
                 }
                 //Submit Data and open other Activity
                 sendEntrantData(android_id, name, phoneNumber, email);
@@ -142,9 +149,16 @@ public class editUserActivity extends AppCompatActivity {
      * Opens the file chooser to select an image from the devices files.
      */
     private void openFileChooser() {
-        Intent intent = new Intent(Intent.ACTION_PICK);
-        intent.setType("image/*");
-        activityResultLauncher.launch(intent);
+        Intent pickImageIntent = new Intent(Intent.ACTION_PICK);
+        pickImageIntent.setType("image/*");
+
+        Intent takePhotoIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+
+        // Create a chooser intent with both options
+        Intent chooserIntent = Intent.createChooser(pickImageIntent, "Select Image or Take Photo");
+        chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, new Intent[]{takePhotoIntent});
+
+        activityResultLauncher.launch(chooserIntent);
     }
 
     /**
@@ -277,8 +291,8 @@ public class editUserActivity extends AppCompatActivity {
         storageRef.getBytes(size)
                 .addOnSuccessListener(bytes -> {
                     // Convert the byte array to a Bitmap
-                    Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
-                    profileImageView.setImageBitmap(bitmap);
+                    bitmapImage = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+                    profileImageView.setImageBitmap(bitmapImage);
                 });
     }
 }
