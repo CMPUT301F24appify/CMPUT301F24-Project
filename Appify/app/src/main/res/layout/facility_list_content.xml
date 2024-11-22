@@ -6,7 +6,7 @@
     android:layout_height="wrap_content"
     android:padding="30dp"
     android:background="@drawable/rounded_list_item"
-    android:backgroundTint="#CBC3E3">
+    android:backgroundTint="@color/card_color">
 
     <LinearLayout
         android:layout_width="match_parent"
