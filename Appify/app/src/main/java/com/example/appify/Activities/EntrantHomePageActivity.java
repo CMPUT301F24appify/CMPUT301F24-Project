@@ -1,19 +1,24 @@
 package com.example.appify.Activities;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.appify.Adapters.CustomEventAdapter;
+import com.example.appify.MainActivity;
 import com.example.appify.Model.Event;
 import com.example.appify.HeaderNavigation;
 import com.example.appify.MyApp;
@@ -23,6 +28,9 @@ import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.journeyapps.barcodescanner.CaptureActivity;
+import com.journeyapps.barcodescanner.ScanContract;
+import com.journeyapps.barcodescanner.ScanOptions;
 
 import java.util.ArrayList;
 
@@ -37,8 +45,6 @@ public class EntrantHomePageActivity extends AppCompatActivity {
     ListView eventListView;
     CustomEventAdapter eventAdapter;
     ArrayList<Event> eventList;
-//    MyApp app = (MyApp) getApplication();
-//    String androidId = app.getAndroidId();
 
     /**
      * Called when the activity is starting. Initializes UI components and loads event data.
@@ -93,7 +99,36 @@ public class EntrantHomePageActivity extends AppCompatActivity {
 
             startActivity(intent);
         });
+
+        // To add event, open a QR Code scanner
+        Button scanEventButton = findViewById(R.id.scanEvent_button);
+        scanEventButton.setOnClickListener(v->{
+            scanCode();
+        });
     }
+
+    private void scanCode(){
+        ScanOptions options = new ScanOptions();
+        options.setPrompt("Volume up to flash on");
+        options.setBeepEnabled(true);
+        options.setOrientationLocked(true);
+        options.setCaptureActivity(CaptureAct.class);
+        barLauncher.launch(options);
+    }
+
+    ActivityResultLauncher<ScanOptions> barLauncher = registerForActivityResult(new ScanContract(), result -> {
+        if (result.getContents()!=null){
+            AlertDialog.Builder builder = new AlertDialog.Builder(EntrantHomePageActivity.this);
+            builder.setTitle("Result");
+            builder.setMessage(result.getContents());
+            builder.setPositiveButton("OK", new DialogInterface.OnClickListener(){
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i){
+                    dialogInterface.dismiss();
+                }
+            }).show();
+        }
+    });
 
     /**
      * Loads events from the Firestore database and updates the ListView.
