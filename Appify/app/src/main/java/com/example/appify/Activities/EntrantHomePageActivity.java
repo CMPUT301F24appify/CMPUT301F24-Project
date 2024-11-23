@@ -97,7 +97,7 @@ public class EntrantHomePageActivity extends AppCompatActivity {
 
     /**
      * Loads events from the Firestore database and updates the ListView.
-     * Retrieves documents from the "events" collection, creates {@link Event} objects,
+     * Retrieves documents from the "events" collection, creates Event objects,
      * and notifies the adapter to refresh the ListView.
      */
     private void loadEventsFromFirestore() {

@@ -64,15 +64,23 @@ public class ManageFacilityActivity extends AppCompatActivity implements AddFaci
         Button deleteButton = findViewById(R.id.delete_button);
 
         // Retrieve facilityID and then the facility details
-        db.collection("Android ID").document(androidId).get()
-                .addOnSuccessListener(documentSnapshot -> {
-                    if (documentSnapshot.exists()) {
-                        facilityID = documentSnapshot.getString("facilityID");
-                        if (facilityID != null) {
-                            loadFacilityData(facilityID, facilityName, facilityLocation, facilityEmail, facilityCapacity, facilityDescription);
+
+        Intent intent = getIntent();
+        facilityID = intent.getStringExtra("facilityID");
+
+        if (facilityID != null && !facilityID.isEmpty()) {
+            loadFacilityData(facilityID, facilityName, facilityLocation, facilityEmail, facilityCapacity, facilityDescription);
+        } else {
+            db.collection("Android ID").document(androidId).get()
+                    .addOnSuccessListener(documentSnapshot -> {
+                        if (documentSnapshot.exists()) {
+                            facilityID = documentSnapshot.getString("facilityID");
+                            if (facilityID != null) {
+                                loadFacilityData(facilityID, facilityName, facilityLocation, facilityEmail, facilityCapacity, facilityDescription);
+                            }
                         }
-                    }
-                });
+                    });
+        }
 
         // Button onClickListeners
         editButton.setOnClickListener(v -> editFacility(facilityID));

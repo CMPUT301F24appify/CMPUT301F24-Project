@@ -6,9 +6,11 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.widget.TextView;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import com.example.appify.Activities.EntrantHomePageActivity;
 import com.example.appify.Activities.EventActivity;
+import com.example.appify.Activities.FacilitiesListActivity;
 import com.example.appify.Activities.userProfileActivity;
 import com.example.appify.Fragments.AddFacilityDialogFragment;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -46,7 +48,7 @@ public class HeaderNavigation {
         // Facilities
         TextView facilitiesText = activity.findViewById(R.id.facilitiesText_navBar);
         if (facilitiesText != null) {
-            facilitiesText.setOnClickListener(v -> navigateToFacilities());
+            facilitiesText.setOnClickListener(v -> checkAdminStatus());
         }
 
         // Organize
@@ -91,8 +93,8 @@ public class HeaderNavigation {
      * Navigates to the facilities management page.
      */
     private void navigateToFacilities() {
-//        Intent intent = new Intent(activity, FacilitiesActivity.class);
-//        activity.startActivity(intent);
+        Intent intent = new Intent(activity, FacilitiesListActivity.class);
+        activity.startActivity(intent);
     }
 
     /**
@@ -165,6 +167,26 @@ public class HeaderNavigation {
                             // User is not an organizer, show Add Facility dialog
                             showAddFacilityDialog();
                         }
+                    });
+        }
+    }
+
+    private void checkAdminStatus() {
+        MyApp app = (MyApp) activity.getApplication();
+        String androidId = app.getAndroidId();
+
+        if (androidId != null) {
+            db.collection("Android ID").document(androidId)
+                    .get()
+                    .addOnSuccessListener(documentSnapshot -> {
+                        if (documentSnapshot.exists() && Boolean.TRUE.equals(documentSnapshot.getBoolean("isAdmin"))) {
+                            navigateToFacilities();
+                        } else {
+                            Toast.makeText(activity, "You are not an admin.", Toast.LENGTH_SHORT).show();
+                        }
+                    })
+                    .addOnFailureListener(e -> {
+                        Toast.makeText(activity, "Error checking admin status.", Toast.LENGTH_SHORT).show();
                     });
         }
     }
