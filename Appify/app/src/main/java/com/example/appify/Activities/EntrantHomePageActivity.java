@@ -4,6 +4,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.Typeface;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.AdapterView;
@@ -117,17 +118,29 @@ public class EntrantHomePageActivity extends AppCompatActivity {
     }
 
     ActivityResultLauncher<ScanOptions> barLauncher = registerForActivityResult(new ScanContract(), result -> {
-        if (result.getContents()!=null){
-            AlertDialog.Builder builder = new AlertDialog.Builder(EntrantHomePageActivity.this);
-            builder.setTitle("Result");
-            builder.setMessage(result.getContents());
-            builder.setPositiveButton("OK", new DialogInterface.OnClickListener(){
-                @Override
-                public void onClick(DialogInterface dialogInterface, int i){
-                    dialogInterface.dismiss();
-                }
-            }).show();
+
+        if (result.getContents() != null) {
+            String scannedData = result.getContents();
+
+            // Check if the scanned data is a valid URL
+            if (scannedData.startsWith("myapp://")) {
+                // Handle custom scheme or navigate within your app
+                Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(scannedData));
+                startActivity(intent);
+            } else {
+                // If the scanned data is not a URL, display it in a dialog
+                AlertDialog.Builder builder = new AlertDialog.Builder(EntrantHomePageActivity.this);
+                builder.setTitle("Result");
+                builder.setMessage(scannedData);
+                builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        dialogInterface.dismiss();
+                    }
+                }).show();
+            }
         }
+
     });
 
     /**
