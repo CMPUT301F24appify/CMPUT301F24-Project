@@ -110,7 +110,7 @@ public class EntrantHomePageActivity extends AppCompatActivity {
 
     private void scanCode(){
         ScanOptions options = new ScanOptions();
-        options.setPrompt("Volume up to flash on");
+        options.setPrompt("Scan an Event QR Code");
         options.setBeepEnabled(true);
         options.setOrientationLocked(true);
         options.setCaptureActivity(CaptureAct.class);
