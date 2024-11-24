@@ -61,7 +61,7 @@ public class CustomFacilityAdapter extends ArrayAdapter<Facility> {
         AlertDialog.Builder builder = new AlertDialog.Builder(this.getContext());
         builder
                 .setTitle("Delete Facility: " + facility.getName())
-                .setMessage("Please confirm that you want to delete: " + facility.getName() + ". This action cannot be undone.")
+                .setMessage("Please confirm that you want to delete: " + facility.getName() + ". ALL EVENTS at this facility will also be deleted. This action cannot be undone.")
                 .setPositiveButton("Confirm", ((dialog, which) -> {
                     db.collection("facilities").document(facility.getId())
                             .get()

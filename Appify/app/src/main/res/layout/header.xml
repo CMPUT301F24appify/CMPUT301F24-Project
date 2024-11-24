@@ -64,13 +64,13 @@
             android:textColor="@color/white" />
 
         <TextView
-            android:id="@+id/facilitiesText_navBar"
+            android:id="@+id/adminText_navBar"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:gravity="center_horizontal"
             android:layout_marginTop="5dp"
-            android:text="Facilities"
+            android:text="Admin"
             android:textColor="@color/white" />
 
         <TextView
