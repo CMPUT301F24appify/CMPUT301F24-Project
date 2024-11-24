@@ -46,7 +46,7 @@ public class HeaderNavigation {
         }
 
         // Facilities
-        TextView facilitiesText = activity.findViewById(R.id.facilitiesText_navBar);
+        TextView facilitiesText = activity.findViewById(R.id.adminText_navBar);
         if (facilitiesText != null) {
             facilitiesText.setOnClickListener(v -> checkAdminStatus());
         }

@@ -46,7 +46,7 @@ public class FacilitiesListActivity extends AppCompatActivity {
         // HeaderNavigation
         HeaderNavigation headerNavigation = new HeaderNavigation(this);
         headerNavigation.setupNavigation();
-        TextView facilitiesText = findViewById(R.id.facilitiesText_navBar);
+        TextView facilitiesText = findViewById(R.id.adminText_navBar);
         facilitiesText.setTextColor(Color.parseColor("#800080"));
         facilitiesText.setTypeface(facilitiesText.getTypeface(), Typeface.BOLD);
 
