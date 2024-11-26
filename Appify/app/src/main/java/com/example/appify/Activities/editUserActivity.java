@@ -49,16 +49,27 @@ public class editUserActivity extends AppCompatActivity {
     private String facilityID = null;
     private Bitmap bitmapImage = null;
     private boolean defaultFlag = true;
+    private boolean cameraFlag = false;
     private ActivityResultLauncher<Intent> activityResultLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
             result -> {
                 if (result.getResultCode() == RESULT_OK && result.getData() != null) {
-                    imageUri = result.getData().getData();
-                    try {
-                        Bitmap bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), imageUri);
-                        profileImageView.setImageBitmap(bitmap);
-                    } catch (IOException e) {
-                        profileImageView.setImageURI(imageUri);
+                    if (result.getData().getData() != null) {
+                        // Image from files
+                        imageUri = result.getData().getData();
+                        try {
+                            Bitmap bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), imageUri);
+                            profileImageView.setImageBitmap(bitmap);
+                        } catch (IOException e) {
+                            profileImageView.setImageURI(imageUri);
+                        }
+                    } else if (result.getData().getExtras() != null) {
+                        // Image from camera
+                        Bitmap bitmap = (Bitmap) result.getData().getExtras().get("data");
+                        if (bitmap != null) {
+                            profileImageView.setImageBitmap(bitmap);
+                            cameraFlag = true;
+                        }
                     }
                 }
             }
@@ -105,7 +116,7 @@ public class editUserActivity extends AppCompatActivity {
         if (android_id != null) {
             populateFields(android_id);
         }
-        uploadButton.setOnClickListener(v -> openFileChooser());
+        uploadButton.setOnClickListener(v -> selectImage());
 
         removeButton.setOnClickListener(v -> {
             profileImageView.setImageResource(R.drawable.default_profile);  // Reset to default image
@@ -130,9 +141,9 @@ public class editUserActivity extends AppCompatActivity {
                 Toast.makeText(editUserActivity.this, "Please enter a valid email address", Toast.LENGTH_SHORT).show();
             }  else {
                 // Generate profile picture
-                if (imageUri == null) {
+                if (imageUri == null && !cameraFlag) {
                     String firstLetter = String.valueOf(name.charAt(0)).toUpperCase();
-                    if(defaultFlag == true) {
+                    if(defaultFlag) {
                         Bitmap profilePicture = generateProfilePicture(firstLetter);
                         profileImageView.setImageBitmap(profilePicture);
                     }
@@ -148,9 +159,9 @@ public class editUserActivity extends AppCompatActivity {
     }
 
     /**
-     * Opens the file chooser to select an image from the devices files.
+     * Lets the user select an image from file system or open camera.
      */
-    private void openFileChooser() {
+    private void selectImage() {
         Intent pickImageIntent = new Intent(Intent.ACTION_PICK);
         pickImageIntent.setType("image/*");
 
