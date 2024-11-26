@@ -28,7 +28,8 @@
                 android:layout_marginTop="10sp"
                 android:layout_marginRight="10sp"
                 android:layout_marginBottom="10sp"
-                android:background="@drawable/rounded_search_view">
+                android:background="@drawable/rounded_search_view"
+                android:queryHint="Search Entrants">
 
             </SearchView>
         </FrameLayout>
@@ -102,9 +103,12 @@
         </LinearLayout>
 
         <ListView
+            android:dividerHeight="10dp"
+            android:layout_margin="15dp"
+            android:divider="@color/zxing_transparent"
             android:id="@+id/entrant_list"
             android:layout_width="match_parent"
-            android:layout_height="568dp"
+            android:layout_height="match_parent"
             android:choiceMode="singleChoice"
             android:listSelector="#999999">
 

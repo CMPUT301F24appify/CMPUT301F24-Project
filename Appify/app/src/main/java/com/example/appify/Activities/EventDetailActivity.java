@@ -1,7 +1,9 @@
 package com.example.appify.Activities;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.net.Uri;
@@ -25,13 +27,18 @@ import com.example.appify.MyApp;
 import com.example.appify.R;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.WriterException;
 import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.QRCodeWriter;
 
+import java.io.ByteArrayOutputStream;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * The EventDetailActivity class displays and manages the details of a selected event.
@@ -53,6 +60,7 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
      * @param savedInstanceState If the activity is re-initialized after being shut down,
      *                           this Bundle contains the most recent data; otherwise, it is null.
      */
+    @SuppressLint("WrongThread")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -67,32 +75,61 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
 
         // Initialize Firebase Firestore instance
         db = FirebaseFirestore.getInstance();
-
-        // Retrieve event ID from intent extras
+        FirebaseStorage storage = FirebaseStorage.getInstance();
         eventID = getIntent().getStringExtra("eventID");
+        StorageReference storageRef = storage.getReference().child("qrcode_images/" + eventID + ".jpg");
 
         // QR code generation for event-specific content
         ImageView qrImageView = findViewById(R.id.qr_code);
         String qrContent = "myapp://event/" + eventID;
         QRCodeWriter qrCodeWriter = new QRCodeWriter();
-        try {
-            BitMatrix bitMatrix = qrCodeWriter.encode(qrContent, BarcodeFormat.QR_CODE, 200, 200);
-            int width = bitMatrix.getWidth();
-            int height = bitMatrix.getHeight();
-            Bitmap qrBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565);
 
-            for (int x = 0; x < width; x++) {
-                for (int y = 0; y < height; y++) {
-                    qrBitmap.setPixel(x, y, bitMatrix.get(x, y) ? Color.BLACK : Color.WHITE);
+
+//         If QR code exists in database use it. Otherwise, generate new one and store in db
+        db.collection("events").document(eventID).get().addOnSuccessListener(documentSnapshot -> {
+            String qrCodeLocationURL = documentSnapshot.getString("qrCodeLocationUrl");
+
+            if (qrCodeLocationURL != null){
+                // Qr code exists
+                System.out.println(qrCodeLocationURL);
+                storageRef.getBytes(1024 * 1024)
+                        .addOnSuccessListener(bytes -> {
+                            // Convert the byte array to a Bitmap
+                            Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+                            qrImageView.setImageBitmap(bitmap);
+                        });
+            }
+            else {
+                // Create QR Code and store it
+                System.out.println("no qr code");
+                try {
+                    BitMatrix bitMatrix = qrCodeWriter.encode(qrContent, BarcodeFormat.QR_CODE, 200, 200);
+                    int width = bitMatrix.getWidth();
+                    int height = bitMatrix.getHeight();
+                    Bitmap qrBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565);
+                    byte[] qrCodeByte;
+                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                    for (int x = 0; x < width; x++) {
+                        for (int y = 0; y < height; y++) {
+                            qrBitmap.setPixel(x, y, bitMatrix.get(x, y) ? Color.BLACK : Color.WHITE);
+                        }
+                    }
+                    qrBitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+                    qrCodeByte = baos.toByteArray();
+                    storageRef.putBytes(qrCodeByte)
+                            .addOnSuccessListener(taskSnapshot -> storageRef.getDownloadUrl().addOnSuccessListener(uri -> {
+                                String qrCodeLocationUrl = uri.toString();
+                                db.collection("events").document(eventID).update("qrCodeLocationUrl", qrCodeLocationUrl);
+                            }));
+                    System.out.println(storageRef.getBytes(1024 * 1024));
+
+                    // Set the QR code bitmap to the ImageView
+                    qrImageView.setImageBitmap(qrBitmap);
+                } catch (WriterException e) {
+                    e.printStackTrace();
                 }
             }
-
-            // Set the QR code bitmap to the ImageView
-            qrImageView.setImageBitmap(qrBitmap);
-        } catch (WriterException e) {
-            e.printStackTrace();
-            // Display error if QR code generation fails
-        }
+        });
 
         // Retrieve event data from intent extras
         Intent intent = getIntent();
@@ -191,6 +228,9 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
         Button editEventButton = findViewById(R.id.buttonEditEvent);
         editEventButton.setOnClickListener(v -> {
             EditEventDialogFragment dialog = new EditEventDialogFragment();
+            Bundle args = new Bundle();
+            args.putString("eventID", eventID);
+            dialog.setArguments(args);
             dialog.show(getSupportFragmentManager(), "EditEventDialogFragment");
         });
 
@@ -218,9 +258,6 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
                         }
                     }
                 });
-
-
-
             }
         });
 
@@ -277,7 +314,6 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
         db.collection("events").document(eventID)
                 .update(updates)
                 .addOnSuccessListener(aVoid -> {
-                    Toast.makeText(this, "Event updated successfully", Toast.LENGTH_SHORT).show();
                     refreshEventUI(name, date, facility, registrationEndDate, description,
                             maxWaitEntrants, maxSampleEntrants, posterUri, isGeolocate);
                 })
