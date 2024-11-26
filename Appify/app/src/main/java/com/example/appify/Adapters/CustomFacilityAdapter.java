@@ -79,12 +79,39 @@ public class CustomFacilityAdapter extends ArrayAdapter<Facility> {
                                                 for (QueryDocumentSnapshot eventDoc : querySnapshot) {
                                                     String eventID = eventDoc.getId();
 
-                                                    // Delete event from 'events' collection
-                                                    db.collection("events").document(eventID).delete();
+                                                    // Check for and process the waitingList for the event
+                                                    db.collection("events").document(eventID).collection("waitingList")
+                                                            .get()
+                                                            .addOnSuccessListener(waitingListSnapshot -> {
+                                                                for (QueryDocumentSnapshot waitDoc : waitingListSnapshot) {
+                                                                    String userID = waitDoc.getId();
 
-                                                    // Delete event document from 'facilities/facilityID/events' collection
-                                                    db.collection("facilities").document(facility.getId()).collection("events").document(eventID)
-                                                            .delete();
+                                                                    // Delete the eventID from the user's waitListedEvents collection
+                                                                    db.collection("Android ID").document(userID)
+                                                                            .collection("waitListedEvents")
+                                                                            .document(eventID)
+                                                                            .delete()
+                                                                            .addOnSuccessListener(aVoid -> Log.d("WaitList", "Removed eventID from user's waitListedEvents: " + userID));
+
+                                                                    // Delete the individual waitingList entry
+                                                                    db.collection("events").document(eventID).collection("waitingList")
+                                                                            .document(userID)
+                                                                            .delete()
+                                                                            .addOnSuccessListener(aVoid -> Log.d("WaitList", "Deleted waitingList entry for userID: " + userID));
+                                                                }
+                                                            })
+                                                            .addOnCompleteListener(waitingListTask -> {
+                                                                // Delete event from 'events' collection
+                                                                db.collection("events").document(eventID)
+                                                                        .delete()
+                                                                        .addOnSuccessListener(aVoid -> Log.d("Event", "Deleted event from 'events': " + eventID));
+
+                                                                // Delete event document from 'facilities/facilityID/events' collection
+                                                                db.collection("facilities").document(facility.getId()).collection("events")
+                                                                        .document(eventID)
+                                                                        .delete()
+                                                                        .addOnSuccessListener(aVoid -> Log.d("FacilityEvent", "Deleted event from 'facilities/facilityID/events': " + eventID));
+                                                            });
                                                 }
                                             })
                                             .addOnCompleteListener(task -> {
@@ -116,4 +143,5 @@ public class CustomFacilityAdapter extends ArrayAdapter<Facility> {
         builder.create();
         builder.show();
     }
+
 }
