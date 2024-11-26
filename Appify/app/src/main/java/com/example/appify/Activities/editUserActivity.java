@@ -21,7 +21,7 @@ import android.widget.Toast;
 import com.example.appify.HeaderNavigation;
 import com.example.appify.Model.Entrant;
 import com.example.appify.R;
-
+import com.github.dhaval2404.imagepicker.ImagePicker;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
@@ -116,7 +116,7 @@ public class editUserActivity extends AppCompatActivity {
         if (android_id != null) {
             populateFields(android_id);
         }
-        uploadButton.setOnClickListener(v -> selectImage());
+        uploadButton.setOnClickListener(v -> openImagePicker());
 
         removeButton.setOnClickListener(v -> {
             profileImageView.setImageResource(R.drawable.default_profile);  // Reset to default image
@@ -157,7 +157,26 @@ public class editUserActivity extends AppCompatActivity {
 
         });
     }
+    private void openImagePicker() {
+        ImagePicker.with(this)
+                .crop()
+                .maxResultSize(1080, 1080)
+                .start();
+    }
 
+    /**
+     * Handle the result from ImagePicker.
+     */
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (resultCode == RESULT_OK && data != null) {
+            // Retrieve the URI of the selected image
+            imageUri = data.getData();
+            profileImageView.setImageURI(imageUri);
+        }
+    }
     /**
      * Lets the user select an image from file system or open camera.
      */
