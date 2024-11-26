@@ -9,6 +9,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.UUID;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -554,9 +555,13 @@ public class Event {
     public void addToFirestore(EventAddCallback callback) {
         db.collection("events").document(this.eventId).set(this)
                 .addOnSuccessListener(aVoid -> {
-                    if (callback != null) {
-                        callback.onEventAdded(this);
-                    }
+                    db.collection("facilities").document(this.getFacility())
+                            .collection("events").document(this.getEventId()).set(new HashMap<>())
+                            .addOnSuccessListener(aVoid2 -> {
+                                if (callback != null) {
+                                    callback.onEventAdded(this);
+                            }
+                    });
                 })
                 .addOnFailureListener(e -> {
                     // Handle the failure
