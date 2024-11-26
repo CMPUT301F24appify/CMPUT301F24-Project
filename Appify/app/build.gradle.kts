@@ -34,7 +34,9 @@ android {
     tasks.withType<Test> {
         useJUnitPlatform() // Make all tests use JUnit 5
     }
+
 }
+
 
 dependencies {
     implementation(platform("com.google.firebase:firebase-bom:33.4.0"))
