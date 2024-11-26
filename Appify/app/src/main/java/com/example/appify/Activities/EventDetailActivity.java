@@ -228,6 +228,9 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
         Button editEventButton = findViewById(R.id.buttonEditEvent);
         editEventButton.setOnClickListener(v -> {
             EditEventDialogFragment dialog = new EditEventDialogFragment();
+            Bundle args = new Bundle();
+            args.putString("eventID", eventID);
+            dialog.setArguments(args);
             dialog.show(getSupportFragmentManager(), "EditEventDialogFragment");
         });
 
@@ -311,7 +314,6 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
         db.collection("events").document(eventID)
                 .update(updates)
                 .addOnSuccessListener(aVoid -> {
-                    Toast.makeText(this, "Event updated successfully", Toast.LENGTH_SHORT).show();
                     refreshEventUI(name, date, facility, registrationEndDate, description,
                             maxWaitEntrants, maxSampleEntrants, posterUri, isGeolocate);
                 })

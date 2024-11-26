@@ -73,6 +73,10 @@ public class EditEventDialogFragment extends DialogFragment {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         calendar = Calendar.getInstance();
 
+        // Retrieve event ID from arguments
+        Bundle args = getArguments();
+        String eventID = args != null ? args.getString("eventID") : null;
+
         // Get facility info
         MyApp app = (MyApp) requireActivity().getApplication();
         String androidId = app.getAndroidId();
@@ -103,6 +107,28 @@ public class EditEventDialogFragment extends DialogFragment {
         buttonRegistrationEndDate = view.findViewById(R.id.buttonRegistrationEndDate);
         uploadPosterButton = view.findViewById(R.id.buttonUploadPoster);
         Button reminderGeolocation = view.findViewById(R.id.checkGeolocation);
+
+        // Fetch existing event details and populate fields
+        if (eventID != null) {
+            db.collection("events").document(eventID)
+                    .get()
+                    .addOnSuccessListener(documentSnapshot -> {
+                        if (documentSnapshot.exists()) {
+                            eventName.setText(documentSnapshot.getString("name"));
+                            buttonEventDate.setText(documentSnapshot.getString("date"));
+                            buttonRegistrationEndDate.setText(documentSnapshot.getString("registrationEndDate"));
+                            eventDescription.setText(documentSnapshot.getString("description"));
+                            maxWaitEntrant.setText(String.valueOf(documentSnapshot.getLong("maxWaitEntrants")));
+                            maxSampleEntrant.setText(String.valueOf(documentSnapshot.getLong("maxSampleEntrants")));
+                            isGeolocate = documentSnapshot.getBoolean("isGeolocate") != null &&
+                                    documentSnapshot.getBoolean("isGeolocate");
+                            updateButtonAppearance(reminderGeolocation, isGeolocate);
+                            posterUri = documentSnapshot.getString("posterUri");
+                        }
+                    })
+                    .addOnFailureListener(e -> {
+                    });
+        }
 
         // Set up date pickers
         buttonEventDate.setOnClickListener(v -> openDatePicker(buttonEventDate));
