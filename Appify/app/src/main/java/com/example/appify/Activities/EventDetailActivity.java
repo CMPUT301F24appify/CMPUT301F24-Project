@@ -334,7 +334,7 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
      *
      * @param name Event name
      * @param date Event date
-     * @param facility Event facility
+     * @param facilityName Event facility
      * @param registrationEndDate Registration end date
      * @param description Event description
      * @param maxWaitEntrants Maximum waitlist entrants
@@ -342,7 +342,7 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
      * @param posterUri URI of the event poster
      * @param isGeolocate Geo-location status of the event
      */
-    private void refreshEventUI(String name, String date, String facility, String registrationEndDate,
+    private void refreshEventUI(String name, String date, String facilityName, String registrationEndDate,
                                 String description, int maxWaitEntrants, int maxSampleEntrants,
                                 String posterUri, boolean isGeolocate) {
 
@@ -359,7 +359,7 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
 
         nameTextView.setText(name);
         dateTextView.setText(date);
-        facilityTextView.setText(facility);
+        facilityTextView.setText(facilityName);
         registrationEndDateTextView.setText(registrationEndDate);
         descriptionTextView.setText(description);
         maxWaitTextView.setText("Max Waitlist Entrants: " + maxWaitEntrants);
