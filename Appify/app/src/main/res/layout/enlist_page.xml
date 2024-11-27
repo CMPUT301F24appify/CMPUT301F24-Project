@@ -65,6 +65,7 @@
                             android:textSize="14sp"
                             android:textStyle="bold"
                             android:layout_gravity="center"
+                            android:textColor="@color/black"
                             />
                         <TextView
                             android:id="@+id/registration_date"
@@ -75,7 +76,8 @@
                             android:text="MMM, DD, YYYY"
                             android:textSize="14sp"
                             android:layout_gravity="center"
-                            android:paddingBottom="10dp"/>
+                            android:paddingBottom="10dp"
+                            android:textColor="@color/black"/>
                         <TextView
                             android:id="@+id/event"
                             android:layout_width="wrap_content"
@@ -85,7 +87,8 @@
                             android:text="Event Date: "
                             android:textSize="14sp"
                             android:layout_gravity="center"
-                            android:textStyle="bold"/>
+                            android:textStyle="bold"
+                            android:textColor="@color/black"/>
 
                         <TextView
                             android:id="@+id/event_date"
@@ -96,7 +99,8 @@
                             android:text="MMM DD, YYYY"
                             android:textSize="14sp"
                             android:layout_gravity="center"
-                            android:paddingBottom="10dp"/>
+                            android:paddingBottom="10dp"
+                            android:textColor="@color/black"/>
                         <TextView
                             android:id="@+id/facility"
                             android:layout_width="wrap_content"
@@ -106,7 +110,8 @@
                             android:text="Facility: "
                             android:textSize="14sp"
                             android:layout_gravity="center"
-                            android:textStyle="bold"/>
+                            android:textStyle="bold"
+                            android:textColor="@color/black"/>
 
                         <TextView
                             android:id="@+id/facility_name"
@@ -116,7 +121,8 @@
                             android:layout_weight="1"
                             android:gravity="end"
                             android:textSize="14sp"
-                            android:layout_gravity="center"/>
+                            android:layout_gravity="center"
+                            android:textColor="@color/black"/>
                     </LinearLayout>
                 </FrameLayout>
                 <FrameLayout
@@ -138,6 +144,7 @@
                             android:text="Description"
                             android:paddingTop="10dp"
                             android:textStyle="bold"
+                            android:textColor="@color/black"
                             />
                         <TextView
                             android:id="@+id/event_description"
@@ -146,7 +153,8 @@
                             android:paddingStart="15dp"
                             android:paddingBottom="15dp"
                             android:paddingEnd="15dp"
-                            android:text="Event Description" />
+                            android:text="Event Description"
+                            android:textColor="@color/black"/>
                     </LinearLayout>
                 </FrameLayout>
                 <TextView
@@ -156,9 +164,9 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
                     android:text="IMPORTANT: GEOLOCATION STATUS"
-                    android:textColor="@color/black"
                     android:textStyle="bold"
-                    android:padding="8dp"/>
+                    android:padding="8dp"
+                    android:textColor="@color/black"/>
             </LinearLayout>
         </FrameLayout>
         <Button
