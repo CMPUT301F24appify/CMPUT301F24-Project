@@ -2,6 +2,7 @@ package com.example.appify.Adapters;
 
 import android.app.AlertDialog;
 import android.content.Context;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,6 +15,7 @@ import androidx.annotation.NonNull;
 import com.example.appify.Model.Facility;
 import com.example.appify.R;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.List;
 
@@ -61,28 +63,76 @@ public class CustomFacilityAdapter extends ArrayAdapter<Facility> {
         AlertDialog.Builder builder = new AlertDialog.Builder(this.getContext());
         builder
                 .setTitle("Delete Facility: " + facility.getName())
-                .setMessage("Please confirm that you want to delete: " + facility.getName() + ". This action cannot be undone.")
+                .setMessage("Please confirm that you want to delete: " + facility.getName() + ". ALL EVENTS at this facility will also be deleted. This action cannot be undone.")
                 .setPositiveButton("Confirm", ((dialog, which) -> {
+                    // Fetch the facility from Firestore
                     db.collection("facilities").document(facility.getId())
                             .get()
                             .addOnSuccessListener(documentSnapshot -> {
                                 if (documentSnapshot.exists()) {
                                     String organizerID = documentSnapshot.getString("organizerID");
 
-                                    db.collection("facilities").document(facility.getId())
-                                            .delete()
-                                            .addOnSuccessListener(aVoid -> {
-                                                if (organizerID != null) {
-                                                    db.collection("Android ID").document(organizerID)
-                                                            .update("facilityID", null)
-                                                            .addOnSuccessListener(aVoid2 -> {
+                                    // Fetch events inside facilities/facilityID/events
+                                    db.collection("facilities").document(facility.getId()).collection("events")
+                                            .get()
+                                            .addOnSuccessListener(querySnapshot -> {
+                                                for (QueryDocumentSnapshot eventDoc : querySnapshot) {
+                                                    String eventID = eventDoc.getId();
+
+                                                    // Check for and process the waitingList for the event
+                                                    db.collection("events").document(eventID).collection("waitingList")
+                                                            .get()
+                                                            .addOnSuccessListener(waitingListSnapshot -> {
+                                                                for (QueryDocumentSnapshot waitDoc : waitingListSnapshot) {
+                                                                    String userID = waitDoc.getId();
+
+                                                                    // Delete the eventID from the user's waitListedEvents collection
+                                                                    db.collection("AndroidID").document(userID)
+                                                                            .collection("waitListedEvents")
+                                                                            .document(eventID)
+                                                                            .delete()
+                                                                            .addOnSuccessListener(aVoid -> Log.d("WaitList", "Removed eventID from user's waitListedEvents: " + userID));
+
+                                                                    // Delete the individual waitingList entry
+                                                                    db.collection("events").document(eventID).collection("waitingList")
+                                                                            .document(userID)
+                                                                            .delete()
+                                                                            .addOnSuccessListener(aVoid -> Log.d("WaitList", "Deleted waitingList entry for userID: " + userID));
+                                                                }
+                                                            })
+                                                            .addOnCompleteListener(waitingListTask -> {
+                                                                // Delete event from 'events' collection
+                                                                db.collection("events").document(eventID)
+                                                                        .delete()
+                                                                        .addOnSuccessListener(aVoid -> Log.d("Event", "Deleted event from 'events': " + eventID));
+
+                                                                // Delete event document from 'facilities/facilityID/events' collection
+                                                                db.collection("facilities").document(facility.getId()).collection("events")
+                                                                        .document(eventID)
+                                                                        .delete()
+                                                                        .addOnSuccessListener(aVoid -> Log.d("FacilityEvent", "Deleted event from 'facilities/facilityID/events': " + eventID));
+                                                            });
+                                                }
+                                            })
+                                            .addOnCompleteListener(task -> {
+                                                // Once all events are processed, delete the facility itself
+                                                db.collection("facilities").document(facility.getId())
+                                                        .delete()
+                                                        .addOnSuccessListener(aVoid -> {
+                                                            Log.d("Facility", "Deleted Facility with ID: " + facility.getId());
+                                                            if (organizerID != null) {
+                                                                // Update organizer's facility ID to null
+                                                                db.collection("AndroidID").document(organizerID)
+                                                                        .update("facilityID", null)
+                                                                        .addOnSuccessListener(aVoid2 -> {
+                                                                            facilityList.remove(facility);
+                                                                            notifyDataSetChanged();
+                                                                        });
+                                                            } else {
                                                                 facilityList.remove(facility);
                                                                 notifyDataSetChanged();
-                                                            });
-                                                } else {
-                                                    facilityList.remove(facility);
-                                                    notifyDataSetChanged();
-                                                }
+                                                            }
+                                                        });
                                             });
                                 }
                             });

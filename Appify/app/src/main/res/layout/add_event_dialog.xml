@@ -12,11 +12,15 @@
         android:layout_height="wrap_content"
         android:hint="Event Name" />
 
-    <EditText
-        android:id="@+id/editDate"
-        android:layout_width="match_parent"
+    <Button
+        android:id="@+id/buttonEventDate"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:hint="Date: MMM DD, YYYY" />
+        android:textColor="@color/black"
+        app:backgroundTint="@color/buttons"
+        app:strokeColor="#FF8C00"
+        app:strokeWidth="1dp"
+        android:text="Event Date" />
 
     <EditText
         android:id="@+id/editFacility"
@@ -24,11 +28,15 @@
         android:layout_height="wrap_content"
         android:hint="Facility" />
 
-    <EditText
-        android:id="@+id/editRegistrationEndDate"
-        android:layout_width="match_parent"
+    <Button
+        android:id="@+id/buttonRegistrationEndDate"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:hint="Reg End Date: MMM DD, YYYY" />
+        android:textColor="@color/black"
+        app:backgroundTint="@color/buttons"
+        app:strokeColor="#FF8C00"
+        app:strokeWidth="1dp"
+        android:text="Registration End Date" />
 
     <EditText
         android:id="@+id/editTextEventDescription"

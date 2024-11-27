@@ -9,6 +9,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.UUID;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -106,7 +107,7 @@ public class Event {
      * and updates their status to "invited." The method first checks the number of entrants already accepted and
      * adjusts the number of additional entrants to invite based on the remaining available slots (`maxSampleEntrants - acceptedCount`).
      * The lottery continues to invite entrants until this adjusted limit is reached or no more eligible entrants are available.
-     * Additionally, it updates the entrant's status in their Android ID collection under "waitListedEvents" for the specific event.
+     * Additionally, it updates the entrant's status in their AndroidID collection under "waitListedEvents" for the specific event.
      *
      * @param db      The Firestore database instance used to access and update the database.
      * @param eventID The unique identifier of the event for which the lottery is being conducted.
@@ -158,15 +159,15 @@ public class Event {
                                             .addOnSuccessListener(aVoid -> {
                                                 Log.d("Lottery", "Entrant " + entrantId + " invited successfully.");
 
-                                                // Update the entrant's status in their Android ID collection as well
-                                                db.collection("Android ID").document(entrantId)
+                                                // Update the entrant's status in their AndroidID collection as well
+                                                db.collection("AndroidID").document(entrantId)
                                                         .collection("waitListedEvents").document(eventID)
                                                         .update("status", "invited")
                                                         .addOnSuccessListener(innerVoid -> {
-                                                            Log.d("Lottery", "Entrant " + entrantId + " status updated in Android ID collection for event " + eventID);
+                                                            Log.d("Lottery", "Entrant " + entrantId + " status updated in AndroidID collection for event " + eventID);
                                                         })
                                                         .addOnFailureListener(e -> {
-                                                            Log.w("Lottery", "Error updating entrant " + entrantId + " status in Android ID collection for event " + eventID, e);
+                                                            Log.w("Lottery", "Error updating entrant " + entrantId + " status in AndroidID collection for event " + eventID, e);
                                                         });
                                             })
                                             .addOnFailureListener(e -> {
@@ -554,9 +555,13 @@ public class Event {
     public void addToFirestore(EventAddCallback callback) {
         db.collection("events").document(this.eventId).set(this)
                 .addOnSuccessListener(aVoid -> {
-                    if (callback != null) {
-                        callback.onEventAdded(this);
-                    }
+                    db.collection("facilities").document(this.getFacility())
+                            .collection("events").document(this.getEventId()).set(new HashMap<>())
+                            .addOnSuccessListener(aVoid2 -> {
+                                if (callback != null) {
+                                    callback.onEventAdded(this);
+                            }
+                    });
                 })
                 .addOnFailureListener(e -> {
                     // Handle the failure

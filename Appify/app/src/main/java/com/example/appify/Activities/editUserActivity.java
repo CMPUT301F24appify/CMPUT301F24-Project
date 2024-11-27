@@ -36,6 +36,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
+import com.github.dhaval2404.imagepicker.ImagePicker;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.common.api.ResolvableApiException;
 import com.google.android.gms.location.LocationCallback;
@@ -62,7 +63,7 @@ import java.util.Random;
 public class editUserActivity extends AppCompatActivity {
     private FirebaseFirestore db;
     private ImageView profileImageView;
-    private Uri imageUri;
+    private Uri imageUri = null;
     private String android_id;
     private byte[] profilePictureByte;
     private EditText nameEditText, phoneEditText, emailEditText;
@@ -72,20 +73,10 @@ public class editUserActivity extends AppCompatActivity {
     private double deviceLongitude;
     private Button deviceLocationButton;
     private LocationRequest deviceLocationRequest;
-    private ActivityResultLauncher<Intent> activityResultLauncher = registerForActivityResult(
-            new ActivityResultContracts.StartActivityForResult(),
-            result -> {
-                if (result.getResultCode() == RESULT_OK && result.getData() != null) {
-                    imageUri = result.getData().getData();
-                    try {
-                        Bitmap bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), imageUri);
-                        profileImageView.setImageBitmap(bitmap);
-                    } catch (IOException e) {
-                        profileImageView.setImageURI(imageUri);
-                    }
-                }
-            }
-    );
+    private Bitmap bitmapImage = null;
+    private boolean defaultFlag = true;
+    private boolean cameraFlag = false;
+
 
     /**
      *
@@ -98,7 +89,8 @@ public class editUserActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.edit_user);
-        android_id = getIntent().getStringExtra("Android ID");
+        bitmapImage = (Bitmap) getIntent().getExtras().get("Image Bitmap");
+        android_id = getIntent().getStringExtra("AndroidID");
         boolean firstEntry = getIntent().getBooleanExtra("firstEntry", false);
         HeaderNavigation headerNavigation = new HeaderNavigation(this);
         headerNavigation.setupNavigation();
@@ -126,18 +118,19 @@ public class editUserActivity extends AppCompatActivity {
         }
         cancelButton.setOnClickListener(v -> {
             Intent intent = new Intent(editUserActivity.this, userProfileActivity.class);
-            intent.putExtra("Android ID", android_id);
+            intent.putExtra("AndroidID", android_id);
             startActivity(intent);
         });
         db = FirebaseFirestore.getInstance();
         if (android_id != null) {
             populateFields(android_id);
         }
-        uploadButton.setOnClickListener(v -> openFileChooser());
+        uploadButton.setOnClickListener(v -> openImagePicker());
 
         removeButton.setOnClickListener(v -> {
             profileImageView.setImageResource(R.drawable.default_profile);  // Reset to default image
             imageUri = null;
+            defaultFlag = true;
         });
 
         deviceLocationButton.setOnClickListener(v -> {
@@ -173,10 +166,15 @@ public class editUserActivity extends AppCompatActivity {
             }
             else {
                 // Generate profile picture
-                if (imageUri == null) {
+                if (imageUri == null && !cameraFlag) {
                     String firstLetter = String.valueOf(name.charAt(0)).toUpperCase();
-                    Bitmap profilePicture = generateProfilePicture(firstLetter);
-                    profileImageView.setImageBitmap(profilePicture);
+                    if(defaultFlag) {
+                        Bitmap profilePicture = generateProfilePicture(firstLetter);
+                        profileImageView.setImageBitmap(profilePicture);
+                    }
+                    else{
+                        profileImageView.setImageBitmap(bitmapImage);
+                    }
                 }
                 //Submit Data and open other Activity
                 sendEntrantData(android_id, name, phoneNumber, email, deviceLatitude, deviceLongitude);
@@ -184,14 +182,25 @@ public class editUserActivity extends AppCompatActivity {
 
         });
     }
+    private void openImagePicker() {
+        ImagePicker.with(this)
+                .crop()
+                .maxResultSize(1080, 1080)
+                .start();
+    }
 
     /**
-     * Opens the file chooser to select an image from the devices files.
+     * Handle the result from ImagePicker.
      */
-    private void openFileChooser() {
-        Intent intent = new Intent(Intent.ACTION_PICK);
-        intent.setType("image/*");
-        activityResultLauncher.launch(intent);
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (resultCode == RESULT_OK && data != null) {
+            // Retrieve the URI of the selected image
+            imageUri = data.getData();
+            profileImageView.setImageURI(imageUri);
+        }
     }
 
     /**
@@ -265,11 +274,11 @@ public class editUserActivity extends AppCompatActivity {
                     Entrant user = new Entrant(id, name, phone, email, downloadUrl, notificationCheck, latitude, longitude);
                     user.setFacilityID(facilityID);
                     // Save Entrant data to Firestore
-                    db.collection("Android ID").document(android_id).set(user)
+                    db.collection("AndroidID").document(android_id).set(user)
                             .addOnSuccessListener(aVoid -> {
                                 // Successfully saved data to Firestore
                                 Intent intent = new Intent(editUserActivity.this, userProfileActivity.class);
-                                intent.putExtra("Android ID", android_id);
+                                intent.putExtra("AndroidID", android_id);
                                 startActivity(intent);
                             });
                 }));
@@ -281,7 +290,7 @@ public class editUserActivity extends AppCompatActivity {
      * @param android_id The user's unique device ID.
      */
     private void populateFields(String android_id){
-        db.collection("Android ID").document(android_id).get()
+        db.collection("AndroidID").document(android_id).get()
                 .addOnSuccessListener(documentSnapshot -> {
                     if (documentSnapshot.exists()) {
                         // Retrieve current user data
@@ -324,8 +333,9 @@ public class editUserActivity extends AppCompatActivity {
         storageRef.getBytes(size)
                 .addOnSuccessListener(bytes -> {
                     // Convert the byte array to a Bitmap
-                    Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
-                    profileImageView.setImageBitmap(bitmap);
+                    defaultFlag = false;
+                    bitmapImage = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+                    profileImageView.setImageBitmap(bitmapImage);
                 });
     }
 

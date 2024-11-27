@@ -90,7 +90,7 @@ public class CustomEventAdapter extends ArrayAdapter<Event> {
 
         FirebaseFirestore db = FirebaseFirestore.getInstance();
 
-        db.collection("Android ID").document(entrantID).collection("waitListedEvents").document(event.getEventId()).get().addOnSuccessListener(DocumentSnapshot -> {
+        db.collection("AndroidID").document(entrantID).collection("waitListedEvents").document(event.getEventId()).get().addOnSuccessListener(DocumentSnapshot -> {
             String status = DocumentSnapshot.getString("status");
 
             statusIcon.setVisibility(View.VISIBLE);

@@ -1,89 +1,98 @@
+// MainActivity.java
 package com.example.appify;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
-import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
-import android.provider.Settings;
+import android.provider.Settings.Secure;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.ImageView;
-import android.widget.Button;
-import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
-import android.provider.Settings.Secure;
+import androidx.core.content.ContextCompat;
+import androidx.core.app.ActivityCompat;
+
+import android.Manifest;
+import android.content.pm.PackageManager;
+import android.os.Build;
 
 import com.example.appify.Activities.EntrantHomePageActivity;
-import com.google.firebase.firestore.CollectionReference;
 import com.example.appify.Activities.editUserActivity;
-import com.example.appify.Activities.userProfileActivity;
-import com.example.appify.Model.Entrant;
-import com.example.appify.Model.Event;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 /**
  * Main activity that initiates the application and directs users based on their profile status.
- * Displays an animated logo on startup, retrieves the device's unique Android ID,
+ * Displays an animated logo on startup, retrieves the device's unique AndroidID,
  * and checks if the user profile exists in Firestore.
- * Navigates to either editUserActivity (for new users) or userProfileActivity (for existing users).
+ * Navigates to either editUserActivity (for new users) or EntrantHomePageActivity (for existing users).
  */
 public class MainActivity extends AppCompatActivity {
     private FirebaseFirestore db;
     private String android_id;
+    private static final int REQUEST_CODE_POST_NOTIFICATIONS = 1001;
 
-    //private static final String TAG = "LotteryTestActivity";
-   // private static final String TEST_EVENT_ID = "8b0f2eb9-e96f-48ee-84c0-8002a676f5ca";
-
-    @SuppressLint("MissingSuperCall")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-
-        /**
-         * Called when the activity is first created. Sets up UI, retrieves the Android ID,
-         * initializes Firebase, and starts the startup animation.
-         *
-         * @param savedInstanceState Saved instance data for restoring state if applicable.
-         */
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // Retrieve the unique Android ID
+        // Retrieve the unique AndroidID
         android_id = Secure.getString(getContentResolver(), Secure.ANDROID_ID);
-        Log.d("MainActivity", "Android ID: " + android_id);
+        Log.d("MainActivity", "AndroidID: " + android_id);
 
-        // Set Android ID in the global application class
+        // Set AndroidID in the global application class
         MyApp app = (MyApp) getApplication();
         app.setAndroidId(android_id);
 
+        // Request notification permission for Android 13 and above
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.POST_NOTIFICATIONS}, REQUEST_CODE_POST_NOTIFICATIONS);
+            } else {
+                // Permission already granted
+                Log.d("MainActivity", "Notification permission already granted.");
+            }
+        }
+
         // Adjust padding based on system bars (optional, depending on your UI design)
         View mainView = findViewById(R.id.main);
-        ViewCompat.setOnApplyWindowInsetsListener(mainView, (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-            return insets;
-        });
+        if (mainView != null) {
+            ViewCompat.setOnApplyWindowInsetsListener(mainView, (v, insets) -> {
+                Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+                v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
+                return insets;
+            });
+        }
 
         // Initialize Firestore
         db = FirebaseFirestore.getInstance();
 
         // Start the startup animation
         startUpAnimation();
+    }
 
-      //  runLotteryTest(db);
-      //  runAcceptStatusTest(db);
-
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == REQUEST_CODE_POST_NOTIFICATIONS) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                // Permission granted
+                Log.d("MainActivity", "Notification permission granted.");
+            } else {
+                // Permission denied
+                Log.d("MainActivity", "Notification permission denied.");
+                // Optionally, inform the user
+                Toast.makeText(this, "Notification permission is required for event updates.", Toast.LENGTH_LONG).show();
+            }
+        }
     }
 
     /**
@@ -155,27 +164,35 @@ public class MainActivity extends AppCompatActivity {
     /**
      * Checks if the user exists in Firestore and navigates accordingly.
      *
-     * @param androidId The unique Android ID of the device/user.
+     * @param androidId The unique AndroidID of the device/user.
      */
     private void checkAndNavigate(String androidId) {
-        db.collection("Android ID").document(androidId)
+        Log.d("MainActivity", "Checking user status for AndroidID: " + androidId);
+
+        // Updated collection name to "AndroidID" without spaces
+        db.collection("AndroidID").document(androidId)
                 .get()
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
                         DocumentSnapshot document = task.getResult();
-                        if (!document.exists()) {
-                            // New user, navigate to editUserActivity
-                            Log.d("MainActivity", "User is new. Navigating to editUserActivity.");
-                            navigateToEditUser(androidId);
-                        } else {
+                        if (document != null && document.exists()) {
                             // Existing user, navigate to HomePage
                             Log.d("MainActivity", "User exists. Navigating to EntrantHomePageActivity.");
                             navigateToHomePage(androidId);
+                        } else {
+                            // New user, navigate to editUserActivity
+                            Log.d("MainActivity", "User is new. Navigating to editUserActivity.");
+                            navigateToEditUser(androidId);
                         }
                     } else {
                         // Handle the error
-                        Log.w("MainActivity", "Error checking for Android ID", task.getException());
+                        Log.w("MainActivity", "Error checking for AndroidID", task.getException());
                         Toast.makeText(MainActivity.this, "Error checking user status. Please try again.", Toast.LENGTH_SHORT).show();
+
+                        // Log additional information
+                        if (task.getException() != null) {
+                            Log.e("MainActivity", "Firestore Exception: ", task.getException());
+                        }
                     }
                 });
     }
@@ -183,11 +200,11 @@ public class MainActivity extends AppCompatActivity {
     /**
      * Navigates the user to editUserActivity to set up their profile.
      *
-     * @param androidId The unique Android ID of the device/user.
+     * @param androidId The unique AndroidID of the device/user.
      */
     private void navigateToEditUser(String androidId) {
         Intent intent = new Intent(MainActivity.this, editUserActivity.class);
-        intent.putExtra("Android ID", androidId);
+        intent.putExtra("AndroidID", androidId); // Updated key to "AndroidID" without spaces
         intent.putExtra("firstEntry", true);
         startActivity(intent);
         finish(); // Prevent user from returning to MainActivity
@@ -196,13 +213,12 @@ public class MainActivity extends AppCompatActivity {
     /**
      * Navigates the user to EntrantHomePageActivity to view their Home Page.
      *
-     * @param androidId The unique Android ID of the device/user.
+     * @param androidId The unique AndroidID of the device/user.
      */
     private void navigateToHomePage(String androidId) {
         Intent intent = new Intent(MainActivity.this, EntrantHomePageActivity.class);
-        intent.putExtra("Android ID", androidId);
+        intent.putExtra("AndroidID", androidId); // Updated key to "AndroidID" without spaces
         startActivity(intent);
-
         finish(); // Prevent user from returning to MainActivity
     }
 }

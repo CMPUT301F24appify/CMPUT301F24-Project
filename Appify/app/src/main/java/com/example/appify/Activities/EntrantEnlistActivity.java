@@ -80,7 +80,7 @@ public class EntrantEnlistActivity extends AppCompatActivity {
                              HeaderNavigation headerNavigation = new HeaderNavigation(this);
                              headerNavigation.setupNavigation();
 
-                             // Get the users Android ID
+                             // Get the users AndroidID
                              MyApp app = (MyApp) getApplication();
                              String androidId = app.getAndroidId();
 
@@ -238,7 +238,7 @@ public class EntrantEnlistActivity extends AppCompatActivity {
 
                                 // Set up actions for the accept and decline buttons
                                 acceptInviteButton.setOnClickListener(v -> {
-                                    db.collection("Android ID").document(androidId).get().addOnSuccessListener(entrantDoc -> {
+                                    db.collection("AndroidID").document(androidId).get().addOnSuccessListener(entrantDoc -> {
                                         if (entrantDoc.exists()) {
                                             Entrant entrant = new Entrant(
                                                     entrantDoc.getString("id"),
@@ -259,7 +259,7 @@ public class EntrantEnlistActivity extends AppCompatActivity {
                                 });
 
                                 declineInviteButton.setOnClickListener(v -> {
-                                    db.collection("Android ID").document(androidId).get().addOnSuccessListener(entrantDoc -> {
+                                    db.collection("AndroidID").document(androidId).get().addOnSuccessListener(entrantDoc -> {
                                         if (entrantDoc.exists()) {
                                             Entrant entrant = new Entrant(
                                                     entrantDoc.getString("id"),
@@ -367,7 +367,7 @@ public class EntrantEnlistActivity extends AppCompatActivity {
         waitingListRef.document(androidId).set(waitlistData)
                 .addOnSuccessListener(aVoid -> {
                     // Add event to user's waitListedEvents with status "enrolled"
-                    CollectionReference userWaitListedEventsRef = db.collection("Android ID")
+                    CollectionReference userWaitListedEventsRef = db.collection("AndroidID")
                             .document(androidId)
                             .collection("waitListedEvents");
 
@@ -408,7 +408,7 @@ public class EntrantEnlistActivity extends AppCompatActivity {
         waitingListRef.document(androidId).delete()
                 .addOnSuccessListener(aVoid -> {
                     // Remove event from user's waitListedEvents
-                    CollectionReference userWaitListedEventsRef = db.collection("Android ID")
+                    CollectionReference userWaitListedEventsRef = db.collection("AndroidID")
                             .document(androidId)
                             .collection("waitListedEvents");
 

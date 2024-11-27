@@ -10,7 +10,7 @@ import android.widget.Toast;
 
 import com.example.appify.Activities.EntrantHomePageActivity;
 import com.example.appify.Activities.EventActivity;
-import com.example.appify.Activities.FacilitiesListActivity;
+import com.example.appify.Activities.AdminListActivity;
 import com.example.appify.Activities.userProfileActivity;
 import com.example.appify.Fragments.AddFacilityDialogFragment;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -46,7 +46,7 @@ public class HeaderNavigation {
         }
 
         // Facilities
-        TextView facilitiesText = activity.findViewById(R.id.facilitiesText_navBar);
+        TextView facilitiesText = activity.findViewById(R.id.adminText_navBar);
         if (facilitiesText != null) {
             facilitiesText.setOnClickListener(v -> checkAdminStatus());
         }
@@ -93,7 +93,7 @@ public class HeaderNavigation {
      * Navigates to the facilities management page.
      */
     private void navigateToFacilities() {
-        Intent intent = new Intent(activity, FacilitiesListActivity.class);
+        Intent intent = new Intent(activity, AdminListActivity.class);
         activity.startActivity(intent);
     }
 
@@ -157,7 +157,7 @@ public class HeaderNavigation {
         String androidId = app.getAndroidId();
 
         if (androidId != null) {
-            db.collection("Android ID").document(androidId)
+            db.collection("AndroidID").document(androidId)
                     .get()
                     .addOnSuccessListener(documentSnapshot -> {
                         if (documentSnapshot.exists() && documentSnapshot.getString("facilityID") != null) {
@@ -176,7 +176,7 @@ public class HeaderNavigation {
         String androidId = app.getAndroidId();
 
         if (androidId != null) {
-            db.collection("Android ID").document(androidId)
+            db.collection("AndroidID").document(androidId)
                     .get()
                     .addOnSuccessListener(documentSnapshot -> {
                         if (documentSnapshot.exists() && Boolean.TRUE.equals(documentSnapshot.getBoolean("isAdmin"))) {

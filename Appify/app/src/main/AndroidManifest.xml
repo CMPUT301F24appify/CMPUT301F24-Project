@@ -9,11 +9,16 @@
 
     <uses-feature
         android:name="android.hardware.camera"
-        android:required="false" />
+        android:required="true" />
 
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.CAMERA"/>
+    <uses-permission android:name="android.permission.CAMERA"
+        android:required="true" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+
     <application
         android:name=".MyApp"
         android:allowBackup="true"
@@ -25,6 +30,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Appify"
         tools:targetApi="31">
+
         <activity
             android:name=".MainActivity"
             android:exported="true">
@@ -59,8 +65,8 @@
         <activity android:name=".Activities.EnlistConfirmationActivity" />
         <activity android:name=".Activities.EventActionsActivity" />
         <activity android:name=".Activities.ManageFacilityActivity" />
-        <activity android:name=".Activities.FacilitiesListActivity" />
         <activity android:name=".Activities.MapActivity" />
+        <activity android:name=".Activities.AdminListActivity" />
 
         <activity android:name=".Activities.CaptureAct"
             android:screenOrientation="portrait"
@@ -72,6 +78,7 @@
             android:value="AIzaSyAAecNafLfMtPMKXMiKwuTAPLOgfqzJucA"/>
 
     </application>
+
 
 
 </manifest>

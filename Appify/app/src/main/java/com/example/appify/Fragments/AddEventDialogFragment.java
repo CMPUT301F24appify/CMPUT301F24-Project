@@ -1,11 +1,13 @@
 package com.example.appify.Fragments;
 
+import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.net.Uri;
 import android.util.Log;
+import android.widget.DatePicker;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -25,6 +27,7 @@ import com.google.firebase.storage.StorageReference;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 import java.util.UUID;
@@ -37,15 +40,14 @@ public class AddEventDialogFragment extends DialogFragment {
     private static final int Pick_Image_Request = 1;
     private String posterUri;  // URI for the poster image
     private AddEventDialogListener listener;  // Listener for communicating with parent activity
-    private Button uploadPosterButton;  // Button to trigger poster image upload
+    private Button uploadPosterButton, buttonEventDate, buttonRegistrationEndDate;  // Buttons for selecting dates
     private boolean isGeolocate = false;  // Flag to indicate geolocation status
     private String facilityID;  // ID for the facility
     private String facilityName;  // Name of the facility
-    private EditText eventFacility;  // EditText for facility name input
+    private EditText eventFacility, eventDescription, maxWaitEntrant, maxSampleEntrant;  // EditTexts for other fields
 
-    /**
-     * Interface for communicating the added event details to the parent activity.
-     */
+    private Calendar calendar;  // Calendar instance for date pickers
+
     public interface AddEventDialogListener {
         /**
          * Callback for adding a new event with the provided details.
@@ -100,19 +102,22 @@ public class AddEventDialogFragment extends DialogFragment {
         LayoutInflater inflater = requireActivity().getLayoutInflater();
         View view = inflater.inflate(R.layout.add_event_dialog, null);
 
-        // Retrieve and set facility name from MyApp based on the device's Android ID
+        // Initialize Firestore and Calendar
         FirebaseFirestore db = FirebaseFirestore.getInstance();
+        calendar = Calendar.getInstance();
+
+        // Get facility info
         MyApp app = (MyApp) requireActivity().getApplication();
         String androidId = app.getAndroidId();
-        db.collection("Android ID").document(androidId)
+        db.collection("AndroidID").document(androidId)
                 .get()
                 .addOnSuccessListener(documentSnapshot -> {
                     facilityID = documentSnapshot.getString("facilityID");
                     if (facilityID != null && !facilityID.isEmpty()) {
                         db.collection("facilities").document(facilityID)
                                 .get()
-                                .addOnSuccessListener(documentSnapshot2 -> {
-                                    facilityName = documentSnapshot2.getString("name");
+                                .addOnSuccessListener(doc -> {
+                                    facilityName = doc.getString("name");
                                     eventFacility = view.findViewById(R.id.editFacility);
                                     eventFacility.setText(facilityName);
                                     eventFacility.setEnabled(false);
@@ -124,47 +129,48 @@ public class AddEventDialogFragment extends DialogFragment {
                                 })
                                 .addOnFailureListener(e -> Log.w("MyApp", "Failed to retrieve facility name", e));
                     } else {
-                        Log.w("MyApp", "No facilityID found for this Android ID");
+                        Log.w("MyApp", "No facilityID found for this AndroidID");
                     }
-                })
-                .addOnFailureListener(e -> Log.w("MyApp", "Failed to retrieve facilityID", e));
+                });
 
-        // Initialize form input fields
+        // Initialize input fields
         EditText eventName = view.findViewById(R.id.editTextEventName);
-        EditText eventDate = view.findViewById(R.id.editDate);
-        EditText eventregistrationEndDate = view.findViewById(R.id.editRegistrationEndDate);
-        EditText eventDescription = view.findViewById(R.id.editTextEventDescription);
-
-        // Set up geolocation toggle button and file upload button
-        Button reminderGeolocation = view.findViewById(R.id.checkGeolocation);
+        eventFacility = view.findViewById(R.id.editFacility);
+        eventDescription = view.findViewById(R.id.editTextEventDescription);
+        maxWaitEntrant = view.findViewById(R.id.maxNumberWaitList);
+        maxSampleEntrant = view.findViewById(R.id.maxNumberSample);
+        buttonEventDate = view.findViewById(R.id.buttonEventDate);
+        buttonRegistrationEndDate = view.findViewById(R.id.buttonRegistrationEndDate);
         uploadPosterButton = view.findViewById(R.id.buttonUploadPoster);
-        EditText maxWaitEntrant = view.findViewById(R.id.maxNumberWaitList);
-        EditText maxSampleEntrant = view.findViewById(R.id.maxNumberSample);
+        Button reminderGeolocation = view.findViewById(R.id.checkGeolocation);
 
+        // Set up date pickers
+        buttonEventDate.setOnClickListener(v -> openDatePicker(buttonEventDate));
+        buttonRegistrationEndDate.setOnClickListener(v -> openDatePicker(buttonRegistrationEndDate));
+
+        // Geolocation toggle
         reminderGeolocation.setOnClickListener(v -> {
             isGeolocate = !isGeolocate;
             updateButtonAppearance(reminderGeolocation, isGeolocate);
         });
 
+        // Upload poster button
         uploadPosterButton.setOnClickListener(v -> openFileChooser());
 
+        // Build dialog
         builder.setView(view)
                 .setTitle("Add Event")
                 .setPositiveButton("CONFIRM", (dialog, id) -> {
-                    // Validate inputs before confirming the dialog
-                    if (validateInputs(eventName, eventDate, eventFacility, eventregistrationEndDate, maxWaitEntrant, maxSampleEntrant)) {
+                    if (validateInputs(eventName, eventFacility, eventDescription)) {
                         String name = eventName.getText().toString();
-                        String date = eventDate.getText().toString();
-                        String facility = facilityName;
-                        String registrationEndDate = eventregistrationEndDate.getText().toString();
+                        String date = buttonEventDate.getText().toString();
+                        String registrationEndDate = buttonRegistrationEndDate.getText().toString();
                         String description = eventDescription.getText().toString();
+                        int waitMax = parseInteger(maxWaitEntrant.getText().toString());
+                        int sampleMax = parseInteger(maxSampleEntrant.getText().toString());
 
-                        int wait_max = parseInteger(maxWaitEntrant.getText().toString());
-                        int sample_max = parseInteger(maxSampleEntrant.getText().toString());
-
-                        listener.onEventAdded(name, date, facility, registrationEndDate, description,
-                                wait_max, sample_max, posterUri, isGeolocate,
-                                "", "", "", "");
+                        listener.onEventAdded(name, date, facilityID, registrationEndDate, description,
+                                waitMax, sampleMax, posterUri, isGeolocate, "", "", "", "");
                     } else {
                         Toast.makeText(getContext(), "Please correct the highlighted fields", Toast.LENGTH_SHORT).show();
                     }
@@ -174,68 +180,41 @@ public class AddEventDialogFragment extends DialogFragment {
         return builder.create();
     }
 
-    /**
-     * Validates input fields to ensure they meet required formats and values.
-     *
-     * @param eventName            Event name field.
-     * @param eventDate            Event date field.
-     * @param eventFacility        Facility field.
-     * @param eventRegistrationEndDate Registration end date field.
-     * @param maxWaitEntrant       Maximum waitlist entrants field.
-     * @param maxSampleEntrant     Maximum sample entrants field.
-     * @return True if inputs are valid, otherwise false.
-     */
-    private boolean validateInputs(EditText eventName, EditText eventDate, EditText eventFacility, EditText eventRegistrationEndDate, EditText maxWaitEntrant, EditText maxSampleEntrant) {
-        boolean isValid = true;
+    private void openDatePicker(Button button) {
+        DatePickerDialog datePickerDialog = new DatePickerDialog(requireContext(),
+                (view, year, month, dayOfMonth) -> {
+                    calendar.set(year, month, dayOfMonth);
+                    String selectedDate = new SimpleDateFormat("MMM dd, yyyy", Locale.getDefault()).format(calendar.getTime());
+                    button.setText(selectedDate);
+                },
+                calendar.get(Calendar.YEAR),
+                calendar.get(Calendar.MONTH),
+                calendar.get(Calendar.DAY_OF_MONTH));
+        datePickerDialog.show();
+    }
 
-        // Check for non-empty event name
+    private boolean validateInputs(EditText eventName, EditText eventFacility, EditText eventDescription) {
+        boolean isValid = true;
         if (eventName.getText().toString().trim().isEmpty()) {
             eventName.setError("Event name is required");
-            Toast.makeText(getContext(), "Event name is required.", Toast.LENGTH_SHORT).show();
             isValid = false;
         }
-
-        // Check for non-empty facility
         if (eventFacility.getText().toString().trim().isEmpty()) {
-            eventFacility.setError("Facility name is required");
-            Toast.makeText(getContext(), "Event facility is required", Toast.LENGTH_SHORT).show();
+            eventFacility.setError("Facility is required");
             isValid = false;
         }
-
-        // Validate event date format (expects format "MMM dd, yyyy")
-        if (!isValidDate(eventDate.getText().toString())) {
-            eventDate.setError("Enter date in 'MMM dd, yyyy' format (e.g., Nov 10, 2022)");
-            Toast.makeText(getContext(), "Enter date in 'MMM dd, yyyy' format for the event date.", Toast.LENGTH_SHORT).show();
+        if (eventDescription.getText().toString().trim().isEmpty()) {
+            eventDescription.setError("Description is required");
             isValid = false;
         }
-
-        // Validate registration end date format
-        if (!isValidDate(eventRegistrationEndDate.getText().toString())) {
-            eventRegistrationEndDate.setError("Enter date in 'MMM dd, yyyy' format (e.g., Nov 10, 2022)");
-            Toast.makeText(getContext(), "Enter date in 'MMM dd, yyyy' format for the registration end date.", Toast.LENGTH_SHORT).show();
+        if (buttonEventDate.getText().toString().equals("Select Event Date")) {
+            Toast.makeText(getContext(), "Please select an event date", Toast.LENGTH_SHORT).show();
             isValid = false;
         }
-
-        // Check if the registration end date is before the event date
-        if (!isRegistrationEndDateBeforeEventDate(eventDate.getText().toString(), eventRegistrationEndDate.getText().toString())) {
-            eventRegistrationEndDate.setError("Registration end date must be before the event date");
-            Toast.makeText(getContext(), "Registration end date must be before the event date.", Toast.LENGTH_SHORT).show();
+        if (buttonRegistrationEndDate.getText().toString().equals("Select Registration End Date")) {
+            Toast.makeText(getContext(), "Please select a registration end date", Toast.LENGTH_SHORT).show();
             isValid = false;
         }
-
-        // Validate max entrants as positive integers
-        if (!isPositiveInteger(maxWaitEntrant.getText().toString())) {
-            maxWaitEntrant.setError("Enter a positive number");
-            Toast.makeText(getContext(), "Max waitlist entrants must be a positive number.", Toast.LENGTH_SHORT).show();
-            isValid = false;
-        }
-
-        if (!isPositiveInteger(maxSampleEntrant.getText().toString())) {
-            maxSampleEntrant.setError("Enter a positive number");
-            Toast.makeText(getContext(), "Max sample entrants must be a positive number.", Toast.LENGTH_SHORT).show();
-            isValid = false;
-        }
-
         return isValid;
     }
 

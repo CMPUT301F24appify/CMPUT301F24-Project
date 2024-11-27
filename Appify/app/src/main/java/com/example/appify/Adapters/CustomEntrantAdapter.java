@@ -2,12 +2,14 @@ package com.example.appify.Adapters;
 
 import android.app.AlertDialog;
 import android.content.Context;
+import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -69,30 +71,34 @@ public class CustomEntrantAdapter extends ArrayAdapter<Entrant> {
 
         View finalConvertView = convertView;
         ImageView xIcon = finalConvertView.findViewById(R.id.x_icon);
+        LinearLayout entrantCard = finalConvertView.findViewById(R.id.entrant_card);
 
-        db.collection("Android ID").document(entrantID).collection("waitListedEvents").document(eventID).get().addOnSuccessListener(DocumentSnapshot -> {
+        db.collection("AndroidID").document(entrantID).collection("waitListedEvents").document(eventID).get().addOnSuccessListener(DocumentSnapshot -> {
             String status = DocumentSnapshot.getString("status");
             TextView entrantStatusView = finalConvertView.findViewById(R.id.entrant_status_text);
-
             if (Objects.equals(status, "enrolled")){
                 // Set status text to orange if status is enrolled, hides the x button
-                entrantStatusView.setTextColor(Color.parseColor("#FFA500"));
+                entrantStatusView.setTextColor(Color.parseColor("#99431f"));
                 entrantStatusView.setText("Enrolled");
+                entrantCard.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#FFDBBB")));
                 xIcon.setVisibility(View.GONE);
             } else if (Objects.equals(status,"invited")) {
                 // Set status text to blue if status is invited, shows the x button
-                entrantStatusView.setTextColor(Color.parseColor("#ADD8E6"));
+                entrantStatusView.setTextColor(Color.parseColor("#00008b"));
                 entrantStatusView.setText("Invited");
+                entrantCard.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#add8e6")));
                 xIcon.setVisibility(View.VISIBLE);
             } else if (Objects.equals(status, "rejected")) {
                 // Set status text to red if status is rejected, hides the x button
-                entrantStatusView.setTextColor(Color.parseColor("#FF0000"));
+                entrantStatusView.setTextColor(Color.parseColor("#8b0000"));
                 entrantStatusView.setText("Rejected");
+                entrantCard.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#ffc0c0")));
                 xIcon.setVisibility(View.GONE);
             } else if (Objects.equals(status, "accepted")) {
                 // Set status text to green if status is accepted, hides the x button
-                entrantStatusView.setTextColor(Color.parseColor("#008000"));
+                entrantStatusView.setTextColor(Color.parseColor("#06402B"));
                 entrantStatusView.setText("Accepted");
+                entrantCard.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#a6ffa6")));
                 xIcon.setVisibility(View.GONE);
             }
         });
@@ -124,7 +130,7 @@ public class CustomEntrantAdapter extends ArrayAdapter<Entrant> {
                     HashMap<String, Object> newStatusData = new HashMap<>();
                     newStatusData.put("status", "rejected");
                     db.collection("events").document(eventID).collection("waitingList").document(entrant.getId()).set(newStatusData);
-                    db.collection("Android ID").document(entrant.getId()).collection("waitListedEvents").document(eventID).set(newStatusData);
+                    db.collection("AndroidID").document(entrant.getId()).collection("waitListedEvents").document(eventID).set(newStatusData);
 
                     if (context instanceof EventEntrantsActivity){
                         EventEntrantsActivity activity = (EventEntrantsActivity) context;

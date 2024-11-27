@@ -153,7 +153,7 @@ public class EntrantHomePageActivity extends AppCompatActivity {
         String androidId = app.getAndroidId();
         System.out.println(androidId);
 
-        CollectionReference userRef = db.collection("Android ID").document(androidId).collection("waitListedEvents");
+        CollectionReference userRef = db.collection("AndroidID").document(androidId).collection("waitListedEvents");
 
         userRef.get().addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
