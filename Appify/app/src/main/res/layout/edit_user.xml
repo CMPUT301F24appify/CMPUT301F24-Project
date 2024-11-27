@@ -192,6 +192,17 @@
             app:strokeWidth="1dp"
             android:layout_marginStart="20dp" />
 
+        <Button
+            android:id="@+id/locationButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Location"
+            android:textColor="@color/black"
+            app:backgroundTint="@color/buttons"
+            app:strokeColor="@color/buttons_stroke"
+            app:strokeWidth="1dp"
+            android:layout_marginStart="20dp" />
+
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

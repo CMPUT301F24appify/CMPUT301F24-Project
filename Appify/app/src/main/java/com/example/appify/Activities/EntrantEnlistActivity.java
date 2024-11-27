@@ -246,8 +246,11 @@ public class EntrantEnlistActivity extends AppCompatActivity {
                                                     entrantDoc.getString("phoneNumber"),
                                                     entrantDoc.getString("email"),
                                                     entrantDoc.getString("profilePictureUrl"),
-                                                    entrantDoc.getBoolean("notifications") != null && entrantDoc.getBoolean("notifications")
-                                            );
+                                                    entrantDoc.getBoolean("notifications") != null && entrantDoc.getBoolean("notifications"),
+                                                    entrantDoc.getDouble("latitude"),
+                                                    entrantDoc.getDouble("longitude")
+
+                                                    );
                                             entrant.acceptEvent(db, eventId);
                                             Intent intent = new Intent(EntrantEnlistActivity.this, EntrantHomePageActivity.class);
                                             startActivity(intent);
@@ -264,7 +267,9 @@ public class EntrantEnlistActivity extends AppCompatActivity {
                                                     entrantDoc.getString("phoneNumber"),
                                                     entrantDoc.getString("email"),
                                                     entrantDoc.getString("profilePictureUrl"),
-                                                    entrantDoc.getBoolean("notifications") != null && entrantDoc.getBoolean("notifications")
+                                                    entrantDoc.getBoolean("notifications") != null && entrantDoc.getBoolean("notifications"),
+                                                    entrantDoc.getDouble("latitude"),
+                                                    entrantDoc.getDouble("longitude")
                                             );
 
                                             eventRef.get().addOnSuccessListener(eventDoc -> {
