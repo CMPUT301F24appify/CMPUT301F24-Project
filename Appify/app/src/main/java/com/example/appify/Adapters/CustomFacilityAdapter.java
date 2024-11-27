@@ -73,7 +73,7 @@ public class CustomFacilityAdapter extends ArrayAdapter<Facility> {
                                             .delete()
                                             .addOnSuccessListener(aVoid -> {
                                                 if (organizerID != null) {
-                                                    db.collection("Android ID").document(organizerID)
+                                                    db.collection("AndroidID").document(organizerID)
                                                             .update("facilityID", null)
                                                             .addOnSuccessListener(aVoid2 -> {
                                                                 facilityList.remove(facility);

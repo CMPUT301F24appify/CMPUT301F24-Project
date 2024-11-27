@@ -157,7 +157,7 @@ public class HeaderNavigation {
         String androidId = app.getAndroidId();
 
         if (androidId != null) {
-            db.collection("Android ID").document(androidId)
+            db.collection("AndroidID").document(androidId)
                     .get()
                     .addOnSuccessListener(documentSnapshot -> {
                         if (documentSnapshot.exists() && documentSnapshot.getString("facilityID") != null) {
@@ -176,7 +176,7 @@ public class HeaderNavigation {
         String androidId = app.getAndroidId();
 
         if (androidId != null) {
-            db.collection("Android ID").document(androidId)
+            db.collection("AndroidID").document(androidId)
                     .get()
                     .addOnSuccessListener(documentSnapshot -> {
                         if (documentSnapshot.exists() && Boolean.TRUE.equals(documentSnapshot.getBoolean("isAdmin"))) {

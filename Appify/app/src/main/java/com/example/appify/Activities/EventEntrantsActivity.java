@@ -134,12 +134,12 @@ public class EventEntrantsActivity extends AppCompatActivity{
                 int[] tasksCompleted = {0};
                 int totalTasks = task.getResult().size();
                 for (QueryDocumentSnapshot document : task.getResult()) {
-                    // For each user in the waiting list, get their details from the "Android ID" collection
+                    // For each user in the waiting list, get their details from the "AndroidID" collection
                     String userID = document.getId();
                     Object waitingListStatus = document.get("status");
 
                     // Access each entrant in the waiting list for this event.
-                    db.collection("Android ID").document(userID).get()
+                    db.collection("AndroidID").document(userID).get()
                             .addOnCompleteListener(task2 ->{
                                 if(task2.isSuccessful() && task2.getResult() != null){
                                     DocumentSnapshot entrantData = task2.getResult();
@@ -154,7 +154,7 @@ public class EventEntrantsActivity extends AppCompatActivity{
                                     Entrant entrant = new Entrant(entrantID, entrantName, phoneNumber, entrantEmail, entrantProfilePic, notifications);
                                     entrant.setFacilityID(facilityID);
 
-                                    db.collection("Android ID").document(entrantID).collection("waitListedEvents").document(eventID).get().addOnSuccessListener(DocumentSnapshot -> {
+                                    db.collection("AndroidID").document(entrantID).collection("waitListedEvents").document(eventID).get().addOnSuccessListener(DocumentSnapshot -> {
                                         String status = DocumentSnapshot.getString("status");
                                         if (Objects.equals(status, "enrolled")){
                                             entrantListWaitinglisted.add(entrant);

@@ -70,7 +70,7 @@ public class CustomEntrantAdapter extends ArrayAdapter<Entrant> {
         View finalConvertView = convertView;
         ImageView xIcon = finalConvertView.findViewById(R.id.x_icon);
 
-        db.collection("Android ID").document(entrantID).collection("waitListedEvents").document(eventID).get().addOnSuccessListener(DocumentSnapshot -> {
+        db.collection("AndroidID").document(entrantID).collection("waitListedEvents").document(eventID).get().addOnSuccessListener(DocumentSnapshot -> {
             String status = DocumentSnapshot.getString("status");
             TextView entrantStatusView = finalConvertView.findViewById(R.id.entrant_status_text);
 
@@ -124,7 +124,7 @@ public class CustomEntrantAdapter extends ArrayAdapter<Entrant> {
                     HashMap<String, Object> newStatusData = new HashMap<>();
                     newStatusData.put("status", "rejected");
                     db.collection("events").document(eventID).collection("waitingList").document(entrant.getId()).set(newStatusData);
-                    db.collection("Android ID").document(entrant.getId()).collection("waitListedEvents").document(eventID).set(newStatusData);
+                    db.collection("AndroidID").document(entrant.getId()).collection("waitListedEvents").document(eventID).set(newStatusData);
 
                     if (context instanceof EventEntrantsActivity){
                         EventEntrantsActivity activity = (EventEntrantsActivity) context;

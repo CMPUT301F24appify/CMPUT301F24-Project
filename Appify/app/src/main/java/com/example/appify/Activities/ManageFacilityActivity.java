@@ -50,7 +50,7 @@ public class ManageFacilityActivity extends AppCompatActivity implements AddFaci
         HeaderNavigation headerNavigation = new HeaderNavigation(this);
         headerNavigation.setupNavigation();
 
-        // Obtain the Current Android ID
+        // Obtain the Current AndroidID
         MyApp app = (MyApp) getApplication();
         String androidId = app.getAndroidId();
 
@@ -71,7 +71,7 @@ public class ManageFacilityActivity extends AppCompatActivity implements AddFaci
         if (facilityID != null && !facilityID.isEmpty()) {
             loadFacilityData(facilityID, facilityName, facilityLocation, facilityEmail, facilityCapacity, facilityDescription);
         } else {
-            db.collection("Android ID").document(androidId).get()
+            db.collection("AndroidID").document(androidId).get()
                     .addOnSuccessListener(documentSnapshot -> {
                         if (documentSnapshot.exists()) {
                             facilityID = documentSnapshot.getString("facilityID");
@@ -168,7 +168,7 @@ public class ManageFacilityActivity extends AppCompatActivity implements AddFaci
                             .addOnSuccessListener(aVoid -> {
                                 // Update user's facilityID to null
                                 String androidId = ((MyApp) getApplication()).getAndroidId();
-                                db.collection("Android ID").document(androidId)
+                                db.collection("AndroidID").document(androidId)
                                         .update("facilityID", null)
                                         .addOnSuccessListener(aVoid2 -> {
                                             Toast.makeText(this, "Facility deleted.", Toast.LENGTH_SHORT).show();

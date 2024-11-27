@@ -100,11 +100,11 @@ public class AddEventDialogFragment extends DialogFragment {
         LayoutInflater inflater = requireActivity().getLayoutInflater();
         View view = inflater.inflate(R.layout.add_event_dialog, null);
 
-        // Retrieve and set facility name from MyApp based on the device's Android ID
+        // Retrieve and set facility name from MyApp based on the device's AndroidID
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         MyApp app = (MyApp) requireActivity().getApplication();
         String androidId = app.getAndroidId();
-        db.collection("Android ID").document(androidId)
+        db.collection("AndroidID").document(androidId)
                 .get()
                 .addOnSuccessListener(documentSnapshot -> {
                     facilityID = documentSnapshot.getString("facilityID");
@@ -124,7 +124,7 @@ public class AddEventDialogFragment extends DialogFragment {
                                 })
                                 .addOnFailureListener(e -> Log.w("MyApp", "Failed to retrieve facility name", e));
                     } else {
-                        Log.w("MyApp", "No facilityID found for this Android ID");
+                        Log.w("MyApp", "No facilityID found for this AndroidID");
                     }
                 })
                 .addOnFailureListener(e -> Log.w("MyApp", "Failed to retrieve facilityID", e));

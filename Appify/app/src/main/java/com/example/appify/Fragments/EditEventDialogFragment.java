@@ -105,7 +105,7 @@ public class EditEventDialogFragment extends DialogFragment {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         MyApp app = (MyApp) requireActivity().getApplication();
         String androidId = app.getAndroidId();
-        db.collection("Android ID").document(androidId)
+        db.collection("AndroidID").document(androidId)
                 .get()
                 .addOnSuccessListener(documentSnapshot -> {
                     facilityID = documentSnapshot.getString("facilityID");
@@ -125,7 +125,7 @@ public class EditEventDialogFragment extends DialogFragment {
                                 })
                                 .addOnFailureListener(e -> Log.w("MyApp", "Failed to retrieve facility name", e));
                     } else {
-                        Log.w("MyApp", "No facilityID found for this Android ID");
+                        Log.w("MyApp", "No facilityID found for this AndroidID");
                     }
                 })
                 .addOnFailureListener(e -> Log.w("MyApp", "Failed to retrieve facilityID", e));
