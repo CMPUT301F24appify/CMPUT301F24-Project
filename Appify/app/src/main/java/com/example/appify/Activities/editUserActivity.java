@@ -161,9 +161,16 @@ public class editUserActivity extends AppCompatActivity {
             } else if (!email.matches("[a-zA-Z0-9._-]+@[a-z]+\\.+[a-z]+")) {
                 Toast.makeText(editUserActivity.this, "Please enter a valid email address", Toast.LENGTH_SHORT).show();
             }
-//            else if (!isDeviceLocationEnabled() && !) {
-//
-//            }
+            else if (!isDeviceLocationEnabled() && ActivityCompat.checkSelfPermission(editUserActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                // Toast if GPS and location permissions are both not enabled
+                Toast.makeText(editUserActivity.this, "Please enable GPS and allow location permissions", Toast.LENGTH_SHORT).show();
+            } else if (!isDeviceLocationEnabled()) {
+                // Toast if only GPS is not enabled
+                Toast.makeText(editUserActivity.this, "Please enable GPS to proceed", Toast.LENGTH_SHORT).show();
+            } else if (ActivityCompat.checkSelfPermission(editUserActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                // Toast if only location permissions are not granted
+                Toast.makeText(editUserActivity.this, "Please allow location permissions to proceed", Toast.LENGTH_SHORT).show();
+            }
             else {
                 // Generate profile picture
                 if (imageUri == null) {

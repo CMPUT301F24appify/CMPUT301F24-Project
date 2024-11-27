@@ -118,12 +118,12 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 int[] tasksCompleted = {0};
                 int totalTasks = task.getResult().size();
                 for (QueryDocumentSnapshot document : task.getResult()) {
-                    // For each user in the waiting list, get their details from the "Android ID" collection
+                    // For each user in the waiting list, get their details from the "AndroidID" collection
                     String userID = document.getId();
                     Object waitingListStatus = document.get("status");
 
                     // Access each entrant in the waiting list for this event.
-                    db.collection("Android ID").document(userID).get()
+                    db.collection("AndroidID").document(userID).get()
                             .addOnCompleteListener(task2 -> {
                                 if (task2.isSuccessful() && task2.getResult() != null) {
                                     DocumentSnapshot entrantData = task2.getResult();
