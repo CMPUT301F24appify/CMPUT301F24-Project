@@ -26,6 +26,7 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.github.dhaval2404.imagepicker.ImagePicker;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
@@ -41,26 +42,16 @@ import java.util.Random;
 public class editUserActivity extends AppCompatActivity {
     private FirebaseFirestore db;
     private ImageView profileImageView;
-    private Uri imageUri;
+    private Uri imageUri = null;
     private String android_id;
     private byte[] profilePictureByte;
     private EditText nameEditText, phoneEditText, emailEditText;
     private CheckBox notifications;
     private String facilityID = null;
-    private ActivityResultLauncher<Intent> activityResultLauncher = registerForActivityResult(
-            new ActivityResultContracts.StartActivityForResult(),
-            result -> {
-                if (result.getResultCode() == RESULT_OK && result.getData() != null) {
-                    imageUri = result.getData().getData();
-                    try {
-                        Bitmap bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), imageUri);
-                        profileImageView.setImageBitmap(bitmap);
-                    } catch (IOException e) {
-                        profileImageView.setImageURI(imageUri);
-                    }
-                }
-            }
-    );
+    private Bitmap bitmapImage = null;
+    private boolean defaultFlag = true;
+    private boolean cameraFlag = false;
+
 
     /**
      *
@@ -73,6 +64,7 @@ public class editUserActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.edit_user);
+        bitmapImage = (Bitmap) getIntent().getExtras().get("Image Bitmap");
         android_id = getIntent().getStringExtra("AndroidID");
         boolean firstEntry = getIntent().getBooleanExtra("firstEntry", false);
         HeaderNavigation headerNavigation = new HeaderNavigation(this);
@@ -102,11 +94,12 @@ public class editUserActivity extends AppCompatActivity {
         if (android_id != null) {
             populateFields(android_id);
         }
-        uploadButton.setOnClickListener(v -> openFileChooser());
+        uploadButton.setOnClickListener(v -> openImagePicker());
 
         removeButton.setOnClickListener(v -> {
             profileImageView.setImageResource(R.drawable.default_profile);  // Reset to default image
             imageUri = null;
+            defaultFlag = true;
         });
 
         submitButton.setOnClickListener(v -> {
@@ -126,10 +119,15 @@ public class editUserActivity extends AppCompatActivity {
                 Toast.makeText(editUserActivity.this, "Please enter a valid email address", Toast.LENGTH_SHORT).show();
             }  else {
                 // Generate profile picture
-                if (imageUri == null) {
+                if (imageUri == null && !cameraFlag) {
                     String firstLetter = String.valueOf(name.charAt(0)).toUpperCase();
-                    Bitmap profilePicture = generateProfilePicture(firstLetter);
-                    profileImageView.setImageBitmap(profilePicture);
+                    if(defaultFlag) {
+                        Bitmap profilePicture = generateProfilePicture(firstLetter);
+                        profileImageView.setImageBitmap(profilePicture);
+                    }
+                    else{
+                        profileImageView.setImageBitmap(bitmapImage);
+                    }
                 }
                 //Submit Data and open other Activity
                 sendEntrantData(android_id, name, phoneNumber, email);
@@ -137,14 +135,25 @@ public class editUserActivity extends AppCompatActivity {
 
         });
     }
+    private void openImagePicker() {
+        ImagePicker.with(this)
+                .crop()
+                .maxResultSize(1080, 1080)
+                .start();
+    }
 
     /**
-     * Opens the file chooser to select an image from the devices files.
+     * Handle the result from ImagePicker.
      */
-    private void openFileChooser() {
-        Intent intent = new Intent(Intent.ACTION_PICK);
-        intent.setType("image/*");
-        activityResultLauncher.launch(intent);
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (resultCode == RESULT_OK && data != null) {
+            // Retrieve the URI of the selected image
+            imageUri = data.getData();
+            profileImageView.setImageURI(imageUri);
+        }
     }
 
     /**
@@ -277,8 +286,9 @@ public class editUserActivity extends AppCompatActivity {
         storageRef.getBytes(size)
                 .addOnSuccessListener(bytes -> {
                     // Convert the byte array to a Bitmap
-                    Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
-                    profileImageView.setImageBitmap(bitmap);
+                    defaultFlag = false;
+                    bitmapImage = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+                    profileImageView.setImageBitmap(bitmapImage);
                 });
     }
 }
