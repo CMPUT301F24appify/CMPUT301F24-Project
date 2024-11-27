@@ -193,8 +193,8 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
         facilityTextView.setText(facility);
         registrationEndDateTextView.setText(registrationEndDate);
         descriptionTextView.setText(description);
-        maxWaitTextView.setText("Max Waitlist Entrants: " + maxWaitEntrants);
-        maxSampleTextView.setText("Max Sample Entrants: " + maxSampleEntrants);
+        maxWaitTextView.setText(""+maxWaitEntrants);
+        maxSampleTextView.setText(""+maxSampleEntrants);
         geolocateTextView.setText(isGeolocate ? "Geo-Location Enabled" : "Geo-Location Disabled");
 
         // Set up the back button to return to EventActivity
