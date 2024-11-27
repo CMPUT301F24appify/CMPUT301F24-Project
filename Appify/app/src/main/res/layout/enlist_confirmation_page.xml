@@ -147,7 +147,8 @@
                             android:padding="15dp"
                             android:layout_gravity="center"
                             android:gravity="center"
-                            android:text="Confirmation Message" />
+                            android:text="Confirmation Message"
+                            android:textColor="@color/black"/>
                     </LinearLayout>
                 </FrameLayout>
                 <TextView
