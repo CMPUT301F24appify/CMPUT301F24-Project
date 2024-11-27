@@ -59,18 +59,11 @@ public class EnlistConfirmationActivity extends AppCompatActivity {
         TextView eventFacility = findViewById(R.id.facility_name);
         TextView eventDescription = findViewById(R.id.confirmation_message);
         TextView eventRegistrationEnd = findViewById(R.id.registration_date);
-        TextView eventGeolocate = findViewById(R.id.geolocationText);
 
         eventName.setText(name);
         eventDate.setText(date);
         eventRegistrationEnd.setText(registrationEndDate);
         eventFacility.setText(facility);
-
-        if (isGeolocate) {
-            eventGeolocate.setText("IMPORTANT: Registering for this event REQUIRES geolocation.");
-        } else {
-            eventGeolocate.setText("IMPORTANT: Registering for this event DOES NOT REQUIRE geolocation.");
-        }
 
         // Display appropriate confirmation message based on enlistment status
         if (Objects.equals(confirmation, "Joined")) {

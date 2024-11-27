@@ -13,185 +13,186 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
 
-    <TextView
-        android:id="@+id/event_name"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="15dp"
-        android:layout_marginLeft="32dp"
-        android:layout_marginRight="32dp"
-        android:gravity="center_horizontal"
-        android:text="Event X"
-        android:textSize="20sp"
-        android:textStyle="bold"
-        app:layout_constraintBottom_toTopOf="@+id/date_facility"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/header" />
-
     <LinearLayout
-        android:id="@+id/date_facility"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="32dp"
-        android:layout_marginTop="5dp"
-        android:layout_marginEnd="32dp"
         android:orientation="vertical"
-        app:layout_constraintBottom_toTopOf="@+id/event_description"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/event_name"
-        >
-
-        <LinearLayout
-            android:id="@+id/date_description"
+        android:padding="16dp"
+        app:layout_constraintTop_toBottomOf="@+id/header">
+        <FrameLayout
+            android:id="@+id/eventDetailsFrame"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="5dp"
-            android:layout_marginBottom="5dp"
-            android:gravity="center_horizontal"
-            android:orientation="horizontal"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent">
-
-            <TextView
-                android:id="@+id/registration"
-                android:layout_width="wrap_content"
+            android:layout_weight="1"
+            android:background="@drawable/rounded_list_item"
+            android:backgroundTint="#0085b4"
+            >
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:gravity="start"
-                android:text="Registration Ends:"
-                android:textSize="14sp"
-                />
+                android:orientation="vertical"
+                android:padding="5dp">
+                <TextView
+                    android:id="@+id/event_name"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:layout_gravity="center"
+                    android:textColor="@color/black"
+                    android:text="Event Name"
+                    android:textSize="20sp"
+                    android:textStyle="bold"
+                    android:padding="10dp"/>
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:background="@drawable/rounded_list_item"
+                    android:backgroundTint="#daf3ff"
+                    android:layout_margin="10dp"
+                    >
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="10dp">
+                        <TextView
+                            android:id="@+id/registration"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:gravity="start"
+                            android:text="Registration Ends:"
+                            android:textSize="14sp"
+                            android:textStyle="bold"
+                            android:layout_gravity="center"
+                            android:textColor="@color/black"
+                            />
+                        <TextView
+                            android:id="@+id/registration_date"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:gravity="end"
+                            android:text="MMM, DD, YYYY"
+                            android:textSize="14sp"
+                            android:layout_gravity="center"
+                            android:paddingBottom="10dp"
+                            android:textColor="@color/black"/>
+                        <TextView
+                            android:id="@+id/event"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:gravity="start"
+                            android:text="Event Date: "
+                            android:textSize="14sp"
+                            android:layout_gravity="center"
+                            android:textStyle="bold"
+                            android:textColor="@color/black"/>
 
-            <TextView
-                android:id="@+id/registration_date"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:gravity="end"
-                android:text="X"
-                android:textSize="14sp"/>
+                        <TextView
+                            android:id="@+id/event_date"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:gravity="end"
+                            android:text="MMM DD, YYYY"
+                            android:textSize="14sp"
+                            android:layout_gravity="center"
+                            android:paddingBottom="10dp"
+                            android:textColor="@color/black"/>
+                        <TextView
+                            android:id="@+id/facility"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:gravity="start"
+                            android:text="Facility: "
+                            android:textSize="14sp"
+                            android:layout_gravity="center"
+                            android:textStyle="bold"
+                            android:textColor="@color/black"/>
 
-        </LinearLayout>
+                        <TextView
+                            android:id="@+id/facility_name"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Facility Name"
+                            android:layout_weight="1"
+                            android:gravity="end"
+                            android:textSize="14sp"
+                            android:layout_gravity="center"
+                            android:textColor="@color/black"/>
+                    </LinearLayout>
+                </FrameLayout>
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:background="@drawable/rounded_list_item"
+                    android:backgroundTint="#daf3ff"
+                    android:layout_margin="10dp"
+                    >
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_horizontal"
+                        android:orientation="vertical">
 
-        <LinearLayout
-            android:id="@+id/eventDate_description"
-            android:layout_width="match_parent"
+                        <TextView
+                            android:id="@+id/confirmation_message"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:padding="15dp"
+                            android:layout_gravity="center"
+                            android:gravity="center"
+                            android:text="Confirmation Message"
+                            android:textColor="@color/black"/>
+                    </LinearLayout>
+                </FrameLayout>
+                <TextView
+                    android:id="@+id/thank_you"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="32dp"
+                    android:layout_marginTop="20dp"
+                    android:layout_marginEnd="32dp"
+                    android:gravity="center_horizontal"
+                    android:text="Thank you!"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/confirmation_message"
+                    android:textColor="@color/black"
+                    android:textStyle="bold"
+                    android:paddingBottom="10dp"/>
+            </LinearLayout>
+        </FrameLayout>
+
+
+        <Button
+            android:id="@+id/home_button"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="5dp"
-            android:layout_marginBottom="5dp"
-            android:orientation="horizontal"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent">
-
-            <TextView
-                android:id="@+id/event"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:gravity="start"
-                android:text="Event Date: "
-                android:textSize="14sp" />
-
-            <TextView
-                android:id="@+id/event_date"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:gravity="end"
-                android:text="X"
-                android:textSize="14sp" />
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:id="@+id/facility_description"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="5dp"
-            android:layout_marginBottom="5dp"
-            android:gravity="center_horizontal"
-            android:orientation="horizontal"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent">
-
-            <TextView
-                android:id="@+id/facility"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:gravity="start"
-                android:text="Facility: "
-                android:textSize="14sp"/>
-
-            <TextView
-                android:id="@+id/facility_name"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="X"
-                android:layout_weight="1"
-                android:gravity="end"
-                android:textSize="14sp"/>
-
-        </LinearLayout>
-
+            android:layout_marginTop="20dp"
+            android:layout_weight="1"
+            android:text="Home"
+            android:textColor="@color/black"
+            app:backgroundTint="@color/buttons"
+            app:strokeColor="@color/buttons_stroke"
+            app:strokeWidth="1dp"
+            android:layout_gravity="center"/>
     </LinearLayout>
 
-    <TextView
-        android:id="@+id/confirmation_message"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="32dp"
-        android:layout_marginEnd="32dp"
-        android:layout_marginTop="20dp"
-        android:text="Confirmation Message"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/date_facility" />
-
-    <TextView
-        android:id="@+id/thank_you"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="32dp"
-        android:layout_marginTop="20dp"
-        android:layout_marginEnd="32dp"
-        android:gravity="center_horizontal"
-        android:text="Thank you!"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/confirmation_message" />
 
 
-    <Button
-        android:id="@+id/home_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
-        android:layout_weight="1"
-        android:text="Home"
-        android:textColor="@color/black"
-        app:backgroundTint="@color/buttons"
-        app:strokeColor="@color/buttons_stroke"
-        app:strokeWidth="1dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/thank_you" />
 
 
-    <TextView
-        android:id="@+id/geolocationText"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="32dp"
-        android:layout_marginTop="20dp"
-        android:layout_marginEnd="32dp"
-        android:gravity="center_horizontal"
-        android:text="IMPORTANT: X"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/home_button" />
+
+
+
+
+
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

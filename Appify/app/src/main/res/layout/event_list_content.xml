@@ -52,8 +52,7 @@
                     android:layout_width="162dp"
                     android:layout_height="63dp"
                     android:layout_gravity="center"
-                    android:layout_weight="0.25
-"
+                    android:layout_weight="0.25"
                     app:srcCompat="@drawable/default_pfp" />
             </LinearLayout>
 

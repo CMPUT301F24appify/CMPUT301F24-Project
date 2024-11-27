@@ -12,6 +12,18 @@
         android:layout_height="wrap_content"
         android:hint="Event Name" />
 
+    <EditText
+        android:id="@+id/editFacility"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Facility" />
+
+    <EditText
+        android:id="@+id/editTextEventDescription"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Event Description" />
+
     <Button
         android:id="@+id/buttonEventDate"
         android:layout_width="wrap_content"
@@ -22,12 +34,6 @@
         app:strokeWidth="1dp"
         android:text="Event Date" />
 
-    <EditText
-        android:id="@+id/editFacility"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Facility" />
-
     <Button
         android:id="@+id/buttonRegistrationEndDate"
         android:layout_width="wrap_content"
@@ -37,12 +43,6 @@
         app:strokeColor="#FF8C00"
         app:strokeWidth="1dp"
         android:text="Registration End Date" />
-
-    <EditText
-        android:id="@+id/editTextEventDescription"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Event Description" />
 
     <CheckBox
         android:id="@+id/checkGeolocation"
