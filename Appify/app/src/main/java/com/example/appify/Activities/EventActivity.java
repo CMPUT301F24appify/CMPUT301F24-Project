@@ -33,7 +33,8 @@ public class EventActivity extends AppCompatActivity implements AddEventDialogFr
     ListView eventListView;  // ListView for displaying events
     CustomEventAdapter eventAdapter;  // Custom adapter for event list items
     ArrayList<Event> eventList = new ArrayList<>();  // List to store Event objects
-
+    String facilityName;
+    String facilityID;
     /**
      * Initializes the EventActivity, setting up the user interface and loading events from Firestore.
      *
@@ -73,15 +74,27 @@ public class EventActivity extends AppCompatActivity implements AddEventDialogFr
             startActivity(intent);
         });
 
+        MyApp app = (MyApp) getApplication();
+        String androidId = app.getAndroidId();
+        db.collection("AndroidID").document(androidId).get()
+                        .addOnSuccessListener(documentSnapshot -> {
+                            facilityID = documentSnapshot.getString("facilityID");
+                            db.collection("facilities").document(facilityID).get()
+                                    .addOnSuccessListener(documentSnapshot1 ->{
+                                        if (documentSnapshot1.exists()) {
+                                            facilityName = documentSnapshot1.getString("name");
+                                        }
+                                    });
+                        });
         // Set up item click listener for eventListView to navigate to EventDetailActivity
         eventListView.setOnItemClickListener((parent, view, position, id) -> {
             Event selectedEvent = eventList.get(position);
             Intent intent = new Intent(EventActivity.this, EventDetailActivity.class);
 
+            intent.putExtra("facility", facilityName);
             // Pass event details with null checks to prevent crashes
             intent.putExtra("name", selectedEvent.getName() != null ? selectedEvent.getName() : "N/A");
             intent.putExtra("date", selectedEvent.getDate() != null ? selectedEvent.getDate() : "N/A");
-            intent.putExtra("facility", selectedEvent.getFacility() != null ? selectedEvent.getFacility() : "N/A");
             intent.putExtra("registrationEndDate", selectedEvent.getRegistrationEndDate() != null ? selectedEvent.getRegistrationEndDate() : "N/A");
             intent.putExtra("description", selectedEvent.getDescription() != null ? selectedEvent.getDescription() : "N/A");
             intent.putExtra("maxWaitEntrants", selectedEvent.getMaxWaitEntrants());
