@@ -27,7 +27,7 @@ import java.util.ArrayList;
 public class AdminListActivity extends AppCompatActivity {
     private FirebaseFirestore db;
     private ListView listView;
-    private CustomFacilityAdapter facilityAdapter; // Update to use appropriate adapters for other types
+    private CustomFacilityAdapter  facilityAdapter; // Update to use appropriate adapters for other types
     private ArrayList<Facility> facilityList; // Update to handle other types (events, profiles, images)
 
     @Override
