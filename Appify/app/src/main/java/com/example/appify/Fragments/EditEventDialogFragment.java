@@ -24,6 +24,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Locale;
@@ -31,6 +32,7 @@ import java.util.UUID;
 
 /**
  * Fragment dialog for editing an event, allowing users to modify event details.
+ * This fragment performs input validation and uploads images to Firebase Storage.
  */
 public class EditEventDialogFragment extends DialogFragment {
     private static final int PICK_IMAGE_REQUEST = 1;
@@ -45,6 +47,23 @@ public class EditEventDialogFragment extends DialogFragment {
     private Calendar calendar;  // Calendar instance for date pickers
 
     public interface EditEventDialogListener {
+        /**
+         * Callback for editing an event with the provided details.
+         *
+         * @param name              Name of the event.
+         * @param date              Date of the event.
+         * @param facility          Facility for the event.
+         * @param registrationEndDate Registration end date.
+         * @param description       Description of the event.
+         * @param maxWaitEntrants   Maximum number of waitlist entrants.
+         * @param maxSampleEntrants Maximum number of sample entrants.
+         * @param posterUri         URI of the uploaded poster image.
+         * @param isGeolocate       Geolocation status.
+         * @param waitlistedMessage Notification message for waitlisted entrants.
+         * @param enrolledMessage   Notification message for enrolled entrants.
+         * @param cancelledMessage  Notification message for cancelled entrants.
+         * @param invitedMessage    Notification message for invited entrants.
+         */
         void onEventEdited(String name, String date, String facility, String registrationEndDate,
                            String description, int maxWaitEntrants, int maxSampleEntrants,
                            String posterUri, boolean isGeolocate,
@@ -52,6 +71,13 @@ public class EditEventDialogFragment extends DialogFragment {
                            String cancelledMessage, String invitedMessage);
     }
 
+    /**
+     * Attaches the fragment to the parent activity and verifies that the parent implements
+     * the EditEventDialogListener callback interface.
+     *
+     * @param context The context to which the fragment is attached.
+     * @throws ClassCastException if the parent context does not implement EditEventDialogListener.
+     */
     @Override
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
@@ -62,6 +88,12 @@ public class EditEventDialogFragment extends DialogFragment {
         }
     }
 
+    /**
+     * Creates the dialog, initializes UI components, retrieves the facility name, and sets up button listeners.
+     *
+     * @param savedInstanceState The saved state of the fragment.
+     * @return The created dialog instance.
+     */
     @NonNull
     @Override
     public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
@@ -69,7 +101,7 @@ public class EditEventDialogFragment extends DialogFragment {
         LayoutInflater inflater = requireActivity().getLayoutInflater();
         View view = inflater.inflate(R.layout.add_event_dialog, null);
 
-        // Initialize Firestore and Calendar
+        // Retrieve and set facility name from MyApp
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         calendar = Calendar.getInstance();
 
@@ -80,7 +112,7 @@ public class EditEventDialogFragment extends DialogFragment {
         // Get facility info
         MyApp app = (MyApp) requireActivity().getApplication();
         String androidId = app.getAndroidId();
-        db.collection("Android ID").document(androidId)
+        db.collection("AndroidID").document(androidId)
                 .get()
                 .addOnSuccessListener(documentSnapshot -> {
                     facilityID = documentSnapshot.getString("facilityID");
@@ -93,9 +125,17 @@ public class EditEventDialogFragment extends DialogFragment {
                                     eventFacility.setText(facilityName);
                                     eventFacility.setEnabled(false);
                                     eventFacility.setBackgroundColor(getResources().getColor(android.R.color.darker_gray));
-                                });
+                                    if (facilityName == null) {
+                                        Log.w("MyApp", "Facility name not found for facilityID: " + facilityID);
+                                        facilityName = "No facility assigned";
+                                    }
+                                })
+                                .addOnFailureListener(e -> Log.w("MyApp", "Failed to retrieve facility name", e));
+                    } else {
+                        Log.w("MyApp", "No facilityID found for this AndroidID");
                     }
-                });
+                })
+                .addOnFailureListener(e -> Log.w("MyApp", "Failed to retrieve facilityID", e));
 
         // Initialize form input fields
         EditText eventName = view.findViewById(R.id.editTextEventName);

@@ -87,7 +87,7 @@ public class CustomFacilityAdapter extends ArrayAdapter<Facility> {
                                                                     String userID = waitDoc.getId();
 
                                                                     // Delete the eventID from the user's waitListedEvents collection
-                                                                    db.collection("Android ID").document(userID)
+                                                                    db.collection("AndroidID").document(userID)
                                                                             .collection("waitListedEvents")
                                                                             .document(eventID)
                                                                             .delete()
@@ -122,7 +122,7 @@ public class CustomFacilityAdapter extends ArrayAdapter<Facility> {
                                                             Log.d("Facility", "Deleted Facility with ID: " + facility.getId());
                                                             if (organizerID != null) {
                                                                 // Update organizer's facility ID to null
-                                                                db.collection("Android ID").document(organizerID)
+                                                                db.collection("AndroidID").document(organizerID)
                                                                         .update("facilityID", null)
                                                                         .addOnSuccessListener(aVoid2 -> {
                                                                             facilityList.remove(facility);
@@ -143,5 +143,4 @@ public class CustomFacilityAdapter extends ArrayAdapter<Facility> {
         builder.create();
         builder.show();
     }
-
 }

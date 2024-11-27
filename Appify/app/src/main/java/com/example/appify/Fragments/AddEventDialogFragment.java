@@ -17,6 +17,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.appify.MyApp;
 import com.example.appify.R;
@@ -48,6 +49,23 @@ public class AddEventDialogFragment extends DialogFragment {
     private Calendar calendar;  // Calendar instance for date pickers
 
     public interface AddEventDialogListener {
+        /**
+         * Callback for adding a new event with the provided details.
+         *
+         * @param name              Name of the event.
+         * @param date              Date of the event.
+         * @param facility          Facility for the event.
+         * @param registrationEndDate Registration end date.
+         * @param description       Description of the event.
+         * @param maxWaitEntrants   Maximum number of waitlist entrants.
+         * @param maxSampleEntrants Maximum number of sample entrants.
+         * @param posterUri         URI of the uploaded poster image.
+         * @param isGeolocate       Geolocation status.
+         * @param waitlistedMessage Notification message for waitlisted entrants.
+         * @param enrolledMessage   Notification message for enrolled entrants.
+         * @param cancelledMessage  Notification message for cancelled entrants.
+         * @param invitedMessage    Notification message for invited entrants.
+         */
         void onEventAdded(String name, String date, String facility, String registrationEndDate,
                           String description, int maxWaitEntrants, int maxSampleEntrants,
                           String posterUri, boolean isGeolocate,
@@ -55,6 +73,12 @@ public class AddEventDialogFragment extends DialogFragment {
                           String cancelledMessage, String invitedMessage);
     }
 
+    /**
+     * Attaches the dialog to the parent activity and checks if the parent implements the callback interface.
+     *
+     * @param context The context to which the dialog is attached.
+     * @throws ClassCastException if the context does not implement AddEventDialogListener.
+     */
     @Override
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
@@ -65,6 +89,12 @@ public class AddEventDialogFragment extends DialogFragment {
         }
     }
 
+    /**
+     * Creates the dialog, initializes UI components allowing organizer to input details, and sets up event handlers.
+     *
+     * @param savedInstanceState The saved state of the dialog.
+     * @return The created dialog instance.
+     */
     @NonNull
     @Override
     public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
@@ -79,7 +109,7 @@ public class AddEventDialogFragment extends DialogFragment {
         // Get facility info
         MyApp app = (MyApp) requireActivity().getApplication();
         String androidId = app.getAndroidId();
-        db.collection("Android ID").document(androidId)
+        db.collection("AndroidID").document(androidId)
                 .get()
                 .addOnSuccessListener(documentSnapshot -> {
                     facilityID = documentSnapshot.getString("facilityID");
@@ -92,7 +122,14 @@ public class AddEventDialogFragment extends DialogFragment {
                                     eventFacility.setText(facilityName);
                                     eventFacility.setEnabled(false);
                                     eventFacility.setBackgroundColor(getResources().getColor(android.R.color.darker_gray));
-                                });
+                                    if (facilityName == null) {
+                                        Log.w("MyApp", "Facility name not found for facilityID: " + facilityID);
+                                        facilityName = "No facility assigned";
+                                    }
+                                })
+                                .addOnFailureListener(e -> Log.w("MyApp", "Failed to retrieve facility name", e));
+                    } else {
+                        Log.w("MyApp", "No facilityID found for this AndroidID");
                     }
                 });
 
@@ -181,14 +218,88 @@ public class AddEventDialogFragment extends DialogFragment {
         return isValid;
     }
 
+    /**
+     * Checks if the registration end date is before the event date.
+     *
+     * @param eventDateStr The event date as a string in "MMM dd, yyyy" format.
+     * @param registrationEndDateStr The registration end date as a string in "MMM dd, yyyy" format.
+     * @return True if the registration end date is before the event date, otherwise false.
+     */
+    private boolean isRegistrationEndDateBeforeEventDate(String eventDateStr, String registrationEndDateStr) {
+        SimpleDateFormat sdf = new SimpleDateFormat("MMM dd, yyyy", Locale.getDefault());
+        sdf.setLenient(false); // Strict date parsing
+        try {
+            Date eventDate = sdf.parse(eventDateStr);
+            Date registrationEndDate = sdf.parse(registrationEndDateStr);
+            return registrationEndDate.before(eventDate); // Check if registration end date is before event date
+        } catch (ParseException e) {
+            return false; // Invalid date format
+        }
+    }
+
+    /**
+     * Checks if a given string represents a positive integer.
+     *
+     * @param text The string to check.
+     * @return True if the string is a positive integer, otherwise false.
+     */
+    private boolean isPositiveInteger(String text) {
+        try {
+            return Integer.parseInt(text) > 0;
+        } catch (NumberFormatException e) {
+            return false;
+        }
+    }
+
+    /**
+     * Validates if a given string is in a valid date format ("MMM dd, yyyy").
+     *
+     * @param date The date string to validate.
+     * @return True if the date is valid, otherwise false.
+     */
+    private boolean isValidDate(String date) {
+        SimpleDateFormat sdf = new SimpleDateFormat("MMM dd, yyyy", Locale.getDefault());
+        sdf.setLenient(false);
+        try {
+            sdf.parse(date);
+            return true;
+        } catch (ParseException e) {
+            return false;
+        }
+    }
+
+    /**
+     * Updates the button's appearance based on its active state.
+     *
+     * @param button The button to update.
+     * @param isActive True if the button should appear active, otherwise false.
+     */
+    private void updateButtonAppearance(Button button, boolean isActive) {
+        if (isActive) {
+            button.setBackgroundColor(getResources().getColor(android.R.color.holo_blue_light));
+        } else {
+            button.setBackgroundColor(getResources().getColor(android.R.color.darker_gray));
+        }
+    }
+
+    /**
+     * Parses a string to an integer. Shows a toast message if parsing fails.
+     *
+     * @param text The text to parse.
+     * @return The integer value if parsing is successful, otherwise 0.
+     */
     private int parseInteger(String text) {
         try {
             return Integer.parseInt(text);
         } catch (NumberFormatException e) {
+            Toast.makeText(getContext(), "Please enter a valid number for max entrants", Toast.LENGTH_SHORT).show();
             return 0;
         }
     }
 
+    /**
+     * Opens a file chooser to select an image for the event poster.
+     */
     private void openFileChooser() {
         Intent intent = new Intent();
         intent.setType("image/*");
@@ -196,9 +307,41 @@ public class AddEventDialogFragment extends DialogFragment {
         startActivityForResult(Intent.createChooser(intent, "Select Poster Image"), Pick_Image_Request);
     }
 
-    private void updateButtonAppearance(Button button, boolean isActive) {
-        button.setBackgroundColor(isActive ?
-                getResources().getColor(android.R.color.holo_blue_light) :
-                getResources().getColor(android.R.color.darker_gray));
+    /**
+     * Handles the result of the file chooser intent, uploading the selected image to Firebase.
+     *
+     * @param requestCode The request code originally supplied to startActivityForResult.
+     * @param resultCode  The result code returned by the child activity.
+     * @param data        The intent containing the result data.
+     */
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == Pick_Image_Request && resultCode == getActivity().RESULT_OK && data != null && data.getData() != null) {
+            uploadImageToFirebase(data.getData());
+            uploadPosterButton.setBackgroundColor(getResources().getColor(android.R.color.holo_blue_light));
+        }
+    }
+
+    /**
+     * Uploads the selected image to Firebase storage and sets the poster URI.
+     *
+     * @param imageUri The URI of the image to upload.
+     */
+    private void uploadImageToFirebase(Uri imageUri) {
+        StorageReference storageRef = FirebaseStorage.getInstance().getReference();
+        StorageReference posterRef = storageRef.child("event_posters/" + UUID.randomUUID().toString() + ".jpg");
+
+        posterRef.putFile(imageUri).addOnSuccessListener(taskSnapshot -> {
+            posterRef.getDownloadUrl().addOnSuccessListener(downloadUri -> {
+                posterUri = downloadUri.toString();
+                Toast.makeText(getContext(), "Poster uploaded successfully!", Toast.LENGTH_SHORT).show();
+            }).addOnFailureListener(e -> {
+                Toast.makeText(getContext(), "Failed to get download URL: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            });
+        }).addOnFailureListener(e -> {
+            Toast.makeText(getContext(), "Failed to upload poster: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+        });
     }
 }

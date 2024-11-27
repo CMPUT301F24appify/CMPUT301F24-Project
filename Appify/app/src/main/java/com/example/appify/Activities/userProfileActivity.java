@@ -65,13 +65,13 @@ public class userProfileActivity extends AppCompatActivity {
         // Edit button to open edit activity
         editButton.setOnClickListener(v -> {
             Intent intent = new Intent(userProfileActivity.this, editUserActivity.class);
-            intent.putExtra("Android ID", android_id);
+            intent.putExtra("AndroidID", android_id);
             startActivity(intent);
         });
 
         // Handle Admin Button Click
         adminButton.setOnClickListener(v -> {
-            db.collection("Android ID").document(android_id)
+            db.collection("AndroidID").document(android_id)
                     .get()
                     .addOnSuccessListener(documentSnapshot -> {
                         if (documentSnapshot.exists()) {
@@ -79,7 +79,7 @@ public class userProfileActivity extends AppCompatActivity {
 
                             // Toggle isAdmin state
                             boolean newAdminState = isAdmin == null || !isAdmin; // Default to false if null
-                            db.collection("Android ID").document(android_id)
+                            db.collection("AndroidID").document(android_id)
                                     .update("isAdmin", newAdminState)
                                     .addOnSuccessListener(aVoid -> {
                                         // Update button color and show a success message
@@ -91,7 +91,7 @@ public class userProfileActivity extends AppCompatActivity {
                                     });
                         } else {
                             // If the document doesn't exist, set isAdmin to true
-                            db.collection("Android ID").document(android_id)
+                            db.collection("AndroidID").document(android_id)
                                     .set(Collections.singletonMap("isAdmin", true), SetOptions.merge())
                                     .addOnSuccessListener(aVoid -> {
                                         adminButton.setBackgroundColor(Color.GREEN);
@@ -102,7 +102,7 @@ public class userProfileActivity extends AppCompatActivity {
 
         //Retrieve and display user data
         if (android_id != null) {
-            db.collection("Android ID").document(android_id).get()
+            db.collection("AndroidID").document(android_id).get()
                     .addOnSuccessListener(documentSnapshot -> {
                         if (documentSnapshot.exists()) {
                             String name = documentSnapshot.getString("name");
@@ -139,7 +139,7 @@ public class userProfileActivity extends AppCompatActivity {
         }
     }
     /**
-     * Loads the user's profile picture from Firebase Storage based on the Android ID.
+     * Loads the user's profile picture from Firebase Storage based on the AndroidID.
      *
      * @param android_id Unique identifier for the user's device.
      */

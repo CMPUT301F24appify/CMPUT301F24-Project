@@ -142,7 +142,7 @@ public class Entrant {
     //need to update in both waitlists)", 2024-11-05
     /**
      * Updates the entrant's status to "accepted" for a specific event in both the event's waiting list
-     * and the Android ID collection.
+     * and the AndroidID collection.
      *
      * @param db      The Firestore database instance used to access and update the database.
      * @param eventID The unique identifier of the event for which the entrant's status is being updated.
@@ -156,15 +156,15 @@ public class Entrant {
                 .addOnSuccessListener(aVoid -> {
                     Log.d("Entrant", "Status updated to 'accepted' in waiting list for entrant " + this.id);
 
-                    // Update status to "accepted" in the Android ID collection for the specific event
-                    db.collection("Android ID").document(this.id)
+                    // Update status to "accepted" in the AndroidID collection for the specific event
+                    db.collection("AndroidID").document(this.id)
                             .collection("waitListedEvents").document(eventID)
                             .update("status", "accepted")
                             .addOnSuccessListener(innerVoid -> {
-                                Log.d("Entrant", "Status updated to 'accepted' in Android ID collection for entrant " + this.id);
+                                Log.d("Entrant", "Status updated to 'accepted' in AndroidID collection for entrant " + this.id);
                             })
                             .addOnFailureListener(e -> {
-                                Log.w("Entrant", "Error updating status in Android ID collection for entrant " + this.id, e);
+                                Log.w("Entrant", "Error updating status in AndroidID collection for entrant " + this.id, e);
                             });
                 })
                 .addOnFailureListener(e -> {
@@ -173,7 +173,7 @@ public class Entrant {
     }
     /**
      * Updates the entrant's status to "declined" for a specified event in both the event's waiting list
-     * and the Android ID collection, and re-runs the lottery to select a replacement entrant
+     * and the AndroidID collection, and re-runs the lottery to select a replacement entrant
      *
      * @param db      The Firestore database instance used to access and update the database.
      * @param eventID The unique identifier of the event for which the entrant's status is being updated.
@@ -189,18 +189,18 @@ public class Entrant {
                 .addOnSuccessListener(aVoid -> {
                     Log.d("Entrant", "Status updated to 'declined' in waiting list for entrant " + this.id);
 
-                    // Update status to "declined" in the Android ID collection for the specific event
-                    db.collection("Android ID").document(this.id)
+                    // Update status to "declined" in the AndroidID collection for the specific event
+                    db.collection("AndroidID").document(this.id)
                             .collection("waitListedEvents").document(eventID)
                             .update("status", "rejected")
                             .addOnSuccessListener(innerVoid -> {
-                                Log.d("Entrant", "Status updated to 'rejected' in Android ID collection for entrant " + this.id);
+                                Log.d("Entrant", "Status updated to 'rejected' in AndroidID collection for entrant " + this.id);
 
                                 // Run the lottery again to select a replacement entrant
                                 event.lottery(db, eventID);
                             })
                             .addOnFailureListener(e -> {
-                                Log.w("Entrant", "Error updating status in Android ID collection for entrant " + this.id, e);
+                                Log.w("Entrant", "Error updating status in AndroidID collection for entrant " + this.id, e);
                             });
                 })
                 .addOnFailureListener(e -> {

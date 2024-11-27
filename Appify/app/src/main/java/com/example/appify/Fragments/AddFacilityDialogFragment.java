@@ -165,7 +165,7 @@ public class AddFacilityDialogFragment extends DialogFragment {
             db.collection("facilities").document(newFacilityID)
                     .set(facility)
                     .addOnSuccessListener(aVoid -> {
-                        db.collection("Android ID").document(organizerID).update("facilityID", newFacilityID)
+                        db.collection("AndroidID").document(organizerID).update("facilityID", newFacilityID)
                                 .addOnSuccessListener(aVoid2 -> {
                                     dismiss();
                                 });

@@ -21,11 +21,12 @@ import android.widget.Toast;
 import com.example.appify.HeaderNavigation;
 import com.example.appify.Model.Entrant;
 import com.example.appify.R;
-import com.github.dhaval2404.imagepicker.ImagePicker;
+
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.github.dhaval2404.imagepicker.ImagePicker;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
@@ -50,30 +51,7 @@ public class editUserActivity extends AppCompatActivity {
     private Bitmap bitmapImage = null;
     private boolean defaultFlag = true;
     private boolean cameraFlag = false;
-    private ActivityResultLauncher<Intent> activityResultLauncher = registerForActivityResult(
-            new ActivityResultContracts.StartActivityForResult(),
-            result -> {
-                if (result.getResultCode() == RESULT_OK && result.getData() != null) {
-                    if (result.getData().getData() != null) {
-                        // Image from files
-                        imageUri = result.getData().getData();
-                        try {
-                            Bitmap bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), imageUri);
-                            profileImageView.setImageBitmap(bitmap);
-                        } catch (IOException e) {
-                            profileImageView.setImageURI(imageUri);
-                        }
-                    } else if (result.getData().getExtras() != null) {
-                        // Image from camera
-                        Bitmap bitmap = (Bitmap) result.getData().getExtras().get("data");
-                        if (bitmap != null) {
-                            profileImageView.setImageBitmap(bitmap);
-                            cameraFlag = true;
-                        }
-                    }
-                }
-            }
-    );
+
 
     /**
      *
@@ -86,8 +64,8 @@ public class editUserActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.edit_user);
-        android_id = getIntent().getStringExtra("Android ID");
         bitmapImage = (Bitmap) getIntent().getExtras().get("Image Bitmap");
+        android_id = getIntent().getStringExtra("AndroidID");
         boolean firstEntry = getIntent().getBooleanExtra("firstEntry", false);
         HeaderNavigation headerNavigation = new HeaderNavigation(this);
         headerNavigation.setupNavigation();
@@ -109,7 +87,7 @@ public class editUserActivity extends AppCompatActivity {
         }
         cancelButton.setOnClickListener(v -> {
             Intent intent = new Intent(editUserActivity.this, userProfileActivity.class);
-            intent.putExtra("Android ID", android_id);
+            intent.putExtra("AndroidID", android_id);
             startActivity(intent);
         });
         db = FirebaseFirestore.getInstance();
@@ -176,21 +154,6 @@ public class editUserActivity extends AppCompatActivity {
             imageUri = data.getData();
             profileImageView.setImageURI(imageUri);
         }
-    }
-    /**
-     * Lets the user select an image from file system or open camera.
-     */
-    private void selectImage() {
-        Intent pickImageIntent = new Intent(Intent.ACTION_PICK);
-        pickImageIntent.setType("image/*");
-
-        Intent takePhotoIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-
-        // Create a chooser intent with both options
-        Intent chooserIntent = Intent.createChooser(pickImageIntent, "Select Image or Take Photo");
-        chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, new Intent[]{takePhotoIntent});
-
-        activityResultLauncher.launch(chooserIntent);
     }
 
     /**
@@ -264,11 +227,11 @@ public class editUserActivity extends AppCompatActivity {
                     Entrant user = new Entrant(id, name, phone, email, downloadUrl, notificationCheck);
                     user.setFacilityID(facilityID);
                     // Save Entrant data to Firestore
-                    db.collection("Android ID").document(android_id).set(user)
+                    db.collection("AndroidID").document(android_id).set(user)
                             .addOnSuccessListener(aVoid -> {
                                 // Successfully saved data to Firestore
                                 Intent intent = new Intent(editUserActivity.this, userProfileActivity.class);
-                                intent.putExtra("Android ID", android_id);
+                                intent.putExtra("AndroidID", android_id);
                                 startActivity(intent);
                             });
                 }));
@@ -280,7 +243,7 @@ public class editUserActivity extends AppCompatActivity {
      * @param android_id The user's unique device ID.
      */
     private void populateFields(String android_id){
-        db.collection("Android ID").document(android_id).get()
+        db.collection("AndroidID").document(android_id).get()
                 .addOnSuccessListener(documentSnapshot -> {
                     if (documentSnapshot.exists()) {
                         // Retrieve current user data
