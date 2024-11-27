@@ -143,6 +143,7 @@ public class editUserActivity extends AppCompatActivity {
             String phoneNumber = phoneEditText.getText().toString();
             String email = emailEditText.getText().toString();
 
+
             //Check Whether the Inputs are Correct for Name, Phone and Email
             if (name.isEmpty() || email.isEmpty()) {
                 Toast.makeText(editUserActivity.this, "Please fill in both Name and Email Fields", Toast.LENGTH_SHORT).show();
@@ -154,32 +155,49 @@ public class editUserActivity extends AppCompatActivity {
             } else if (!email.matches("[a-zA-Z0-9._-]+@[a-z]+\\.+[a-z]+")) {
                 Toast.makeText(editUserActivity.this, "Please enter a valid email address", Toast.LENGTH_SHORT).show();
             }
-            else if (!isDeviceLocationEnabled() && ActivityCompat.checkSelfPermission(editUserActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                // Toast if GPS and location permissions are both not enabled
-                Toast.makeText(editUserActivity.this, "Please enable GPS and allow location permissions", Toast.LENGTH_SHORT).show();
-            } else if (!isDeviceLocationEnabled()) {
-                // Toast if only GPS is not enabled
-                Toast.makeText(editUserActivity.this, "Please enable GPS to proceed", Toast.LENGTH_SHORT).show();
-            } else if (ActivityCompat.checkSelfPermission(editUserActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                // Toast if only location permissions are not granted
-                Toast.makeText(editUserActivity.this, "Please allow location permissions to proceed", Toast.LENGTH_SHORT).show();
-            }
             else {
-                // Generate profile picture
-                if (imageUri == null && !cameraFlag) {
-                    String firstLetter = String.valueOf(name.charAt(0)).toUpperCase();
-                    if(defaultFlag) {
-                        Bitmap profilePicture = generateProfilePicture(firstLetter);
-                        profileImageView.setImageBitmap(profilePicture);
-                    }
-                    else{
-                        profileImageView.setImageBitmap(bitmapImage);
-                    }
+                // Check for location permissions
+                if (ActivityCompat.checkSelfPermission(editUserActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                    ActivityCompat.requestPermissions(editUserActivity.this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
+                    return;
                 }
-                //Submit Data and open other Activity
-                sendEntrantData(android_id, name, phoneNumber, email, deviceLatitude, deviceLongitude);
-            }
 
+                if (!isDeviceLocationEnabled()) {
+                    Toast.makeText(editUserActivity.this, "Please enable GPS to proceed", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                // Fetch the last known location
+                LocationServices.getFusedLocationProviderClient(editUserActivity.this)
+                        .getLastLocation()
+                        .addOnSuccessListener(location -> {
+                            if (location != null) {
+                                deviceLatitude = location.getLatitude();
+                                deviceLongitude = location.getLongitude();
+                                Toast.makeText(editUserActivity.this,
+                                        "Location obtained: Lat = " + deviceLatitude + ", Lon = " + deviceLongitude,
+                                        Toast.LENGTH_SHORT).show();
+                            } else {
+                                // Handle null location
+                                Toast.makeText(editUserActivity.this, "Unable to obtain location. Please try again.", Toast.LENGTH_SHORT).show();
+                                return;
+                            }
+
+                            // Generate profile picture if needed
+                            if (imageUri == null && !cameraFlag) {
+                                String firstLetter = String.valueOf(name.charAt(0)).toUpperCase();
+                                if (defaultFlag) {
+                                    Bitmap profilePicture = generateProfilePicture(firstLetter);
+                                    profileImageView.setImageBitmap(profilePicture);
+                                } else {
+                                    profileImageView.setImageBitmap(bitmapImage);
+                                }
+                            }
+
+                            // Submit data after location is obtained
+                            sendEntrantData(android_id, name, phoneNumber, email, deviceLatitude, deviceLongitude);
+                        });
+            }
         });
     }
     private void openImagePicker() {
@@ -407,11 +425,14 @@ public class editUserActivity extends AppCompatActivity {
                                     if (locationResult != null && locationResult.getLocations().size() >0){
 
                                         int index = locationResult.getLocations().size() - 1;
-                                        double latitude = locationResult.getLocations().get(index).getLatitude();
-                                        double longitude = locationResult.getLocations().get(index).getLongitude();
+                                        deviceLatitude = locationResult.getLocations().get(index).getLatitude();
+                                        deviceLongitude = locationResult.getLocations().get(index).getLongitude();
 
-                                        deviceLatitude = latitude;
-                                        deviceLongitude = longitude;
+                                        Toast.makeText(editUserActivity.this,
+                                                "Location updated: Lat = " + deviceLatitude + ", Lon = " + deviceLongitude,
+                                                Toast.LENGTH_SHORT).show();
+                                    } else {
+                                        Toast.makeText(editUserActivity.this, "Failed to get location", Toast.LENGTH_SHORT).show();
                                     }
                                 }
                             }, Looper.getMainLooper());
