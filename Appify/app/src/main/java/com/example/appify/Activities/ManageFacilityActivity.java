@@ -14,6 +14,7 @@ import com.example.appify.HeaderNavigation;
 import com.example.appify.MyApp;
 import com.example.appify.R;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 
 /**
@@ -161,21 +162,38 @@ public class ManageFacilityActivity extends AppCompatActivity implements AddFaci
         // Show confirmation dialog
         new AlertDialog.Builder(this)
                 .setTitle("Delete Facility")
-                .setMessage("Are you sure you want to delete this facility? This action cannot be undone.")
+                .setMessage("Are you sure you want to delete this facility? ALL EVENTS associated with the facility will also be deleted. This action cannot be undone.")
                 .setPositiveButton("Delete", (dialog, which) -> {
-                    // Proceed with deletion
-                    db.collection("facilities").document(facilityID).delete()
-                            .addOnSuccessListener(aVoid -> {
-                                // Update user's facilityID to null
-                                String androidId = ((MyApp) getApplication()).getAndroidId();
-                                db.collection("AndroidID").document(androidId)
-                                        .update("facilityID", null)
-                                        .addOnSuccessListener(aVoid2 -> {
-                                            Toast.makeText(this, "Facility deleted.", Toast.LENGTH_SHORT).show();
-                                            // Redirect to the EntrantHomePageActivity after deletion
-                                            Intent intent = new Intent(ManageFacilityActivity.this, EntrantHomePageActivity.class);
-                                            startActivity(intent);
-                                            finish();
+                    // Fetch all events under the facility's subcollection
+                    db.collection("facilities").document(facilityID).collection("events")
+                            .get()
+                            .addOnSuccessListener(querySnapshot -> {
+                                // Delete each event found
+                                for (QueryDocumentSnapshot eventDoc : querySnapshot) {
+                                    String eventID = eventDoc.getId();
+
+                                    // Delete the event from the 'events' collection
+                                    db.collection("events").document(eventID).delete();
+
+                                    // Delete the event from the facility's subcollection
+                                    db.collection("facilities").document(facilityID).collection("events").document(eventID)
+                                            .delete();
+                                }
+
+                                // After all events are deleted, proceed to delete the facility itself
+                                db.collection("facilities").document(facilityID).delete()
+                                        .addOnSuccessListener(aVoid -> {
+                                            // Update user's facilityID to null
+                                            String androidId = ((MyApp) getApplication()).getAndroidId();
+                                            db.collection("AndroidID").document(androidId)
+                                                    .update("facilityID", null)
+                                                    .addOnSuccessListener(aVoid2 -> {
+                                                        Toast.makeText(this, "Facility and its events deleted.", Toast.LENGTH_SHORT).show();
+                                                        // Redirect to the EntrantHomePageActivity after deletion
+                                                        Intent intent = new Intent(ManageFacilityActivity.this, EntrantHomePageActivity.class);
+                                                        startActivity(intent);
+                                                        finish();
+                                                    });
                                         });
                             });
                 })
