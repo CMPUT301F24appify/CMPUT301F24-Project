@@ -11,9 +11,12 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.appify.Adapters.CustomEntrantAdapter;
+import com.example.appify.Adapters.CustomEntrantAdminAdapter;
 import com.example.appify.Adapters.CustomEventAdapter;
 import com.example.appify.Adapters.CustomFacilityAdapter;
 import com.example.appify.HeaderNavigation;
+import com.example.appify.Model.Entrant;
 import com.example.appify.Model.Event;
 import com.example.appify.Model.Facility;
 import com.example.appify.R;
@@ -33,6 +36,8 @@ public class AdminListActivity extends AppCompatActivity {
     private ArrayList<Facility> facilityList; // Update to handle other types (events, profiles, images)
     private ArrayList<Event> eventList;
     private CustomEventAdapter eventAdapter;
+    private ArrayList<Entrant> entrantList;
+    private CustomEntrantAdminAdapter entrantAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,6 +51,8 @@ public class AdminListActivity extends AppCompatActivity {
         facilityAdapter = new CustomFacilityAdapter(this, facilityList);
         eventList = new ArrayList<>();
         eventAdapter = new CustomEventAdapter(this, eventList,false);
+        entrantList = new ArrayList<>();
+        entrantAdapter = new CustomEntrantAdminAdapter(this, entrantList);
         listView = findViewById(R.id.admin_list);
 
         // HeaderNavigation
@@ -65,6 +72,7 @@ public class AdminListActivity extends AppCompatActivity {
                 listView.setAdapter(eventAdapter);
                 loadEventsFromFirestore();
             } else if (checkedId == R.id.toggle_profiles) {
+                listView.setAdapter(entrantAdapter);
                 loadProfilesFromFirestore();
             } else if (checkedId == R.id.toggle_images) {
                 loadImagesFromFirestore();
@@ -129,7 +137,28 @@ public class AdminListActivity extends AppCompatActivity {
     }
 
     private void loadProfilesFromFirestore() {
-        // TODO: Implement functionality to load profiles from Firestore
+        CollectionReference entrantRef = db.collection("AndroidID");
+
+        entrantRef.get().addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                entrantList.clear();
+                for (QueryDocumentSnapshot doc : task.getResult()) {
+
+                    String id = doc.getId();
+                    String name = doc.getString("name");
+                    String facilityID = doc.getString("facilityID");
+                    String email = doc.getString("email");
+                    String phoneNumber = doc.getString("phoneNumber");
+                    Boolean notifications = doc.getBoolean("notifications");
+                    String profilePictureURL = doc.getString("profilePictureURL");
+
+                    Entrant entrant = new Entrant(id,name,phoneNumber,email,profilePictureURL,notifications);
+                    if(facilityID != null)
+                        entrantList.add(entrant);
+                }
+                entrantAdapter.notifyDataSetChanged();
+            }
+        });
         Toast.makeText(this, "Loading profiles...", Toast.LENGTH_SHORT).show();
     }
 
