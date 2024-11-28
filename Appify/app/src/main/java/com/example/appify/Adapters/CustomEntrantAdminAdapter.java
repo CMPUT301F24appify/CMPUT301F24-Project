@@ -70,8 +70,6 @@ public class CustomEntrantAdminAdapter extends ArrayAdapter<Entrant> {
         TextView phoneNumber = convertView.findViewById(R.id.phone);
         TextView name = convertView.findViewById(R.id.entrant_name_admin);
         ImageView statusIcon = convertView.findViewById(R.id.statusIcon);
-        ConstraintLayout eventCard = convertView.findViewById(R.id.event_information);
-
         FirebaseFirestore db = FirebaseFirestore.getInstance();
 
 

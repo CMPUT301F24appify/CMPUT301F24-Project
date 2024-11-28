@@ -153,8 +153,10 @@ public class AdminListActivity extends AppCompatActivity {
                     String profilePictureURL = doc.getString("profilePictureURL");
 
                     Entrant entrant = new Entrant(id,name,phoneNumber,email,profilePictureURL,notifications);
-                    if(facilityID != null)
-                        entrantList.add(entrant);
+                    if(facilityID != null) {
+                        entrant.setFacilityID(facilityID);
+                    }
+                    entrantList.add(entrant);
                 }
                 entrantAdapter.notifyDataSetChanged();
             }
