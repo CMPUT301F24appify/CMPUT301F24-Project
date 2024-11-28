@@ -91,6 +91,27 @@ public class Event {
         this.invitedMessage = invitedMessage;
         this.organizerID = organizerID;
     }
+    /**
+     * Constructor used for Admin View, only taking required fields.
+     *
+     * @param name              the name of the event
+     * @param date              the date of the event
+     * @param facility          the facility where the event takes place
+     * @param registrationEndDate the registration end date for the event
+     * @param maxWaitEntrants   the maximum number of wait-listed entrants
+     * @param maxSampleEntrants the maximum number of sample-selected entrants
+     * @param organizerID       the ID of the organizer
+     */
+    public Event(String name, String date, String facility, String registrationEndDate,
+                  int maxWaitEntrants, int maxSampleEntrants, String organizerID){
+        this.name = name;
+        this.date = date;
+        this.registrationEndDate = registrationEndDate;
+        this.facility = facility;
+        this.maxWaitEntrants = maxWaitEntrants;
+        this.maxSampleEntrants = maxSampleEntrants;
+        this.organizerID = organizerID;
+    }
 
     /**
      * No-argument constructor required by Firestore.

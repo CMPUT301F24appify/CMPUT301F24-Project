@@ -11,8 +11,10 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.appify.Adapters.CustomEventAdapter;
 import com.example.appify.Adapters.CustomFacilityAdapter;
 import com.example.appify.HeaderNavigation;
+import com.example.appify.Model.Event;
 import com.example.appify.Model.Facility;
 import com.example.appify.R;
 import com.google.firebase.firestore.CollectionReference;
@@ -29,6 +31,8 @@ public class AdminListActivity extends AppCompatActivity {
     private ListView listView;
     private CustomFacilityAdapter  facilityAdapter; // Update to use appropriate adapters for other types
     private ArrayList<Facility> facilityList; // Update to handle other types (events, profiles, images)
+    private ArrayList<Event> eventList;
+    private CustomEventAdapter eventAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,8 +44,9 @@ public class AdminListActivity extends AppCompatActivity {
         // Initialize the ListView
         facilityList = new ArrayList<>();
         facilityAdapter = new CustomFacilityAdapter(this, facilityList);
+        eventList = new ArrayList<>();
+        eventAdapter = new CustomEventAdapter(this, eventList,false);
         listView = findViewById(R.id.admin_list);
-        listView.setAdapter(facilityAdapter);
 
         // HeaderNavigation
         HeaderNavigation headerNavigation = new HeaderNavigation(this);
@@ -54,8 +59,10 @@ public class AdminListActivity extends AppCompatActivity {
         RadioGroup toggleGroup = findViewById(R.id.toggle_group);
         toggleGroup.setOnCheckedChangeListener((group, checkedId) -> {
             if (checkedId == R.id.toggle_facilities) {
+                listView.setAdapter(facilityAdapter);
                 loadFacilitiesFromFirestore();
             } else if (checkedId == R.id.toggle_events) {
+                listView.setAdapter(eventAdapter);
                 loadEventsFromFirestore();
             } else if (checkedId == R.id.toggle_profiles) {
                 loadProfilesFromFirestore();
@@ -88,13 +95,36 @@ public class AdminListActivity extends AppCompatActivity {
                     Facility facility = new Facility(id, name, location, email, description, capacity, organizerID);
                     facilityList.add(facility);
                 }
+
                 facilityAdapter.notifyDataSetChanged();
             }
         });
     }
 
     private void loadEventsFromFirestore() {
-        // TODO: Implement functionality to load events from Firestore
+        CollectionReference eventsRef = db.collection("events");
+
+        eventsRef.get().addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                eventList.clear();
+                for (QueryDocumentSnapshot doc : task.getResult()) {
+                    String id = doc.getId();
+                    String name = doc.getString("name");
+                    String date = doc.getString("date");
+                    String registrationEndDate = doc.getString("registrationEndDate");
+                    String facility = doc.getString("facility");
+                    int maxSampleEntrants = doc.getLong("maxSampleEntrants").intValue();
+                    int maxWaitEntrants = doc.getLong("maxWaitEntrants").intValue();
+                    String organizerID = doc.getString("organizerID");
+
+                    Event event = new Event(name,date,facility,registrationEndDate,
+                            maxWaitEntrants,maxSampleEntrants,organizerID);
+                    event.setEventId(id);
+                    eventList.add(event);
+                }
+                eventAdapter.notifyDataSetChanged();
+            }
+        });
         Toast.makeText(this, "Loading events...", Toast.LENGTH_SHORT).show();
     }
 

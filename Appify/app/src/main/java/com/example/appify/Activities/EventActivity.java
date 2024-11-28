@@ -149,6 +149,7 @@ public class EventActivity extends AppCompatActivity implements AddEventDialogFr
         String organizerID = app.getAndroidId();
 
         // Create new Event object with details from the dialog
+        String eventID = "";
         Event newEvent = new Event(name, date, facility, registrationEndDate, description,
                 maxWaitEntrants, maxSampleEntrants, posterUri, isGeolocate,
                 false, false, false, false,
