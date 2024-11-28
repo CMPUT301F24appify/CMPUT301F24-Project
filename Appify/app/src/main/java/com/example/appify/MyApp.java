@@ -1,21 +1,29 @@
 // MyApp.java
 package com.example.appify;
 
+
 import android.app.Application;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Build;
+import android.os.Handler;
+import android.os.Looper;
 import android.provider.Settings;
 import android.util.Log;
 
-import androidx.annotation.Nullable;
-import androidx.core.app.NotificationCompat;
-import androidx.core.content.ContextCompat;
 
+import androidx.annotation.NonNull;
+import androidx.core.app.NotificationCompat;
+
+
+import com.example.appify.Activities.EntrantEnlistActivity;
+import com.example.appify.Model.Event;
+import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentChange;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -25,83 +33,121 @@ import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.QuerySnapshot;
 
-import java.util.ArrayList;
+
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
+
 public class MyApp extends Application {
-    private String androidId;
-    private List<ListenerRegistration> statusListeners = new ArrayList<>();
-    private FirebaseFirestore db;
     private static final String TAG = "MyApp";
     private static final String NOTIFICATION_CHANNEL_ID = "event_channel_id";
+    private static final String NOTIFICATION_CHANNEL_NAME = "Event Notifications";
+    private static final String NOTIFICATION_CHANNEL_DESCRIPTION = "Notifications for event status changes";
+    private static final String PREFS_NAME = "MyAppPrefs";
+    private static final String PREF_ANDROID_ID = "androidId";
 
-    // Constants for statuses and message fields
-    private static final String STATUS_ENROLLED = "enrolled";
-    private static final String STATUS_INVITED = "invited";
-    private static final String STATUS_ACCEPTED = "accepted";
-    private static final String STATUS_REJECTED = "rejected";
+    // Firebase Firestore instance
+    private FirebaseFirestore db;
+    private ListenerRegistration eventListener;
+    private ListenerRegistration waitingListListener; // **New ListenerRegistration for waitingList**
 
-    private static final String FIELD_NOTIFY_ENROLLED = "notifyEnrolled";
-    private static final String FIELD_WAITLISTED_MESSAGE = "waitlistedMessage";
+    // User Identifier
+    private String androidId;
 
-    private static final String FIELD_NOTIFY_INVITED = "notifyInvited";
-    private static final String FIELD_INVITED_MESSAGE = "invitedMessage";
+    // Define the delay duration for flag and message reset in milliseconds (e.g., 3000 ms = 3 seconds)
+    private static final long FLAG_RESET_DELAY_MILLISECONDS = 3000;
 
-    private static final String FIELD_NOTIFY_ACCEPTED = "notifyAccepted";
-    private static final String FIELD_ENROLLED_MESSAGE = "enrolledMessage";
+    // Handler for scheduling flag and message resets
+    private Handler handler = new Handler(Looper.getMainLooper());
 
-    private static final String FIELD_NOTIFY_REJECTED = "notifyRejected";
-    private static final String FIELD_CANCELLED_MESSAGE = "cancelledMessage";
 
     @Override
     public void onCreate() {
         super.onCreate();
 
+
         // Initialize Firestore
         db = FirebaseFirestore.getInstance();
 
-        // Retrieve and set the AndroidID
-        androidId = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
-        Log.d(TAG, "AndroidID: " + androidId);
+
+        // Retrieve Android ID
+        androidId = getAndroidId();
+        Log.d(TAG, "Android ID: " + androidId);
+
+
+        if (androidId == null) {
+            Log.e(TAG, "Failed to retrieve Android ID.");
+            // Handle the error as needed, possibly exit the app or retry
+            return;
+        }
+
 
         // Create Notification Channel
         createNotificationChannel();
 
-        // Start listening for user status changes (Invited Status)
-        listenForStatusChanges();
 
         // Start listening for event-level notifications
         listenForEventNotifications();
+
+        // **Start listening for waitingList subcollection changes**
+        listenForWaitingListAdditions();
     }
 
-    public String getAndroidId() {
-        return androidId;
-    }
-
-    public void setAndroidId(String androidId) {
-        this.androidId = androidId;
-    }
 
     /**
-     * Creates a notification channel for Android O and above.
+     * Retrieves the device's Android ID.
+     *
+     * @return The Android ID as a String.
+     */
+    public String getAndroidId() {
+        SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+        String storedAndroidId = prefs.getString(PREF_ANDROID_ID, null);
+
+
+        if (storedAndroidId != null) {
+            return storedAndroidId;
+        } else {
+            String newAndroidId = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
+            setAndroidId(newAndroidId);
+            return newAndroidId;
+        }
+    }
+
+
+    /**
+     * Sets the device's Android ID in SharedPreferences.
+     *
+     * @param id The Android ID to store.
+     */
+    public void setAndroidId(String id) {
+        SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putString(PREF_ANDROID_ID, id);
+        editor.apply();
+        Log.d(TAG, "Android ID set to: " + id);
+    }
+
+
+    /**
+     * Creates a notification channel for Android Oreo and above.
      */
     private void createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            CharSequence channelName = "Event Notifications";
-            String channelDescription = "Notifications for event status changes";
+            CharSequence name = NOTIFICATION_CHANNEL_NAME;
+            String description = NOTIFICATION_CHANNEL_DESCRIPTION;
             int importance = NotificationManager.IMPORTANCE_HIGH;
 
-            NotificationChannel notificationChannel = new NotificationChannel(NOTIFICATION_CHANNEL_ID, channelName, importance);
-            notificationChannel.setDescription(channelDescription);
-            notificationChannel.enableLights(true);
-            notificationChannel.setLightColor(Color.RED);
-            notificationChannel.enableVibration(true);
+
+            NotificationChannel channel = new NotificationChannel(NOTIFICATION_CHANNEL_ID, name, importance);
+            channel.setDescription(description);
+            channel.enableLights(true);
+            channel.setLightColor(Color.RED);
+            channel.enableVibration(true);
+
 
             NotificationManager notificationManager = getSystemService(NotificationManager.class);
             if (notificationManager != null) {
-                notificationManager.createNotificationChannel(notificationChannel);
+                notificationManager.createNotificationChannel(channel);
                 Log.d(TAG, "Notification channel created.");
             } else {
                 Log.e(TAG, "Notification Manager is null. Cannot create notification channel.");
@@ -109,197 +155,238 @@ public class MyApp extends Application {
         }
     }
 
-    /**
-     * Sets up listeners for individual user status changes (existing Invited status feature).
-     */
-    private void listenForStatusChanges() {
-        if (androidId == null || androidId.isEmpty()) {
-            Log.e(TAG, "AndroidID is not set. Cannot listen for status changes.");
-            return;
-        }
-
-        Log.d(TAG, "Listening for status changes for AndroidID: " + androidId);
-
-        // Get all event IDs
-        db.collection("events")
-                .get()
-                .addOnSuccessListener(queryDocumentSnapshots -> {
-                    List<String> eventIds = new ArrayList<>();
-                    for (DocumentSnapshot doc : queryDocumentSnapshots) {
-                        String eventId = doc.getId();
-                        eventIds.add(eventId);
-                    }
-
-                    if (eventIds.isEmpty()) {
-                        Log.d(TAG, "No events found.");
-                        return;
-                    }
-
-                    // Set up listeners for each event's waitingList document for this androidId
-                    for (String eventId : eventIds) {
-                        DocumentReference docRef = db.collection("events")
-                                .document(eventId)
-                                .collection("waitingList")
-                                .document(androidId);
-
-                        ListenerRegistration listenerRegistration = docRef.addSnapshotListener(new EventListener<DocumentSnapshot>() {
-                            @Override
-                            public void onEvent(@Nullable DocumentSnapshot snapshot, @Nullable FirebaseFirestoreException e) {
-                                if (e != null) {
-                                    Log.w(TAG, "Listen failed for eventId: " + eventId, e);
-                                    return;
-                                }
-
-                                if (snapshot != null && snapshot.exists()) {
-                                    String status = snapshot.getString("status");
-                                    Log.d(TAG, "Status for eventId " + eventId + ": " + status);
-
-                                    if (STATUS_INVITED.equals(status)) {
-                                        fetchEventNameAndNotify(eventId, STATUS_INVITED);
-                                    }
-                                } else {
-                                    Log.d(TAG, "No waitingList document for eventId: " + eventId);
-                                }
-                            }
-                        });
-
-                        // Add the listener to the list for later removal
-                        statusListeners.add(listenerRegistration);
-                    }
-                })
-                .addOnFailureListener(e -> Log.e(TAG, "Failed to get events.", e));
-    }
 
     /**
-     * Sets up a listener for event-level notifications based on boolean flags.
+     * Sets up a listener for the 'events' collection to detect changes.
      */
     private void listenForEventNotifications() {
-        db.collection("events")
+        CollectionReference eventsRef = db.collection("events");
+        eventListener = eventsRef.addSnapshotListener(new EventListener<QuerySnapshot>() {
+            @Override
+            public void onEvent(@androidx.annotation.Nullable QuerySnapshot snapshots,
+                                @androidx.annotation.Nullable FirebaseFirestoreException e) {
+                if (e != null) {
+                    Log.w(TAG, "Listen failed for events.", e);
+                    return;
+                }
+
+
+                if (snapshots != null) {
+                    for (DocumentChange dc : snapshots.getDocumentChanges()) {
+                        if (dc.getType() == DocumentChange.Type.MODIFIED || dc.getType() == DocumentChange.Type.ADDED) {
+                            Log.d(TAG, "Detected change in event: " + dc.getDocument().getId());
+                            handleEventChange(dc.getDocument());
+                        }
+                    }
+                }
+            }
+        });
+
+
+        Log.d(TAG, "Started listening for event notifications.");
+    }
+
+
+    /**
+     * Sets up a collection group listener for all 'waitingList' subcollections to detect new users.
+     */
+    private void listenForWaitingListAdditions() {
+        waitingListListener = db.collectionGroup("waitingList")
                 .addSnapshotListener(new EventListener<QuerySnapshot>() {
                     @Override
-                    public void onEvent(@Nullable QuerySnapshot snapshots,
-                                        @Nullable FirebaseFirestoreException e) {
+                    public void onEvent(@androidx.annotation.Nullable QuerySnapshot snapshots,
+                                        @androidx.annotation.Nullable FirebaseFirestoreException e) {
                         if (e != null) {
-                            Log.w(TAG, "Event notifications listen failed.", e);
+                            Log.w(TAG, "Listen failed for waitingList collection group.", e);
                             return;
                         }
 
                         if (snapshots != null) {
                             for (DocumentChange dc : snapshots.getDocumentChanges()) {
-                                if (dc.getType() == DocumentChange.Type.MODIFIED || dc.getType() == DocumentChange.Type.ADDED) {
-                                    handleEventNotifications(dc.getDocument());
+                                if (dc.getType() == DocumentChange.Type.ADDED) {
+                                    Log.d(TAG, "New user added to waitingList: " + dc.getDocument().getId());
+                                    handleNewWaitingListUser(dc.getDocument());
                                 }
                             }
                         }
                     }
                 });
+
+        Log.d(TAG, "Started listening for new waitingList additions.");
     }
 
-    /**
-     * Handles sending notifications based on event-level boolean flags.
-     *
-     * @param eventDoc The event document snapshot.
-     */
-    private void handleEventNotifications(DocumentSnapshot eventDoc) {
-        String eventId = eventDoc.getId();
-        Log.d(TAG, "Handling event notifications for eventId: " + eventId);
 
-        // Retrieve the event name
-        String eventName = eventDoc.getString("name"); // Ensure 'name' field exists
-        if (eventName == null || eventName.isEmpty()) {
-            Log.e(TAG, "Event name is missing for eventId: " + eventId);
+    /**
+     * Handles changes in an individual event document.
+     *
+     * @param eventDoc The changed event document.
+     */
+    private void handleEventChange(DocumentSnapshot eventDoc) {
+        String eventId = eventDoc.getId();
+        Log.d(TAG, "Handling event change for eventId: " + eventId);
+
+
+        // Fetch the Event model from the document
+        Event event = eventDoc.toObject(Event.class);
+        if (event == null) {
+            Log.e(TAG, "Failed to convert document to Event model for eventId: " + eventId);
             return;
         }
 
-        // Handle Enrolled Status (Waitlisted)
-        Boolean notifyEnrolled = eventDoc.getBoolean(FIELD_NOTIFY_ENROLLED);
-        String waitlistedMessage = eventDoc.getString(FIELD_WAITLISTED_MESSAGE);
-        if (Boolean.TRUE.equals(notifyEnrolled) && waitlistedMessage != null && !waitlistedMessage.isEmpty()) {
-            Log.d(TAG, "Notify Enrolled is true. Sending waitlistedMessage.");
-            sendBulkNotification(eventId, STATUS_ENROLLED, waitlistedMessage, FIELD_NOTIFY_ENROLLED, FIELD_WAITLISTED_MESSAGE, eventName);
-        }
 
-        // Handle Invited Status
-        Boolean notifyInvited = eventDoc.getBoolean(FIELD_NOTIFY_INVITED);
-        String invitedMessage = eventDoc.getString(FIELD_INVITED_MESSAGE);
-        if (Boolean.TRUE.equals(notifyInvited) && invitedMessage != null && !invitedMessage.isEmpty()) {
-            Log.d(TAG, "Notify Invited is true. Sending invitedMessage.");
-            sendBulkNotification(eventId, STATUS_INVITED, invitedMessage, FIELD_NOTIFY_INVITED, FIELD_INVITED_MESSAGE, eventName);
-        }
+        // List of statuses to handle
+        String[] statuses = {"invited", "accepted", "enrolled", "rejected"};
 
-        // Handle Accepted Status
-        Boolean notifyAccepted = eventDoc.getBoolean(FIELD_NOTIFY_ACCEPTED);
-        String enrolledMessage = eventDoc.getString(FIELD_ENROLLED_MESSAGE);
-        if (Boolean.TRUE.equals(notifyAccepted) && enrolledMessage != null && !enrolledMessage.isEmpty()) {
-            Log.d(TAG, "Notify Accepted is true. Sending enrolledMessage.");
-            sendBulkNotification(eventId, STATUS_ACCEPTED, enrolledMessage, FIELD_NOTIFY_ACCEPTED, FIELD_ENROLLED_MESSAGE, eventName);
-        }
 
-        // Handle Rejected Status (Cancelled)
-        Boolean notifyRejected = eventDoc.getBoolean(FIELD_NOTIFY_REJECTED);
-        String cancelledMessage = eventDoc.getString(FIELD_CANCELLED_MESSAGE);
-        if (Boolean.TRUE.equals(notifyRejected) && cancelledMessage != null && !cancelledMessage.isEmpty()) {
-            Log.d(TAG, "Notify Rejected is true. Sending cancelledMessage.");
-            sendBulkNotification(eventId, STATUS_REJECTED, cancelledMessage, FIELD_NOTIFY_REJECTED, FIELD_CANCELLED_MESSAGE, eventName);
+        for (String status : statuses) {
+            boolean notifyFlag = false;
+            String message = "";
+
+
+            switch (status) {
+                case "invited":
+                    notifyFlag = event.isNotifyInvited();
+                    message = event.getInvitedMessage();
+                    break;
+                case "accepted":
+                    notifyFlag = event.isNotifyEnrolled();
+                    message = event.getEnrolledMessage();
+                    break;
+                case "enrolled":
+                    notifyFlag = event.isNotifyWaitlisted();
+                    message = event.getWaitlistedMessage();
+                    break;
+                case "rejected":
+                    notifyFlag = event.isNotifyCancelled();
+                    message = event.getCancelledMessage();
+                    break;
+                default:
+                    Log.w(TAG, "Unknown status: " + status);
+            }
+
+
+            Log.d(TAG, "Status: " + status + ", notifyFlag: " + notifyFlag + ", message: " + message);
+
+
+            if (notifyFlag && message != null && !message.isEmpty()) {
+                Log.d(TAG, "Preparing to check and send notification for status: " + status);
+                checkAndSendNotification(eventId, status, message, event.getName());
+            } else {
+                Log.d(TAG, "No notification needed for status: " + status);
+            }
         }
     }
 
-    /**
-     * Sends notifications in bulk to all users with a specific status, excluding the sender.
-     *
-     * @param eventId        The ID of the event.
-     * @param status         The status to filter users.
-     * @param message        The message to send.
-     * @param notifyField    The boolean flag field name.
-     * @param messageField   The message field name.
-     * @param eventName      The name of the event.
-     */
-    private void sendBulkNotification(String eventId, String status, String message, String notifyField, String messageField, String eventName) {
-        // Fetch all users with the specified status
-        db.collection("events")
-                .document(eventId)
-                .collection("waitingList")
-                .whereEqualTo("status", status)
-                .get()
-                .addOnSuccessListener(queryDocumentSnapshots -> {
-                    if (!queryDocumentSnapshots.isEmpty()) {
-                        for (DocumentSnapshot userDoc : queryDocumentSnapshots) {
-                            String userId = userDoc.getId();
-                            // **Exclude the sender**
-                            if (!userId.equals(androidId)) {
-                                // Send notification to each user with event name
-                                sendNotification(message, eventId, userId, eventName);
-                            } else {
-                                Log.d(TAG, "Excluded sender (userId: " + userId + ") from receiving notification for event: " + eventId);
-                            }
-                        }
-                        // After sending notifications, reset the message field and notify flag
-                        resetEventFields(eventId, notifyField, messageField);
-                    } else {
-                        Log.d(TAG, "No users with status: " + status + " for eventId: " + eventId);
-                        // Still reset the fields even if no users are found
-                        resetEventFields(eventId, notifyField, messageField);
-                    }
-                })
-                .addOnFailureListener(e -> Log.e(TAG, "Failed to fetch users with status: " + status + " for eventId: " + eventId, e));
-    }
 
     /**
-     * Sends a notification to a single user with a personalized title.
+     * Checks if the current user is affected by the status change and sends a notification if true.
      *
-     * @param message   The message to send.
      * @param eventId   The ID of the event.
-     * @param userId    The ID of the user.
+     * @param status    The status that has changed.
+     * @param message   The message to send in the notification.
      * @param eventName The name of the event.
      */
-    private void sendNotification(String message, String eventId, String userId, String eventName) {
-        // Create an intent that opens the event details when the notification is tapped
-        Intent intent = new Intent(this, com.example.appify.Activities.EntrantEnlistActivity.class);
-        intent.putExtra("eventID", eventId); // Ensure the key matches what your EntrantEnlistActivity expects
-        intent.putExtra("userID", userId);   // Pass the user ID if needed
+    private void checkAndSendNotification(String eventId, String status, String message, String eventName) {
+        DocumentReference userRef = db.collection("events").document(eventId)
+                .collection("waitingList").document(androidId);
+
+
+        Log.d(TAG, "Checking user status for eventId: " + eventId + ", status: " + status);
+
+
+        userRef.get().addOnSuccessListener(userDoc -> {
+            if (userDoc.exists()) {
+                String userStatus = userDoc.getString("status");
+                Boolean notified = userDoc.getBoolean(status + "Notified");
+                if (notified == null) notified = false;
+
+
+                Log.d(TAG, "UserStatus: " + userStatus + ", Notified: " + notified);
+
+
+                if (userStatus != null && userStatus.equals(status) && !notified) {
+                    Log.d(TAG, "User is affected by status: " + status + ". Sending notification.");
+                    sendNotification(eventId, status, message, eventName);
+                } else {
+                    Log.d(TAG, "User is not affected by status: " + status + " or already notified.");
+                }
+            } else {
+                Log.d(TAG, "User document does not exist in waitingList for eventId: " + eventId);
+            }
+        }).addOnFailureListener(exception -> {
+            Log.e(TAG, "Error fetching user document for eventId: " + eventId, exception);
+        });
+    }
+
+
+    /**
+     * Handles a newly added user document in the 'waitingList' subcollection.
+     *
+     * @param userDoc The newly added user document.
+     */
+    private void handleNewWaitingListUser(DocumentSnapshot userDoc) {
+        String userId = userDoc.getId();
+        Log.d(TAG, "Handling new waitingList user: " + userId);
+
+
+        String status = userDoc.getString("status");
+        Boolean notified = userDoc.getBoolean(status + "Notified");
+        if (notified == null) notified = false;
+
+
+        Log.d(TAG, "UserStatus: " + status + ", Notified: " + notified);
+
+
+        if (status != null && status.equals("invited") && !notified) {
+            // Retrieve the eventId from the document's path: events/{eventId}/waitingList/{userId}
+            String eventId = userDoc.getReference().getParent().getParent().getId();
+            Log.d(TAG, "Associated eventId for user " + userId + ": " + eventId);
+
+            // Fetch the Event document to get the invitedMessage and eventName
+            db.collection("events").document(eventId).get()
+                    .addOnSuccessListener(eventDoc -> {
+                        if (eventDoc.exists()) {
+                            String message = eventDoc.getString("invitedMessage");
+                            String eventName = eventDoc.getString("name"); // Ensure 'name' field exists
+                            if (message != null && !message.isEmpty()) {
+                                Log.d(TAG, "Sending invited notification to user: " + userId);
+                                sendNotification(eventId, "invited", message, eventName);
+                            } else {
+                                Log.d(TAG, "Invited message is empty for eventId: " + eventId + ". No notification sent.");
+                            }
+                        } else {
+                            Log.d(TAG, "Event document does not exist for eventId: " + eventId);
+                        }
+                    })
+                    .addOnFailureListener(e -> {
+                        Log.e(TAG, "Error fetching event document for eventId: " + eventId, e);
+                    });
+        } else {
+            Log.d(TAG, "No invited notification needed for user: " + userId);
+        }
+    }
+
+
+    /**
+     * Sends a local notification to the device and schedules a flag and message reset after a delay.
+     *
+     * @param eventId   The ID of the event.
+     * @param status    The status of the user.
+     * @param message   The message to display in the notification.
+     * @param eventName The name of the event.
+     */
+    private void sendNotification(String eventId, String status, String message, String eventName) {
+        Log.d(TAG, "Attempting to send notification for eventId: " + eventId + ", status: " + status);
+
+
+        // Create an intent to open EntrantEnlistActivity when the notification is tapped
+        Intent intent = new Intent(this, EntrantEnlistActivity.class);
+        intent.putExtra("eventID", eventId);
+        intent.putExtra("status", status);
+        intent.putExtra("eventName", eventName);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 
-        // PendingIntent setup
+
         PendingIntent pendingIntent;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_IMMUTABLE);
@@ -307,103 +394,173 @@ public class MyApp extends Application {
             pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_ONE_SHOT | PendingIntent.FLAG_IMMUTABLE);
         }
 
-        // NotificationManager setup
-        NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
-        // Handle notification permission for Android 13 (API level 33) and above
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.POST_NOTIFICATIONS) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
-                // Since this is the Application class, we cannot request permissions here.
-                // You should handle requesting this permission in your MainActivity or a suitable Activity.
-                Log.e(TAG, "Notification permission not granted. Cannot send notification.");
-                return;
-            }
-        }
+        // Build the notification
+        String notificationTitle = eventName + " - " + capitalize(status) + " Notification";
 
-        // Build the notification with the event name in the title
-        String notificationTitle = eventName + " Notification"; // e.g., "City Marathon Notification"
 
         NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
-                .setSmallIcon(R.drawable.notification_bell) // Replace with your app's notification icon
-                .setContentTitle(notificationTitle) // Dynamic title with event name
+                .setSmallIcon(R.drawable.notification_bell) // Ensure this icon exists in res/drawable
+                .setContentTitle(notificationTitle)
                 .setContentText(message)
                 .setAutoCancel(true)
                 .setContentIntent(pendingIntent)
                 .setPriority(NotificationCompat.PRIORITY_HIGH);
 
-        // Display the notification
+
+        // Get NotificationManager
+        NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+
+
         if (notificationManager != null) {
-            notificationManager.notify((int) System.currentTimeMillis(), notificationBuilder.build());
-            Log.d(TAG, "Notification sent to userId: " + userId + " for event: " + eventId);
+            // Use a unique notification ID
+            int notificationId = (int) System.currentTimeMillis();
+            notificationManager.notify(notificationId, notificationBuilder.build());
+            Log.d(TAG, "Notification sent for eventId: " + eventId + " with status: " + status);
+
+
+            // After sending the notification, set the statusNotified flag to true
+            setNotifiedFlag(eventId, status, true);
+
+
+            // Schedule the flag and message reset after the defined delay
+            scheduleFlagAndMessageReset(eventId, status, androidId);
         } else {
-            Log.e(TAG, "Notification Manager is null");
+            Log.e(TAG, "Notification Manager is null. Cannot send notification for eventId: " + eventId);
         }
     }
 
-    /**
-     * Resets the event's message field and notify flag after sending notifications.
-     *
-     * @param eventId      The ID of the event.
-     * @param notifyField  The boolean flag field name.
-     * @param messageField The message field name.
-     */
-    private void resetEventFields(String eventId, String notifyField, String messageField) {
-        DocumentReference eventRef = db.collection("events").document(eventId);
-
-        Map<String, Object> updates = new HashMap<>();
-        updates.put(messageField, ""); // Reset message field
-        updates.put(notifyField, false); // Reset notify flag
-
-        eventRef.update(updates)
-                .addOnSuccessListener(aVoid -> Log.d(TAG, "Reset " + messageField + " and " + notifyField + " for eventId: " + eventId))
-                .addOnFailureListener(e -> Log.e(TAG, "Failed to reset fields for eventId: " + eventId, e));
-    }
 
     /**
-     * Handles sending notifications based on individual user status changes (existing Invited feature).
+     * Sets the statusNotified flag to the specified value.
      *
      * @param eventId The ID of the event.
-     * @param status  The new status of the user.
+     * @param status  The status related to the notification.
+     * @param value   The value to set for statusNotified (true or false).
      */
-    private void fetchEventNameAndNotify(String eventId, String status) {
-        db.collection("events").document(eventId).get()
-                .addOnSuccessListener(documentSnapshot -> {
-                    if (documentSnapshot.exists()) {
-                        String eventName = documentSnapshot.getString("name"); // Assuming 'name' is the field for event name
-                        String message = "";
+    private void setNotifiedFlag(String eventId, String status, boolean value) {
+        Log.d(TAG, "Setting " + status + "Notified to " + value + " for eventId: " + eventId);
 
-                        // Determine the message based on status
-                        switch (status) {
-                            case STATUS_INVITED:
-                                message = documentSnapshot.getString(FIELD_INVITED_MESSAGE);
-                                break;
-                            // Add cases if needed for other statuses
-                            default:
-                                message = "You have a new update for the event: " + eventName;
-                                break;
-                        }
 
-                        if (message != null && !message.isEmpty()) {
-                            // **Do not send notification to the sender themselves**
-                            // Since this method is triggered by the sender's own status change,
-                            // we skip sending a notification to themselves.
-                            Log.d(TAG, "Sender (userId: " + androidId + ") triggered a notification for event: " + eventId + " but will not receive it.");
-                            // Reset the message field and notify flag without sending notification
-                            resetEventFields(eventId, FIELD_NOTIFY_INVITED, FIELD_INVITED_MESSAGE);
-                        }
-                    } else {
-                        Log.w(TAG, "Event document does not exist for eventId: " + eventId);
-                    }
-                })
-                .addOnFailureListener(e -> Log.e(TAG, "Failed to fetch event name.", e));
+        DocumentReference userRef = db.collection("events").document(eventId)
+                .collection("waitingList").document(androidId);
+        Map<String, Object> updates = new HashMap<>();
+        updates.put(status + "Notified", value);
+
+
+        userRef.update(updates)
+                .addOnSuccessListener(aVoid -> Log.d(TAG, "Successfully set " + status + "Notified to " + value + " for eventId: " + eventId))
+                .addOnFailureListener(error -> Log.e(TAG, "Failed to set " + status + "Notified to " + value + " for eventId: " + eventId, error));
     }
+
+
+    /**
+     * Schedules the flag and message reset after a specified delay using Handler.
+     *
+     * @param eventId   The ID of the event.
+     * @param status    The status related to the notification.
+     * @param androidId The user's androidId.
+     */
+    private void scheduleFlagAndMessageReset(String eventId, String status, String androidId) {
+        Log.d(TAG, "Scheduling flag and message reset for eventId: " + eventId + ", status: " + status + ", androidId: " + androidId);
+
+
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                resetFlagAndMessage(eventId, status, androidId);
+            }
+        }, FLAG_RESET_DELAY_MILLISECONDS); // Delay in milliseconds (e.g., 3000 ms = 3 seconds)
+    }
+
+
+    /**
+     * Resets the statusNotified flag to false and the corresponding message field to an empty string in Firestore.
+     * Additionally, resets the related notify* boolean and message field in the events collection.
+     *
+     * @param eventId   The ID of the event.
+     * @param status    The status related to the notification.
+     * @param androidId The user's androidId.
+     */
+    private void resetFlagAndMessage(String eventId, String status, String androidId) {
+        Log.d(TAG, "Resetting " + status + "Notified to false and " + status + "Message to empty string for eventId: " + eventId + ", androidId: " + androidId);
+
+
+        // Reset in waitingList subcollection
+        DocumentReference userRef = db.collection("events").document(eventId)
+                .collection("waitingList").document(androidId);
+        Map<String, Object> userUpdates = new HashMap<>();
+        userUpdates.put(status + "Notified", false);
+        // Assuming 'waitingList' subcollection does NOT have message fields. If it does, uncomment the next line.
+        // userUpdates.put(status + "Message", ""); // Reset the message field to an empty string (if exists)
+
+
+        userRef.update(userUpdates)
+                .addOnSuccessListener(aVoid -> Log.d(TAG, "Successfully reset " + status + "Notified to false for eventId: " + eventId + ", androidId: " + androidId))
+                .addOnFailureListener(error -> Log.e(TAG, "Failed to reset " + status + "Notified for eventId: " + eventId + ", androidId: " + androidId, error));
+
+
+        // Reset in events collection
+        DocumentReference eventRef = db.collection("events").document(eventId);
+        Map<String, Object> eventUpdates = new HashMap<>();
+
+
+        switch (status) {
+            case "invited":
+                eventUpdates.put("notifyInvited", false);
+                eventUpdates.put("invitedMessage", "");
+                break;
+            case "accepted":
+                eventUpdates.put("notifyEnrolled", false);
+                eventUpdates.put("enrolledMessage", "");
+                break;
+            case "enrolled":
+                eventUpdates.put("notifyWaitlisted", false);
+                eventUpdates.put("waitlistedMessage", "");
+                break;
+            case "rejected":
+                eventUpdates.put("notifyCancelled", false);
+                eventUpdates.put("cancelledMessage", "");
+                break;
+            default:
+                Log.w(TAG, "Unknown status during event reset: " + status);
+                return; // Exit if status is unknown
+        }
+
+
+        eventRef.update(eventUpdates)
+                .addOnSuccessListener(aVoid -> Log.d(TAG, "Successfully reset notify*" + capitalize(status) + " to false and " + status + "Message to empty string for eventId: " + eventId))
+                .addOnFailureListener(error -> Log.e(TAG, "Failed to reset notify*" + capitalize(status) + " and " + status + "Message for eventId: " + eventId, error));
+    }
+
+
+    /**
+     * Capitalizes the first letter of a string.
+     *
+     * @param str The input string.
+     * @return The capitalized string.
+     */
+    private String capitalize(String str) {
+        if (str == null || str.isEmpty()) return str;
+        return str.substring(0, 1).toUpperCase() + str.substring(1);
+    }
+
 
     @Override
     public void onTerminate() {
         super.onTerminate();
-        // Remove all listeners when the app is terminated
-        for (ListenerRegistration listener : statusListeners) {
-            listener.remove();
+        // Remove the event listener to prevent memory leaks
+        if (eventListener != null) {
+            eventListener.remove();
+            Log.d(TAG, "Removed event listener.");
         }
+
+        // **Remove the waitingListListener**
+        if (waitingListListener != null) {
+            waitingListListener.remove();
+            Log.d(TAG, "Removed waitingList listener.");
+        }
+
+        Log.d(TAG, "App terminated and listeners removed.");
     }
 }

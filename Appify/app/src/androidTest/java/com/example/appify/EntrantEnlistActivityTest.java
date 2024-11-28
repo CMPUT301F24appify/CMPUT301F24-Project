@@ -2,7 +2,6 @@ package com.example.appify;
 
 import android.content.Context;
 import android.content.Intent;
-import android.widget.TextView;
 
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.espresso.intent.Intents;
@@ -12,7 +11,6 @@ import androidx.test.rule.ActivityTestRule;
 import com.example.appify.Activities.EntrantEnlistActivity;
 import com.example.appify.Activities.EnlistConfirmationActivity;
 import com.example.appify.Model.Entrant;
-import com.example.appify.Model.Event;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
