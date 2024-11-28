@@ -14,6 +14,7 @@
 package com.example.appify.Adapters;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.view.LayoutInflater;
@@ -27,6 +28,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.constraintlayout.widget.ConstraintLayout;
 
+import com.example.appify.Activities.EventDetailActivity;
 import com.example.appify.Model.Event;
 import com.example.appify.MyApp;
 import com.example.appify.R;
@@ -125,6 +127,20 @@ public class CustomEventAdapter extends ArrayAdapter<Event> {
             bottomPart.setVisibility(View.GONE);
             topPart.setVisibility(View.GONE);
         }
+        convertView.setOnClickListener(view -> {
+            Intent intent = new Intent(context, EventDetailActivity.class);
+            intent.putExtra("name", event.getName() );
+            intent.putExtra("date", event.getDate());
+            intent.putExtra("facility", event.getFacility());
+            intent.putExtra("registrationEndDate", event.getRegistrationEndDate());
+            intent.putExtra("description", event.getDescription() );
+            intent.putExtra("maxWaitEntrants", event.getMaxWaitEntrants());
+            intent.putExtra("maxSampleEntrants", event.getMaxSampleEntrants());
+            intent.putExtra("eventID", event.getEventId());
+            intent.putExtra("posterUri", event.getPosterUri());
+            intent.putExtra("isGeolocate", event.isGeolocate());
+            context.startActivity(intent);
+        });
 
         return convertView;
     }
