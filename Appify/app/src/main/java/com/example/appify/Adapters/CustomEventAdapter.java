@@ -32,10 +32,8 @@ import com.example.appify.Activities.EventDetailActivity;
 import com.example.appify.Model.Event;
 import com.example.appify.MyApp;
 import com.example.appify.R;
-import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 
@@ -123,7 +121,7 @@ public class CustomEventAdapter extends ArrayAdapter<Event> {
 
         if (Objects.equals(event.getOrganizerID(), entrantID) && !isOrganizePage){
             LinearLayout topPart = convertView.findViewById(R.id.top_part);
-            LinearLayout bottomPart = convertView.findViewById(R.id.event_dates);
+            LinearLayout bottomPart = convertView.findViewById(R.id.profile_information);
             bottomPart.setVisibility(View.GONE);
             topPart.setVisibility(View.GONE);
         }

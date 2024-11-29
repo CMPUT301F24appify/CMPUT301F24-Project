@@ -57,7 +57,7 @@
             </LinearLayout>
 
             <LinearLayout
-                android:id="@+id/event_dates"
+                android:id="@+id/profile_information"
                 android:layout_width="match_parent"
                 android:layout_height="89dp"
                 android:layout_margin="10dp"

@@ -133,7 +133,6 @@ public class AdminListActivity extends AppCompatActivity {
                 eventAdapter.notifyDataSetChanged();
             }
         });
-        Toast.makeText(this, "Loading events...", Toast.LENGTH_SHORT).show();
     }
 
     private void loadProfilesFromFirestore() {
@@ -152,14 +151,12 @@ public class AdminListActivity extends AppCompatActivity {
                     Boolean notifications = doc.getBoolean("notifications");
                     String profilePictureURL = doc.getString("profilePictureURL");
 
-                    Entrant entrant = new Entrant(id,name,phoneNumber,email,profilePictureURL,notifications);
-                    if(facilityID != null)
-                        entrantList.add(entrant);
+                    Entrant entrant = new Entrant(id,name,phoneNumber,email,profilePictureURL,notifications, facilityID);
+                    entrantList.add(entrant);
                 }
                 entrantAdapter.notifyDataSetChanged();
             }
         });
-        Toast.makeText(this, "Loading profiles...", Toast.LENGTH_SHORT).show();
     }
 
     private void loadImagesFromFirestore() {
