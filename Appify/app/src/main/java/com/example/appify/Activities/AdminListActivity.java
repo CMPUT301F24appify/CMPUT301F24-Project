@@ -59,7 +59,7 @@ public class AdminListActivity extends AppCompatActivity {
         HeaderNavigation headerNavigation = new HeaderNavigation(this);
         headerNavigation.setupNavigation();
         TextView facilitiesText = findViewById(R.id.adminText_navBar);
-        facilitiesText.setTextColor(Color.parseColor("#800080"));
+        facilitiesText.setTextColor(Color.parseColor("#000000"));
         facilitiesText.setTypeface(facilitiesText.getTypeface(), Typeface.BOLD);
 
         // Set up RadioGroup for toggling options
