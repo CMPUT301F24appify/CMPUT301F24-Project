@@ -13,6 +13,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
 
+import com.example.appify.HeaderNavigation;
 import com.example.appify.Model.Facility;
 import com.example.appify.MyApp;
 import com.example.appify.R;
@@ -134,6 +135,12 @@ public class AddFacilityDialogFragment extends DialogFragment {
             return;
         }
 
+        // Email validation using regex
+        if (!email.matches("[a-zA-Z0-9._-]+@[a-z]+\\.+[a-z]+")) {
+            Toast.makeText(getContext(), "Please enter a valid email address.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         int capacity;
         try {
             capacity = Integer.parseInt(capacityStr);
@@ -167,6 +174,12 @@ public class AddFacilityDialogFragment extends DialogFragment {
                     .addOnSuccessListener(aVoid -> {
                         db.collection("AndroidID").document(organizerID).update("facilityID", newFacilityID)
                                 .addOnSuccessListener(aVoid2 -> {
+                                    // Navigate to organizer page after adding the facility
+                                    if (getActivity() != null) {
+                                        HeaderNavigation headerNavigation = new HeaderNavigation(getActivity());
+                                        headerNavigation.navigateToOrganize();
+                                    }
+
                                     dismiss();
                                 });
                     });

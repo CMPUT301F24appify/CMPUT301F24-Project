@@ -100,7 +100,7 @@ public class HeaderNavigation {
     /**
      * Navigates to the event management page.
      */
-    private void navigateToOrganize() {
+    public void navigateToOrganize() {
         Intent intent = new Intent(activity, EventActivity.class);
         activity.startActivity(intent);
     }

@@ -190,27 +190,23 @@ public class ManageFacilityActivity extends AppCompatActivity implements AddFaci
                                                                     db.collection("AndroidID").document(userID)
                                                                             .collection("waitListedEvents")
                                                                             .document(eventID)
-                                                                            .delete()
-                                                                            .addOnSuccessListener(aVoid -> Log.d("WaitList", "Removed eventID from user's waitListedEvents: " + userID));
+                                                                            .delete();
 
                                                                     // Delete the individual waitingList entry
                                                                     db.collection("events").document(eventID).collection("waitingList")
                                                                             .document(userID)
-                                                                            .delete()
-                                                                            .addOnSuccessListener(aVoid -> Log.d("WaitList", "Deleted waitingList entry for userID: " + userID));
+                                                                            .delete();
                                                                 }
                                                             })
                                                             .addOnCompleteListener(waitingListTask -> {
                                                                 // Delete event from 'events' collection
                                                                 db.collection("events").document(eventID)
-                                                                        .delete()
-                                                                        .addOnSuccessListener(aVoid -> Log.d("Event", "Deleted event from 'events': " + eventID));
+                                                                        .delete();
 
                                                                 // Delete event document from 'facilities/facilityID/events' collection
                                                                 db.collection("facilities").document(facilityID).collection("events")
                                                                         .document(eventID)
-                                                                        .delete()
-                                                                        .addOnSuccessListener(aVoid -> Log.d("FacilityEvent", "Deleted event from 'facilities/facilityID/events': " + eventID));
+                                                                        .delete();
                                                             });
                                                 }
                                             })
@@ -219,11 +215,21 @@ public class ManageFacilityActivity extends AppCompatActivity implements AddFaci
                                                 db.collection("facilities").document(facilityID)
                                                         .delete()
                                                         .addOnSuccessListener(aVoid -> {
-                                                            Log.d("Facility", "Deleted Facility with ID: " + facilityID);
                                                             if (organizerID != null) {
                                                                 // Update organizer's facility ID to null
                                                                 db.collection("AndroidID").document(organizerID)
-                                                                        .update("facilityID", null);
+                                                                        .update("facilityID", null)
+                                                                        .addOnSuccessListener(aVoid1 -> {
+                                                                            // Navigate to EntrantHomePageActivity after facility deletion
+                                                                            Intent intent = new Intent(this, EntrantHomePageActivity.class);
+                                                                            startActivity(intent);
+                                                                            finish(); // Close the current activity
+                                                                        });
+                                                            } else {
+                                                                // Navigate directly if no organizerID exists
+                                                                Intent intent = new Intent(this, EntrantHomePageActivity.class);
+                                                                startActivity(intent);
+                                                                finish(); // Close the current activity
                                                             }
                                                         });
                                             });
