@@ -3,6 +3,7 @@ package com.example.appify.Activities;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.ListView;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
@@ -15,6 +16,7 @@ import com.example.appify.Adapters.CustomEntrantAdapter;
 import com.example.appify.Adapters.CustomEntrantAdminAdapter;
 import com.example.appify.Adapters.CustomEventAdapter;
 import com.example.appify.Adapters.CustomFacilityAdapter;
+import com.example.appify.Adapters.CustomFolderAdapter;
 import com.example.appify.HeaderNavigation;
 import com.example.appify.Model.Entrant;
 import com.example.appify.Model.Event;
@@ -23,6 +25,8 @@ import com.example.appify.R;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
 import java.util.ArrayList;
 
@@ -38,6 +42,8 @@ public class AdminListActivity extends AppCompatActivity {
     private CustomEventAdapter eventAdapter;
     private ArrayList<Entrant> entrantList;
     private CustomEntrantAdminAdapter entrantAdapter;
+    private ArrayList<StorageReference> folderList;
+    private CustomFolderAdapter folderAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,6 +59,8 @@ public class AdminListActivity extends AppCompatActivity {
         eventAdapter = new CustomEventAdapter(this, eventList,false);
         entrantList = new ArrayList<>();
         entrantAdapter = new CustomEntrantAdminAdapter(this, entrantList);
+        folderList = new ArrayList<>();
+        folderAdapter = new CustomFolderAdapter(this, folderList);
         listView = findViewById(R.id.admin_list);
 
         // HeaderNavigation
@@ -75,6 +83,7 @@ public class AdminListActivity extends AppCompatActivity {
                 listView.setAdapter(entrantAdapter);
                 loadProfilesFromFirestore();
             } else if (checkedId == R.id.toggle_images) {
+                listView.setAdapter(folderAdapter);
                 loadImagesFromFirestore();
             } else {
                 Toast.makeText(this, "Invalid selection", Toast.LENGTH_SHORT).show();
@@ -165,7 +174,18 @@ public class AdminListActivity extends AppCompatActivity {
     }
 
     private void loadImagesFromFirestore() {
-        // TODO: Implement functionality to load images from Firestore
+        FirebaseStorage storage = FirebaseStorage.getInstance();
+        StorageReference ref = storage.getReference();
+        ref.listAll()
+                .addOnSuccessListener(result -> {
+                    folderList.clear();
+                    for (StorageReference folder : result.getPrefixes()) {
+                        if(!folder.getName().contains("qrcode")) {
+                            folderList.add(folder);
+                        }
+                    }
+                    folderAdapter.notifyDataSetChanged();
+                });
         Toast.makeText(this, "Loading images...", Toast.LENGTH_SHORT).show();
     }
 }
