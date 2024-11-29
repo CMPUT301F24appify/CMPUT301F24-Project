@@ -83,6 +83,7 @@ public class EntrantEnlistActivity extends AppCompatActivity {
                              // If qrCodeKey doesn't match current passKey, the scanned qrCode is outdated. Return to events page.
                              if (!Objects.equals(dbKey, passKey)) {
                                  Intent intent2 = new Intent(this, EntrantHomePageActivity.class);
+                                 Toast.makeText(this, "Invalid QRCode",Toast.LENGTH_LONG).show();
                                  this.startActivity(intent2);
                              }
                              else {
