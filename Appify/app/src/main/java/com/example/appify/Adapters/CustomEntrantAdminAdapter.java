@@ -113,94 +113,105 @@ public class CustomEntrantAdminAdapter extends ArrayAdapter<Entrant> {
     }
 
     private void showCancelProfileDialog(Entrant entrant) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this.getContext());
-        builder.setTitle("Delete User: " + entrant.getName())
-                .setMessage("Please confirm that you want to delete: " + entrant.getName() + ". Entrant will be removed from all waiting lists. If the entrant owns a facility, ALL events at that facility as well as the facility will be deleted. This action cannot be undone.")
-                .setPositiveButton("Confirm", (dialog, which) -> {
-                    // 1. Determine if the user is enrolled in any waitingList, if so delete
-                    db.collection("AndroidID").document(entrant.getId()).collection("waitListedEvents")
-                            .get()
-                            .addOnSuccessListener(waitListedSnapshot -> {
-                                for (QueryDocumentSnapshot eventDoc : waitListedSnapshot) {
-                                    String eventID = eventDoc.getId();
-
-                                    // Enter the event, and delete the user from the waitingList
-                                    db.collection("events").document(eventID).collection("waitingList")
-                                            .document(entrant.getId())
-                                            .delete();
-
-                                    // Delete the event from the users waitListedEvents
+        // Check if the user is an admin before proceeding
+        db.collection("AndroidID").document(entrant.getId())
+                .get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists() && documentSnapshot.getBoolean("isAdmin") != null && documentSnapshot.getBoolean("isAdmin")) {
+                        // Make the Toast that the user is an Admin and cannot be deleted
+                        Toast.makeText(context, entrant.getName() + " is an admin and cannot be deleted.", Toast.LENGTH_SHORT).show();
+                    } else {
+                        // Delete the Profile
+                        AlertDialog.Builder builder = new AlertDialog.Builder(this.getContext());
+                        builder.setTitle("Delete User: " + entrant.getName())
+                                .setMessage("Please confirm that you want to delete: " + entrant.getName() + ". Entrant will be removed from all waiting lists. If the entrant owns a facility, ALL events at that facility as well as the facility will be deleted. This action cannot be undone.")
+                                .setPositiveButton("Confirm", (dialog, which) -> {
+                                    // 1. Determine if the user is enrolled in any waitingList, if so delete
                                     db.collection("AndroidID").document(entrant.getId()).collection("waitListedEvents")
-                                            .document(eventID)
-                                            .delete();
-                                }
-                            });
-                    // 2. Determine if the user has a facility, if so cascade delete
-                    if (entrant.getFacilityID() != null) {
-                        db.collection("facilities").document(entrant.getFacilityID())
-                                .get()
-                                .addOnSuccessListener(documentSnapshot2 -> {
-                                    if (documentSnapshot2.exists()) {
+                                            .get()
+                                            .addOnSuccessListener(waitListedSnapshot -> {
+                                                for (QueryDocumentSnapshot eventDoc : waitListedSnapshot) {
+                                                    String eventID = eventDoc.getId();
 
-                                        // Search if the Facility has any events
-                                        db.collection("facilities").document(entrant.getFacilityID()).collection("events")
+                                                    // Enter the event, and delete the user from the waitingList
+                                                    db.collection("events").document(eventID).collection("waitingList")
+                                                            .document(entrant.getId())
+                                                            .delete();
+
+                                                    // Delete the event from the users waitListedEvents
+                                                    db.collection("AndroidID").document(entrant.getId()).collection("waitListedEvents")
+                                                            .document(eventID)
+                                                            .delete();
+                                                }
+                                            });
+                                    // 2. Determine if the user has a facility, if so cascade delete
+                                    if (entrant.getFacilityID() != null) {
+                                        db.collection("facilities").document(entrant.getFacilityID())
                                                 .get()
-                                                .addOnSuccessListener(querySnapshot -> {
-                                                    for (QueryDocumentSnapshot eventDoc : querySnapshot) {
-                                                        String eventID = eventDoc.getId();
+                                                .addOnSuccessListener(documentSnapshot2 -> {
+                                                    if (documentSnapshot2.exists()) {
 
-                                                        // Check for and process the waitingList for the event
-                                                        db.collection("events").document(eventID).collection("waitingList")
+                                                        // Search if the Facility has any events
+                                                        db.collection("facilities").document(entrant.getFacilityID()).collection("events")
                                                                 .get()
-                                                                .addOnSuccessListener(waitingListSnapshot -> {
-                                                                    for (QueryDocumentSnapshot userDoc : waitingListSnapshot) {
-                                                                        String userID = userDoc.getId();
+                                                                .addOnSuccessListener(querySnapshot -> {
+                                                                    for (QueryDocumentSnapshot eventDoc : querySnapshot) {
+                                                                        String eventID = eventDoc.getId();
 
-                                                                        // Delete the eventID from the user's waitListedEvents collection
-                                                                        db.collection("AndroidID").document(userID)
-                                                                                .collection("waitListedEvents")
-                                                                                .document(eventID)
-                                                                                .delete();
+                                                                        // Check for and process the waitingList for the event
+                                                                        db.collection("events").document(eventID).collection("waitingList")
+                                                                                .get()
+                                                                                .addOnSuccessListener(waitingListSnapshot -> {
+                                                                                    for (QueryDocumentSnapshot userDoc : waitingListSnapshot) {
+                                                                                        String userID = userDoc.getId();
 
-                                                                        // Delete the individual from the waitingList entry
-                                                                        db.collection("events").document(eventID)
-                                                                                .collection("waitingList")
-                                                                                .document(userID)
-                                                                                .delete();
+                                                                                        // Delete the eventID from the user's waitListedEvents collection
+                                                                                        db.collection("AndroidID").document(userID)
+                                                                                                .collection("waitListedEvents")
+                                                                                                .document(eventID)
+                                                                                                .delete();
+
+                                                                                        // Delete the individual from the waitingList entry
+                                                                                        db.collection("events").document(eventID)
+                                                                                                .collection("waitingList")
+                                                                                                .document(userID)
+                                                                                                .delete();
+                                                                                    }
+                                                                                })
+                                                                                .addOnCompleteListener(waitingListTask -> {
+                                                                                    // Delete event from 'events' collection
+                                                                                    db.collection("events").document(eventID)
+                                                                                            .delete();
+
+                                                                                    // Delete event document from 'facilities/facilityID/events' collection
+                                                                                    db.collection("facilities").document(entrant.getFacilityID()).collection("events")
+                                                                                            .document(eventID)
+                                                                                            .delete();
+                                                                                });
                                                                     }
                                                                 })
-                                                                .addOnCompleteListener(waitingListTask -> {
-                                                                    // Delete event from 'events' collection
-                                                                    db.collection("events").document(eventID)
-                                                                            .delete();
-
-                                                                    // Delete event document from 'facilities/facilityID/events' collection
-                                                                    db.collection("facilities").document(entrant.getFacilityID()).collection("events")
-                                                                            .document(eventID)
+                                                                .addOnCompleteListener(task -> {
+                                                                    // Once all events are processed, delete the facility itself
+                                                                    db.collection("facilities").document(entrant.getFacilityID())
                                                                             .delete();
                                                                 });
                                                     }
-                                                })
-                                                .addOnCompleteListener(task -> {
-                                                    // Once all events are processed, delete the facility itself
-                                                    db.collection("facilities").document(entrant.getFacilityID())
-                                                            .delete();
                                                 });
-                                    }
-                                });
 
+                                    }
+                                    // 3. Delete the user
+                                    db.collection("AndroidID").document(entrant.getId())
+                                            .delete()
+                                            .addOnSuccessListener(aVoid -> {
+                                                entrantList.remove(entrant);
+                                                notifyDataSetChanged();
+                                            });
+                                })
+                                .setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss());
+                        builder.create();
+                        builder.show();
                     }
-                    // 3. Delete the user
-                    db.collection("AndroidID").document(entrant.getId())
-                            .delete()
-                            .addOnSuccessListener(aVoid -> {
-                                entrantList.remove(entrant);
-                                notifyDataSetChanged();
-                            });
-                })
-                .setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss());
-        builder.create();
-        builder.show();
+                });
     }
 }
 

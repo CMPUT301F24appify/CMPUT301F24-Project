@@ -47,13 +47,31 @@
 
                 </LinearLayout>
 
-                <ImageView
-                    android:id="@+id/statusIcon"
+                <FrameLayout
                     android:layout_width="162dp"
-                    android:layout_height="63dp"
+                    android:layout_height="64dp"
                     android:layout_gravity="center"
-                    android:layout_weight="0.25"
-                    app:srcCompat="@drawable/default_pfp" />
+                    android:layout_weight="0.25">
+
+                    <ImageView
+                        android:id="@+id/statusIcon"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        app:srcCompat="@drawable/default_pfp" />
+
+                    <ImageButton
+                        android:id="@+id/x_icon"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:background="@android:color/transparent"
+                        android:scaleType="fitCenter"
+                        android:src="@drawable/x_icon"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toEndOf="@id/content"
+                    />
+
+                </FrameLayout>
+
             </LinearLayout>
 
             <LinearLayout

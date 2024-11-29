@@ -15,6 +15,7 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
 
 import com.example.appify.Activities.EntrantHomePageActivity;
+import com.example.appify.Activities.EventActivity;
 import com.example.appify.Model.Facility;
 import com.example.appify.MyApp;
 import com.example.appify.R;
@@ -103,6 +104,7 @@ public class AddFacilityDialogFragment extends DialogFragment {
 
         addButton.setOnClickListener(v -> {
             addOrUpdateFacility();
+
         });
         cancelButton.setOnClickListener(v -> dismiss());
 
