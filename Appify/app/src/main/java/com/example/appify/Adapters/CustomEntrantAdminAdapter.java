@@ -124,7 +124,7 @@ public class CustomEntrantAdminAdapter extends ArrayAdapter<Entrant> {
                         // Delete the Profile
                         AlertDialog.Builder builder = new AlertDialog.Builder(this.getContext());
                         builder.setTitle("Delete User: " + entrant.getName())
-                                .setMessage("Please confirm that you want to delete: " + entrant.getName() + ". Entrant will be removed from all waiting lists. If the entrant owns a facility, ALL events at that facility as well as the facility will be deleted. This action cannot be undone.")
+                                .setMessage("Please confirm that you want to delete: " + entrant.getName() + ". User will be removed from all waiting lists. If the user owns a facility, ALL events at that facility as well as the facility will be deleted. This action cannot be undone.")
                                 .setPositiveButton("Confirm", (dialog, which) -> {
                                     // 1. Determine if the user is enrolled in any waitingList, if so delete
                                     db.collection("AndroidID").document(entrant.getId()).collection("waitListedEvents")
