@@ -142,7 +142,6 @@ public class AdminListActivity extends AppCompatActivity {
                 eventAdapter.notifyDataSetChanged();
             }
         });
-        Toast.makeText(this, "Loading events...", Toast.LENGTH_SHORT).show();
     }
 
     private void loadProfilesFromFirestore() {
@@ -170,7 +169,6 @@ public class AdminListActivity extends AppCompatActivity {
                 entrantAdapter.notifyDataSetChanged();
             }
         });
-        Toast.makeText(this, "Loading profiles...", Toast.LENGTH_SHORT).show();
     }
 
     private void loadImagesFromFirestore() {
@@ -186,6 +184,5 @@ public class AdminListActivity extends AppCompatActivity {
                     }
                     folderAdapter.notifyDataSetChanged();
                 });
-        Toast.makeText(this, "Loading images...", Toast.LENGTH_SHORT).show();
     }
 }
