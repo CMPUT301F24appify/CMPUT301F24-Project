@@ -37,6 +37,7 @@ import com.google.zxing.qrcode.QRCodeWriter;
 import java.io.ByteArrayOutputStream;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -81,8 +82,8 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
 
         // QR code generation for event-specific content
         ImageView qrImageView = findViewById(R.id.qr_code);
-        String qrContent = "myapp://event/" + eventID;
-        QRCodeWriter qrCodeWriter = new QRCodeWriter();
+
+
 
 
 //         If QR code exists in database use it. Otherwise, generate new one and store in db
@@ -101,8 +102,15 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
             }
             else {
                 // Create QR Code and store it
-                System.out.println("no qr code");
                 try {
+
+                    QRCodeWriter qrCodeWriter = new QRCodeWriter();
+
+                    // Generate a passKey for this version of the QRcode, store in database
+                    String passKey = UUID.randomUUID().toString();
+                    db.collection("events").document(eventID).update("qrCodePassKey", passKey);
+                    String qrContent = "myapp://event/" + eventID +"/"+passKey;
+
                     BitMatrix bitMatrix = qrCodeWriter.encode(qrContent, BarcodeFormat.QR_CODE, 200, 200);
                     int width = bitMatrix.getWidth();
                     int height = bitMatrix.getHeight();
