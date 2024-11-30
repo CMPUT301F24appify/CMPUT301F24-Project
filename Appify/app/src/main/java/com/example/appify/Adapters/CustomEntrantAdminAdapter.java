@@ -200,12 +200,29 @@ public class CustomEntrantAdminAdapter extends ArrayAdapter<Entrant> {
                                                 });
 
                                     }
-                                    // 3. Delete the user
+                                    // 3. Delete the user and their profile picture from the database
                                     db.collection("AndroidID").document(entrant.getId())
-                                            .delete()
-                                            .addOnSuccessListener(aVoid -> {
-                                                entrantList.remove(entrant);
-                                                notifyDataSetChanged();
+                                            .get()
+                                            .addOnSuccessListener(documentSnapshot1 -> {
+                                                if (documentSnapshot1.exists()) {
+                                                    String profilePictureUrl = documentSnapshot1.getString("profilePictureUrl");
+
+                                                    if (profilePictureUrl != null && !profilePictureUrl.isEmpty()) {
+                                                        // Delete the profile picture from Firebase Storage
+                                                        FirebaseStorage storage = FirebaseStorage.getInstance();
+                                                        StorageReference imageRef = storage.getReferenceFromUrl(profilePictureUrl);
+
+                                                        imageRef.delete();
+                                                    }
+                                                }
+
+                                                // Delete the User
+                                                db.collection("AndroidID").document(entrant.getId())
+                                                        .delete()
+                                                        .addOnSuccessListener(aVoid -> {
+                                                            entrantList.remove(entrant);
+                                                            notifyDataSetChanged();
+                                                        });
                                             });
                                 })
                                 .setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss());

@@ -36,6 +36,8 @@ import com.example.appify.MyApp;
 import com.example.appify.R;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
 import java.util.List;
 import java.util.Objects;
@@ -193,12 +195,29 @@ public class CustomEventAdapter extends ArrayAdapter<Event> {
                                 }
                             })
                             .addOnCompleteListener(eventTask -> {
-                                // Delete the Event all together
+                                // Delete the Event along with its poster
                                 db.collection("events").document(event.getEventId())
-                                        .delete()
-                                        .addOnSuccessListener(aVoid -> {
-                                            eventList.remove(event);
-                                            notifyDataSetChanged();
+                                        .get()
+                                        .addOnSuccessListener(documentSnapshot -> {
+                                            if (documentSnapshot.exists()) {
+                                                String posterUri = documentSnapshot.getString("posterUri");
+
+                                                if (posterUri != null && !posterUri.isEmpty()) {
+                                                    // Delete the poster image from Firebase Storage
+                                                    FirebaseStorage storage = FirebaseStorage.getInstance();
+                                                    StorageReference imageRef = storage.getReferenceFromUrl(posterUri);
+
+                                                    imageRef.delete();
+                                                }
+                                            }
+
+                                            // Delete the Event all together
+                                            db.collection("events").document(event.getEventId())
+                                                    .delete()
+                                                    .addOnSuccessListener(aVoid -> {
+                                                        eventList.remove(event);
+                                                        notifyDataSetChanged();
+                                                    });
                                         });
                             });
                 }))
