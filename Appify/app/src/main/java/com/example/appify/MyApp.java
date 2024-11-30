@@ -236,8 +236,12 @@ public class MyApp extends Application {
                             if (dc.getType() == DocumentChange.Type.MODIFIED && eventDoc.contains("lotteryRan")) {
                                 Log.d(TAG, "Lottery counter updated for event: " + eventId);
 
-                                // Fetch the organizerID from the event document
+                                // Retrieve the event's organizerID
                                 String organizerId = eventDoc.getString("organizerID");
+                                if (organizerId != null && organizerId.equals(androidId)) {
+                                    Log.d(TAG, "Organizer detected. Skipping notifications for organizer: " + androidId);
+                                    continue; // Skip processing for the organizer's device
+                                }
 
                                 // Fetch the waiting list for this event
                                 db.collection("events").document(eventId)
@@ -248,9 +252,9 @@ public class MyApp extends Application {
                                                 String userId = userDoc.getId();
                                                 String status = userDoc.getString("status");
 
-                                                // Ignore the organizer
-                                                if (userId.equals(organizerId)) {
-                                                    Log.d(TAG, "Skipping notification for organizer: " + organizerId);
+                                                // Ignore notifications for the organizer (current user)
+                                                if (userId.equals(androidId)) {
+                                                    Log.d(TAG, "Skipping notification for organizer (current user): " + androidId);
                                                     continue;
                                                 }
 
@@ -277,6 +281,8 @@ public class MyApp extends Application {
 
         Log.d(TAG, "Started listening for updates to the lottery counter.");
     }
+
+
 
 
 
