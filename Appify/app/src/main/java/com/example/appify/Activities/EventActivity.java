@@ -49,7 +49,7 @@ public class EventActivity extends AppCompatActivity implements AddEventDialogFr
         HeaderNavigation headerNavigation = new HeaderNavigation(this);
         headerNavigation.setupNavigation();
         TextView organizeText = findViewById(R.id.organizeText_navBar);
-        organizeText.setTextColor(Color.parseColor("#800080"));
+        organizeText.setTextColor(Color.parseColor("#000000"));
         organizeText.setTypeface(organizeText.getTypeface(), Typeface.BOLD);
 
         db = FirebaseFirestore.getInstance();  // Initialize Firestore instance

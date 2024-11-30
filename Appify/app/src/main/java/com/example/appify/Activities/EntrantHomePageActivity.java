@@ -9,7 +9,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
-import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -19,17 +19,14 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.appify.Adapters.CustomEventAdapter;
-import com.example.appify.MainActivity;
 import com.example.appify.Model.Event;
 import com.example.appify.HeaderNavigation;
 import com.example.appify.MyApp;
 import com.example.appify.R;
 import com.google.firebase.firestore.CollectionReference;
-import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
-import com.journeyapps.barcodescanner.CaptureActivity;
 import com.journeyapps.barcodescanner.ScanContract;
 import com.journeyapps.barcodescanner.ScanOptions;
 
@@ -46,6 +43,7 @@ public class EntrantHomePageActivity extends AppCompatActivity {
     ListView eventListView;
     CustomEventAdapter eventAdapter;
     ArrayList<Event> eventList;
+    LinearLayout noEventsText;
 
     /**
      * Called when the activity is starting. Initializes UI components and loads event data.
@@ -63,6 +61,8 @@ public class EntrantHomePageActivity extends AppCompatActivity {
 
         db = FirebaseFirestore.getInstance();
 
+        noEventsText = findViewById(R.id.noEventsLayout);
+        noEventsText.setVisibility(View.GONE);
         // Initialize the ListView and the Adapter
         eventList = new ArrayList<>();
         eventAdapter = new CustomEventAdapter(this, eventList, false, false);
@@ -73,7 +73,7 @@ public class EntrantHomePageActivity extends AppCompatActivity {
         HeaderNavigation headerNavigation = new HeaderNavigation(this);
         headerNavigation.setupNavigation();
         TextView eventsText = findViewById(R.id.eventsText_navBar);
-        eventsText.setTextColor(Color.parseColor("#800080"));
+        eventsText.setTextColor(Color.parseColor("#000000"));
         eventsText.setTypeface(eventsText.getTypeface(), Typeface.BOLD);
 
         // Load Events from Firebase
@@ -151,7 +151,6 @@ public class EntrantHomePageActivity extends AppCompatActivity {
     private void loadEventsFromFirestore() {
         MyApp app = (MyApp) getApplication();
         String androidId = app.getAndroidId();
-        System.out.println(androidId);
 
         CollectionReference userRef = db.collection("AndroidID").document(androidId).collection("waitListedEvents");
 
@@ -163,39 +162,23 @@ public class EntrantHomePageActivity extends AppCompatActivity {
                     // Use the fromFirestore method to create an Event object
 
                     db.collection("events").document(event.getId()).get().addOnCompleteListener(task1 -> {
-                        System.out.println(db.collection("events").document(event.getId()));
                         DocumentSnapshot eventData = task1.getResult();
-                        System.out.println(eventData);
 
                         String eventID = eventData.getId();
                         String name = eventData.getString("name");
-                        System.out.println(name);
                         String date = eventData.getString("date");
-                        System.out.println(date);
                         String registrationEndDate = eventData.getString("registrationEndDate");
-                        System.out.println(registrationEndDate);
                         String description = eventData.getString("description");
-                        System.out.println(description);
                         String facility = eventData.getString("facility");
-                        System.out.println(facility);
                         int maxWaitEntrants = eventData.getLong("maxWaitEntrants").intValue();
-                        System.out.println(maxWaitEntrants);
                         int maxSampleEntrants = eventData.getLong("maxSampleEntrants").intValue();
-                        System.out.println(maxSampleEntrants);
                         String posterUri = eventData.getString("posterUri");
-                        System.out.println(posterUri);
                         boolean isGeolocate = eventData.getBoolean("geolocate") != null ? eventData.getBoolean("geolocate") : false;
-                        System.out.println(isGeolocate);
                         boolean notifyWaitlisted = eventData.getBoolean("notifyWaitlisted") != null ? eventData.getBoolean("notifyWaitlisted") : false;
-                        System.out.println(notifyWaitlisted);
                         boolean notifyEnrolled = eventData.getBoolean("notifyEnrolled") != null ? eventData.getBoolean("notifyEnrolled") : false;
-                        System.out.println(notifyEnrolled);
                         boolean notifyCancelled = eventData.getBoolean("notifyCancelled") != null ? eventData.getBoolean("notifyCancelled") : false;
-                        System.out.println(notifyCancelled);
                         boolean notifyInvited = eventData.getBoolean("notifyInvited") != null ? eventData.getBoolean("notifyInvited") : false;
-                        System.out.println(notifyInvited);
                         String organizerID = eventData.getString("organizerID");
-                        System.out.println(organizerID);
 
                         // Retrieve notification messages
                         String waitlistedMessage = eventData.getString("waitlistedMessage");
@@ -206,15 +189,24 @@ public class EntrantHomePageActivity extends AppCompatActivity {
                         Event event1 = new Event(name,date,facility,registrationEndDate,description,maxWaitEntrants,maxSampleEntrants,posterUri,isGeolocate,notifyWaitlisted,notifyEnrolled,notifyCancelled,notifyInvited,waitlistedMessage,enrolledMessage,cancelledMessage,invitedMessage,organizerID);
                         event1.setEventId(eventID);
                         eventList.add(event1);
+                        noEventsText.setVisibility(View.GONE);
                         // Notify the adapter that data has changed
                         eventAdapter.notifyDataSetChanged();
+
                     });
+
+                }
+                if (eventList.isEmpty()){
+                    noEventsText.setVisibility(View.VISIBLE);
                 }
 
             } else {
 
                 Toast.makeText(EntrantHomePageActivity.this, "Error getting events.", Toast.LENGTH_SHORT).show();
             }
+
+
         });
+
     }
 }

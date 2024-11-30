@@ -85,6 +85,7 @@ public class CustomEntrantAdminAdapter extends ArrayAdapter<Entrant> {
         ImageView statusIcon = convertView.findViewById(R.id.statusIcon);
         ConstraintLayout eventCard = convertView.findViewById(R.id.event_information);
         ImageView xIcon = convertView.findViewById(R.id.x_icon);
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
 
 
         FirebaseStorage storage = FirebaseStorage.getInstance();
