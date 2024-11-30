@@ -74,7 +74,6 @@ public class editUserActivity extends AppCompatActivity {
     private String facilityID = null;
     private double deviceLatitude;
     private double deviceLongitude;
-    private Button deviceLocationButton;
     private LocationRequest deviceLocationRequest;
     private Bitmap bitmapImage = null;
     private boolean defaultFlag = true;
@@ -109,7 +108,6 @@ public class editUserActivity extends AppCompatActivity {
         Button removeButton = findViewById(R.id.removeButton);
         Button submitButton = findViewById(R.id.submitButton);
         Button cancelButton = findViewById(R.id.cancelButton);
-        deviceLocationButton = findViewById(R.id.locationButton);
 
         deviceLocationRequest = LocationRequest.create();
         deviceLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
@@ -146,10 +144,6 @@ public class editUserActivity extends AppCompatActivity {
             defaultFlag = true;
         });
 
-        deviceLocationButton.setOnClickListener(v -> {
-            getDeviceLocation();
-
-        });
 
         submitButton.setOnClickListener(v -> {
             String name = nameEditText.getText().toString();
@@ -168,47 +162,19 @@ public class editUserActivity extends AppCompatActivity {
                 Toast.makeText(editUserActivity.this, "Please enter a valid email address", Toast.LENGTH_SHORT).show();
             }
             else {
-                // Check for location permissions
-                if (ActivityCompat.checkSelfPermission(editUserActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                    ActivityCompat.requestPermissions(editUserActivity.this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
-                    return;
+                // Generate profile picture if needed
+                if (imageUri == null && !cameraFlag) {
+                    String firstLetter = String.valueOf(name.charAt(0)).toUpperCase();
+                    if (defaultFlag) {
+                        Bitmap profilePicture = generateProfilePicture(firstLetter);
+                        profileImageView.setImageBitmap(profilePicture);
+                    } else {
+                        profileImageView.setImageBitmap(bitmapImage);
+                    }
                 }
 
-                if (!isDeviceLocationEnabled()) {
-                    Toast.makeText(editUserActivity.this, "Please enable GPS to proceed", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-
-                // Fetch the last known location
-                LocationServices.getFusedLocationProviderClient(editUserActivity.this)
-                        .getLastLocation()
-                        .addOnSuccessListener(location -> {
-                            if (location != null) {
-                                deviceLatitude = location.getLatitude();
-                                deviceLongitude = location.getLongitude();
-                                Toast.makeText(editUserActivity.this,
-                                        "Location obtained: Lat = " + deviceLatitude + ", Lon = " + deviceLongitude,
-                                        Toast.LENGTH_SHORT).show();
-                            } else {
-                                // Handle null location
-                                Toast.makeText(editUserActivity.this, "Unable to obtain location. Please try again.", Toast.LENGTH_SHORT).show();
-                                return;
-                            }
-
-                            // Generate profile picture if needed
-                            if (imageUri == null && !cameraFlag) {
-                                String firstLetter = String.valueOf(name.charAt(0)).toUpperCase();
-                                if (defaultFlag) {
-                                    Bitmap profilePicture = generateProfilePicture(firstLetter);
-                                    profileImageView.setImageBitmap(profilePicture);
-                                } else {
-                                    profileImageView.setImageBitmap(bitmapImage);
-                                }
-                            }
-
-                            // Submit data after location is obtained
-                            sendEntrantData(android_id, name, phoneNumber, email, deviceLatitude, deviceLongitude);
-                        });
+                // Submit data after location is obtained
+                sendEntrantData(android_id, name, phoneNumber, email, deviceLatitude, deviceLongitude);
             }
 
         });
@@ -230,24 +196,6 @@ public class editUserActivity extends AppCompatActivity {
         }
     }
 
-    private void getDeviceLocation(Runnable onSuccess) {
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            LocationServices.getFusedLocationProviderClient(this)
-                    .getLastLocation()
-                    .addOnSuccessListener(location -> {
-                        if (location != null) {
-                            deviceLatitude = location.getLatitude();
-                            deviceLongitude = location.getLongitude();
-                            Toast.makeText(this, "Location obtained: Lat = " + deviceLatitude + ", Lon = " + deviceLongitude, Toast.LENGTH_SHORT).show();
-                            onSuccess.run();
-                        } else {
-                            Toast.makeText(this, "Unable to obtain location. Please try again.", Toast.LENGTH_SHORT).show();
-                        }
-                    });
-        } else {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
-        }
-    }
     private void openImagePicker() {
         ImagePicker.with(this)
                 .crop()
@@ -403,92 +351,4 @@ public class editUserActivity extends AppCompatActivity {
                 });
     }
 
-    private boolean isDeviceLocationEnabled() {
-        LocationManager locationManager = null;
-        boolean isEnabled = false;
-        if (locationManager == null) {
-            locationManager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
-        }
-
-        isEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
-        return isEnabled;
-    }
-
-    private void requestDeviceLocation() {
-
-        LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder()
-                .addLocationRequest(deviceLocationRequest);
-        builder.setAlwaysShow(true);
-
-        Task<LocationSettingsResponse> result = LocationServices.getSettingsClient(getApplicationContext())
-                .checkLocationSettings(builder.build());
-
-        result.addOnCompleteListener(new OnCompleteListener<LocationSettingsResponse>() {
-            @Override
-            public void onComplete(@NonNull Task<LocationSettingsResponse> task) {
-
-                try {
-                    LocationSettingsResponse response = task.getResult(ApiException.class);
-                    Toast.makeText(editUserActivity.this, "GPS is already turned on", Toast.LENGTH_SHORT).show();
-
-                } catch (ApiException e) {
-
-                    switch (e.getStatusCode()) {
-                        case LocationSettingsStatusCodes.RESOLUTION_REQUIRED:
-
-                            try {
-                                ResolvableApiException resolvableApiException = (ResolvableApiException)e;
-                                resolvableApiException.startResolutionForResult(editUserActivity.this,2);
-                            } catch (IntentSender.SendIntentException ex) {
-                                ex.printStackTrace();
-                            }
-                            break;
-
-                        case LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE:
-                            //Device does not have location
-                            break;
-                    }
-                }
-            }
-        });
-    }
-
-    private void getDeviceLocation() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            if (ActivityCompat.checkSelfPermission(editUserActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-
-                if (isDeviceLocationEnabled()) {
-
-                    LocationServices.getFusedLocationProviderClient(editUserActivity.this)
-                            .requestLocationUpdates(deviceLocationRequest, new LocationCallback() {
-                                @Override
-                                public void onLocationResult(@NonNull LocationResult locationResult) {
-                                    super.onLocationResult(locationResult);
-
-                                    LocationServices.getFusedLocationProviderClient(editUserActivity.this)
-                                            .removeLocationUpdates(this);
-
-                                    if (locationResult != null && locationResult.getLocations().size() >0){
-
-                                        int index = locationResult.getLocations().size() - 1;
-                                        deviceLatitude = locationResult.getLocations().get(index).getLatitude();
-                                        deviceLongitude = locationResult.getLocations().get(index).getLongitude();
-
-                                        Toast.makeText(editUserActivity.this,
-                                                "Location updated: Lat = " + deviceLatitude + ", Lon = " + deviceLongitude,
-                                                Toast.LENGTH_SHORT).show();
-                                    } else {
-                                        Toast.makeText(editUserActivity.this, "Failed to get location", Toast.LENGTH_SHORT).show();
-                                    }
-                                }
-                            }, Looper.getMainLooper());
-
-                }else {
-                    requestDeviceLocation();
-                }
-            }else {
-                requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
-            }
-        }
-    }
 }

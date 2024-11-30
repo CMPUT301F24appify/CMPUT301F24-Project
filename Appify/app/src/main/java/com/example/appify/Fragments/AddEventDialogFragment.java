@@ -37,7 +37,7 @@ import java.util.UUID;
  * This fragment performs input validation and uploads images to Firebase storage.
  */
 public class AddEventDialogFragment extends DialogFragment {
-    private static final int Pick_Image_Request = 1;
+    private static final int PICK_IMAGE_REQUEST = 1;
     private String posterUri;  // URI for the poster image
     private AddEventDialogListener listener;  // Listener for communicating with parent activity
     private Button uploadPosterButton, buttonEventDate, buttonRegistrationEndDate;  // Buttons for selecting dates
@@ -320,7 +320,7 @@ public class AddEventDialogFragment extends DialogFragment {
         Intent intent = new Intent();
         intent.setType("image/*");
         intent.setAction(Intent.ACTION_GET_CONTENT);
-        startActivityForResult(Intent.createChooser(intent, "Select Poster Image"), Pick_Image_Request);
+        startActivityForResult(Intent.createChooser(intent, "Select Poster Image"), PICK_IMAGE_REQUEST);
     }
 
     /**
@@ -334,7 +334,7 @@ public class AddEventDialogFragment extends DialogFragment {
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if (requestCode == Pick_Image_Request && resultCode == getActivity().RESULT_OK && data != null && data.getData() != null) {
+        if (requestCode == PICK_IMAGE_REQUEST && resultCode == getActivity().RESULT_OK && data != null && data.getData() != null) {
             uploadImageToFirebase(data.getData());
             uploadPosterButton.setBackgroundColor(getResources().getColor(android.R.color.holo_blue_light));
         }
