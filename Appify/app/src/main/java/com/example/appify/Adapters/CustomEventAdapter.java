@@ -220,7 +220,6 @@ public class CustomEventAdapter extends ArrayAdapter<Event> {
                                                     // Delete the poster image from Firebase Storage
                                                     FirebaseStorage storage = FirebaseStorage.getInstance();
                                                     StorageReference imageRef = storage.getReferenceFromUrl(posterUri);
-
                                                     imageRef.delete();
                                                 }
                                             }
