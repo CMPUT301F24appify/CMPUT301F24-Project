@@ -336,7 +336,7 @@ public class editUserActivity extends AppCompatActivity {
                     String downloadUrl = uri.toString();
 
                     // Create Entrant object with the download URL
-                    Entrant user = new Entrant(id, name, phone, email, downloadUrl, false, latitude, longitude, facilityID);
+                    Entrant user = new Entrant(id, name, phone, email, downloadUrl, false, facilityID, latitude, longitude);
 
                     // Save Entrant data to Firestore
                     db.collection("AndroidID").document(android_id).set(user)
