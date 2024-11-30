@@ -456,9 +456,15 @@ public class EntrantEnlistActivity extends AppCompatActivity {
                                 intent.putExtra("name", name);
                                 intent.putExtra("date", date);
                                 intent.putExtra("registrationEndDate", registrationEndDate);
-                                intent.putExtra("facility", facility);
+
                                 intent.putExtra("geolocate", isGeolocate);
-                                startActivity(intent);
+
+                                db.collection("facilities").document(facility).get().addOnSuccessListener(documentSnapshot -> {
+                                    String facName = documentSnapshot.getString("name");
+                                    intent.putExtra("facility", facName);
+                                    startActivity(intent);
+                                });
+
 //                                finish();
                             })
                             .addOnFailureListener(e -> Toast.makeText(this, "Failed to add event to your waitlisted events.", Toast.LENGTH_SHORT).show());
@@ -506,8 +512,8 @@ public class EntrantEnlistActivity extends AppCompatActivity {
 
     private void getDeviceLocation(Runnable onSuccess) {
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            LocationServices.getFusedLocationProviderClient(this)
-                    .getLastLocation()
+            LocationServices.getFusedLocationProviderClient(this).getCurrentLocation(LocationRequest.PRIORITY_HIGH_ACCURACY, null)
+//                    .getCurrentLocation()
                     .addOnSuccessListener(location -> {
                         if (location != null) {
                             deviceLatitude = location.getLatitude();
@@ -517,6 +523,9 @@ public class EntrantEnlistActivity extends AppCompatActivity {
                         } else {
                             Toast.makeText(this, "Unable to obtain location. Please try again.", Toast.LENGTH_SHORT).show();
                         }
+                    })
+                    .addOnFailureListener(e -> {
+                        Toast.makeText(this, "Failed to get location. Please try again.", Toast.LENGTH_SHORT).show();
                     });
         } else {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);

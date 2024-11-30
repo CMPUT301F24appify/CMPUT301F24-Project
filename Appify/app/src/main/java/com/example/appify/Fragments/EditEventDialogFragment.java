@@ -263,4 +263,37 @@ public class EditEventDialogFragment extends DialogFragment {
                 getResources().getColor(android.R.color.holo_blue_light) :
                 getResources().getColor(android.R.color.darker_gray));
     }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == PICK_IMAGE_REQUEST && resultCode == getActivity().RESULT_OK && data != null && data.getData() != null) {
+            uploadImageToFirebase(data.getData());
+            uploadPosterButton.setBackgroundColor(getResources().getColor(android.R.color.holo_blue_light));
+        }
+    }
+
+    /**
+     * Uploads the selected image to Firebase storage and sets the poster URI.
+     *
+     * @param imageUri The URI of the image to upload.
+     */
+    private void uploadImageToFirebase(Uri imageUri) {
+        StorageReference storageRef = FirebaseStorage.getInstance().getReference();
+        StorageReference posterRef = storageRef.child("event_posters/" + UUID.randomUUID().toString() + ".jpg");
+
+        posterRef.putFile(imageUri).addOnSuccessListener(taskSnapshot -> {
+            posterRef.getDownloadUrl().addOnSuccessListener(downloadUri -> {
+                posterUri = downloadUri.toString();
+                Toast.makeText(getContext(), "Poster uploaded successfully!", Toast.LENGTH_SHORT).show();
+            }).addOnFailureListener(e -> {
+                Toast.makeText(getContext(), "Failed to get download URL: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            });
+        }).addOnFailureListener(e -> {
+            Toast.makeText(getContext(), "Failed to upload poster: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+        });
+    }
+
+
 }
