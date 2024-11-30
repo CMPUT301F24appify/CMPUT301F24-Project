@@ -35,6 +35,7 @@ import com.google.firebase.firestore.QuerySnapshot;
 
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 
@@ -91,6 +92,8 @@ public class MyApp extends Application {
 
         // **Start listening for waitingList subcollection changes**
         listenForWaitingListAdditions();
+
+        listenForInvitations();
     }
 
 
@@ -213,6 +216,85 @@ public class MyApp extends Application {
                 });
 
         Log.d(TAG, "Started listening for new waitingList additions.");
+    }
+
+    /**
+     * Sets up a listener for the 'waitingList' subcollections to detect changes in status to "invited"
+     * and sends a notification to those not invited.
+     */
+    private void listenForInvitations() {
+        CollectionReference eventsRef = db.collection("events");
+
+        eventsRef.addSnapshotListener((snapshots, e) -> {
+            if (e != null) {
+                Log.w(TAG, "Listen failed for invitations.", e);
+                return;
+            }
+
+            if (snapshots != null) {
+                for (DocumentChange dc : snapshots.getDocumentChanges()) {
+                    if (dc.getType() == DocumentChange.Type.MODIFIED) {
+                        DocumentSnapshot eventDoc = dc.getDocument();
+                        String eventId = eventDoc.getId();
+                        String eventName = eventDoc.getString("name"); // Get event name for notification
+
+                        // Fetch the waitingList for this event
+                        eventDoc.getReference().collection("waitingList").get().addOnSuccessListener(waitingListSnapshot -> {
+                            for (DocumentSnapshot userDoc : waitingListSnapshot.getDocuments()) {
+                                String status = userDoc.getString("status");
+                                Boolean notified = userDoc.getBoolean("invitedNotified");
+
+                                // Ensure 'notified' is not null to avoid null pointer exceptions
+                                if (notified == null) notified = false;
+
+                                // Handle notifications for invited users
+                                if ("invited".equals(status) && !notified) {
+                                    // Send "invited" notification
+                                    sendNotification(eventId, "invited", "You have been invited!", eventName);
+
+                                    // Mark as notified
+                                    userDoc.getReference().update("invitedNotified", true);
+                                }
+                                // Handle notifications for non-invited users
+                                else if (!"invited".equals(status) && !notified) {
+                                    // Send "not invited" notification
+                                    sendNotification(eventId, "not_invited", "You have not been invited to this event.", eventName);
+
+                                    // Mark as notified
+                                    userDoc.getReference().update("invitedNotified", true);
+                                }
+                            }
+                        });
+                    }
+                }
+            }
+        });
+    }
+
+
+
+    /**
+     * Notifies users who were not invited to the event.
+     *
+     * @param eventId     The ID of the event.
+     * @param userDocs    The list of all user documents in the waitingList.
+     * @param eventName   The name of the event.
+     */
+    private void notifyNonInvitedUsers(String eventId, List<DocumentSnapshot> userDocs, String eventName) {
+        for (DocumentSnapshot userDoc : userDocs) {
+            String userId = userDoc.getId();
+            String status = userDoc.getString("status");
+
+            // Skip users who are invited or already have a finalized status (e.g., "enrolled")
+            if ("invited".equals(status) || "enrolled".equals(status)) {
+                continue;
+            }
+
+            // Prepare and send the "not invited" notification
+            String message = "You were not invited to the event: " + eventName;
+            Log.d(TAG, "Sending 'not invited' notification to user: " + userId);
+            sendNotification(eventId, "not_invited", message, eventName);
+        }
     }
 
 
@@ -368,7 +450,7 @@ public class MyApp extends Application {
 
 
     /**
-     * Sends a local notification to the device and schedules a flag and message reset after a delay.
+     * Sends a local notification to the device.
      *
      * @param eventId   The ID of the event.
      * @param status    The status of the user.
@@ -378,14 +460,11 @@ public class MyApp extends Application {
     private void sendNotification(String eventId, String status, String message, String eventName) {
         Log.d(TAG, "Attempting to send notification for eventId: " + eventId + ", status: " + status);
 
-
         // Create an intent to open EntrantEnlistActivity when the notification is tapped
         Intent intent = new Intent(this, EntrantEnlistActivity.class);
-        intent.putExtra("eventID", eventId);
-        intent.putExtra("status", status);
-        intent.putExtra("eventName", eventName);
+        intent.putExtra("eventId", eventId); // Pass eventId to identify the event
+        intent.putExtra("status", status); // Pass status to determine invited behavior
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-
 
         PendingIntent pendingIntent;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
@@ -394,10 +473,8 @@ public class MyApp extends Application {
             pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_ONE_SHOT | PendingIntent.FLAG_IMMUTABLE);
         }
 
-
         // Build the notification
         String notificationTitle = eventName + " - " + capitalize(status) + " Notification";
-
 
         NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
                 .setSmallIcon(R.drawable.notification_bell) // Ensure this icon exists in res/drawable
@@ -407,28 +484,20 @@ public class MyApp extends Application {
                 .setContentIntent(pendingIntent)
                 .setPriority(NotificationCompat.PRIORITY_HIGH);
 
-
         // Get NotificationManager
         NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-
 
         if (notificationManager != null) {
             // Use a unique notification ID
             int notificationId = (int) System.currentTimeMillis();
             notificationManager.notify(notificationId, notificationBuilder.build());
             Log.d(TAG, "Notification sent for eventId: " + eventId + " with status: " + status);
-
-
-            // After sending the notification, set the statusNotified flag to true
-            setNotifiedFlag(eventId, status, true);
-
-
-            // Schedule the flag and message reset after the defined delay
-            scheduleFlagAndMessageReset(eventId, status, androidId);
         } else {
             Log.e(TAG, "Notification Manager is null. Cannot send notification for eventId: " + eventId);
         }
     }
+
+
 
 
     /**
