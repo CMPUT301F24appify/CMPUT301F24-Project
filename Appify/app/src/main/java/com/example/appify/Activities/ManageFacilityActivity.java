@@ -16,6 +16,8 @@ import com.example.appify.MyApp;
 import com.example.appify.R;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
 
 /**
@@ -199,9 +201,33 @@ public class ManageFacilityActivity extends AppCompatActivity implements AddFaci
                                                                 }
                                                             })
                                                             .addOnCompleteListener(waitingListTask -> {
-                                                                // Delete event from 'events' collection
+                                                                // Delete the Event along with its poster
                                                                 db.collection("events").document(eventID)
-                                                                        .delete();
+                                                                        .get()
+                                                                        .addOnSuccessListener(documentSnapshot1 -> {
+                                                                            if (documentSnapshot1.exists()) {
+                                                                                String qrCodeLocationUrl = documentSnapshot1.getString("qrCodeLocationUrl");
+                                                                                if (qrCodeLocationUrl != null && !qrCodeLocationUrl.isEmpty()) {
+                                                                                    // Delete the qrCode image from Firebase Storage
+                                                                                    FirebaseStorage storage = FirebaseStorage.getInstance();
+                                                                                    StorageReference imageRef = storage.getReferenceFromUrl(qrCodeLocationUrl);
+                                                                                    imageRef.delete();
+                                                                                }
+
+                                                                                String posterUri = documentSnapshot1.getString("posterUri");
+
+                                                                                if (posterUri != null && !posterUri.isEmpty()) {
+                                                                                    // Delete the poster image from Firebase Storage
+                                                                                    FirebaseStorage storage = FirebaseStorage.getInstance();
+                                                                                    StorageReference imageRef = storage.getReferenceFromUrl(posterUri);
+                                                                                    imageRef.delete();
+                                                                                }
+                                                                            }
+
+                                                                            // Delete the Event all together
+                                                                            db.collection("events").document(eventID)
+                                                                                    .delete();
+                                                                        });
 
                                                                 // Delete event document from 'facilities/facilityID/events' collection
                                                                 db.collection("facilities").document(facilityID).collection("events")
