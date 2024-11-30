@@ -11,6 +11,7 @@ import androidx.test.rule.ActivityTestRule;
 import com.example.appify.Activities.EntrantEnlistActivity;
 import com.example.appify.Activities.EnlistConfirmationActivity;
 import com.example.appify.Model.Entrant;
+import com.example.appify.Model.Event;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;

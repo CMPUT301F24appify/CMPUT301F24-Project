@@ -4,10 +4,10 @@
     <selectionStates>
       <SelectionState runConfigName="Appify">
         <option name="selectionMode" value="DROPDOWN" />
-        <DropdownSelection timestamp="2024-11-28T10:05:16.342820Z">
+        <DropdownSelection timestamp="2024-11-29T22:32:04.561498Z">
           <Target type="DEFAULT_BOOT">
             <handle>
-              <DeviceId pluginId="LocalEmulator" identifier="path=/Users/sanskarsingh/.android/avd/tetsing.avd" />
+              <DeviceId pluginId="LocalEmulator" identifier="path=/Users/sanskarsingh/.android/avd/Appify.avd" />
             </handle>
           </Target>
         </DropdownSelection>
