@@ -144,11 +144,16 @@ public class EntrantEnlistActivity extends AppCompatActivity {
                                          registrationEndDate = eventData.getString("registrationEndDate");
                                          isGeolocate = eventData.getBoolean("geolocate");
 
+                                         db.collection("facilities").document(facility).get().addOnSuccessListener(documentSnapshot3 -> {
+                                             String facilityName = documentSnapshot3.getString("name");
+                                             eventFacility.setText(facilityName);
+                                         });
+
                                          eventName.setText(name);
                                          eventDate.setText(date);
                                          eventDescription.setText(description);
                                          eventRegistrationEnd.setText(registrationEndDate);
-                                         eventFacility.setText(facility);
+
 
 
                                          // Show Geolocation Requirement
@@ -162,6 +167,7 @@ public class EntrantEnlistActivity extends AppCompatActivity {
                                          enlistLeaveButton = findViewById(R.id.enlist_leave_button);
 
                                          // Check if user is already enlisted in the waiting list
+
 
                                          checkUserEnrollmentStatus(eventId, androidId);
 
