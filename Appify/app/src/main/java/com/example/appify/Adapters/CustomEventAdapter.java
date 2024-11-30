@@ -96,29 +96,30 @@ public class CustomEventAdapter extends ArrayAdapter<Event> {
         ConstraintLayout eventCard = convertView.findViewById(R.id.event_information);
 
         FirebaseFirestore db = FirebaseFirestore.getInstance();
+        if(!isAdminPage) {
+            db.collection("AndroidID").document(entrantID).collection("waitListedEvents").document(event.getEventId()).get().addOnSuccessListener(DocumentSnapshot -> {
+                String status = DocumentSnapshot.getString("status");
 
-        db.collection("AndroidID").document(entrantID).collection("waitListedEvents").document(event.getEventId()).get().addOnSuccessListener(DocumentSnapshot -> {
-            String status = DocumentSnapshot.getString("status");
+                statusIcon.setVisibility(View.VISIBLE);
 
-            statusIcon.setVisibility(View.VISIBLE);
-
-            // Change the icon based off the status
-            if (Objects.equals(status, "enrolled")) {
-                statusIcon.setImageResource(R.drawable.waiting_list_icon);
-                eventCard.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#FFDBBB")));
-            } else if (Objects.equals(status, "invited")) {
-                statusIcon.setImageResource(R.drawable.invited_icon);
-                eventCard.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#add8e6")));
-            } else if (Objects.equals(status, "accepted")) {
-                statusIcon.setImageResource(R.drawable.accepted_icon);
-                eventCard.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#a6ffa6")));
-            } else if (Objects.equals(status, "rejected")) {
-                eventCard.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#ffc0c0")));
-                statusIcon.setImageResource(R.drawable.rejected_icon);
-            } else {
-                statusIcon.setVisibility(View.INVISIBLE);
-            }
-        });
+                // Change the icon based off the status
+                if (Objects.equals(status, "enrolled")) {
+                    statusIcon.setImageResource(R.drawable.waiting_list_icon);
+                    eventCard.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#FFDBBB")));
+                } else if (Objects.equals(status, "invited")) {
+                    statusIcon.setImageResource(R.drawable.invited_icon);
+                    eventCard.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#add8e6")));
+                } else if (Objects.equals(status, "accepted")) {
+                    statusIcon.setImageResource(R.drawable.accepted_icon);
+                    eventCard.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#a6ffa6")));
+                } else if (Objects.equals(status, "rejected")) {
+                    eventCard.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#ffc0c0")));
+                    statusIcon.setImageResource(R.drawable.rejected_icon);
+                } else {
+                    statusIcon.setVisibility(View.INVISIBLE);
+                }
+            });
+        }
 
 
         eventTitle.setText(event.getName());

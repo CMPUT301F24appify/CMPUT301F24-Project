@@ -168,15 +168,18 @@ public class AdminListActivity extends AppCompatActivity {
                     Double latitude = doc.getDouble("latitude");
                     Double longitude = doc.getDouble("longitude");
 
-                    Entrant entrant = new Entrant(id,name,phoneNumber,email,profilePictureURL,notifications, facilityID, latitude, longitude);
+                    Entrant entrant = new Entrant(id,name,phoneNumber,email,profilePictureURL,notifications, facilityID);
 
+                    if(latitude != null && longitude != null){
+                        entrant.setLongitude(longitude);
+                        entrant.setLatitude(latitude);
+                    }
                     entrantList.add(entrant);
                 }
                 entrantAdapter.notifyDataSetChanged();
             }
         });
     }
-
     private void loadImagesFromFirestore() {
         FirebaseStorage storage = FirebaseStorage.getInstance();
         StorageReference ref = storage.getReference();
