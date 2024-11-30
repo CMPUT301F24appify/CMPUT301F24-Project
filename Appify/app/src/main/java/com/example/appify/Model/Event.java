@@ -368,11 +368,27 @@ public class Event {
 
                                 // Invite only the selected entrants
                                 for (String entrantId : selectedEntrants) {
+                                    // Update the entrant's status to "invited" in the waiting list of the event
                                     db.collection("events").document(eventID)
                                             .collection("waitingList").document(entrantId)
                                             .update("status", "invited")
-                                            .addOnSuccessListener(aVoid -> Log.d("Lottery", "Entrant " + entrantId + " invited successfully."))
-                                            .addOnFailureListener(e -> Log.w("Lottery", "Error inviting entrant " + entrantId, e));
+                                            .addOnSuccessListener(aVoid -> {
+                                                Log.d("Lottery", "Entrant " + entrantId + " invited successfully.");
+
+                                                // Update the entrant's status in their AndroidID collection as well
+                                                db.collection("AndroidID").document(entrantId)
+                                                        .collection("waitListedEvents").document(eventID)
+                                                        .update("status", "invited")
+                                                        .addOnSuccessListener(innerVoid -> {
+                                                            Log.d("Lottery", "Entrant " + entrantId + " status updated in AndroidID collection for event " + eventID);
+                                                        })
+                                                        .addOnFailureListener(e -> {
+                                                            Log.w("Lottery", "Error updating entrant " + entrantId + " status in AndroidID collection for event " + eventID, e);
+                                                        });
+                                            })
+                                            .addOnFailureListener(e -> {
+                                                Log.w("Lottery", "Error inviting entrant " + entrantId, e);
+                                            });
                                 }
 
                                 incrementLotteryRanFlag(db, eventID);
@@ -382,6 +398,7 @@ public class Event {
                 })
                 .addOnFailureListener(e -> Log.e("Lottery", "Error retrieving accepted entrants for event " + eventID, e));
     }
+
 
     private void incrementLotteryRanFlag(FirebaseFirestore db, String eventID) {
         db.collection("events").document(eventID)
