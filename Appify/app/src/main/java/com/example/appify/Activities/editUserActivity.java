@@ -1,7 +1,9 @@
 package com.example.appify.Activities;
 
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
@@ -9,8 +11,10 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
@@ -25,6 +29,8 @@ import com.example.appify.R;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 import com.github.dhaval2404.imagepicker.ImagePicker;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -50,6 +56,8 @@ public class editUserActivity extends AppCompatActivity {
     private Bitmap bitmapImage = null;
     private boolean defaultFlag = true;
     private boolean cameraFlag = false;
+
+    private static final int REQUEST_CODE_POST_NOTIFICATIONS = 10010001;
 
 
     /**
@@ -78,6 +86,16 @@ public class editUserActivity extends AppCompatActivity {
         Button removeButton = findViewById(R.id.removeButton);
         Button submitButton = findViewById(R.id.submitButton);
         Button cancelButton = findViewById(R.id.cancelButton);
+
+        // Request notification permission for Android 13 and above
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.POST_NOTIFICATIONS}, REQUEST_CODE_POST_NOTIFICATIONS);
+            } else {
+                // Permission already granted
+                Log.d("MainActivity", "Notification permission already granted.");
+            }
+        }
 
         if (firstEntry) {
             cancelButton.setVisibility(View.GONE);
@@ -132,6 +150,23 @@ public class editUserActivity extends AppCompatActivity {
 
         });
     }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == REQUEST_CODE_POST_NOTIFICATIONS) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                // Permission granted
+                Log.d("MainActivity", "Notification permission granted.");
+            } else {
+                // Permission denied
+                Log.d("MainActivity", "Notification permission denied.");
+                // Optionally, inform the user
+                Toast.makeText(this, "Notification permission is required for event updates.", Toast.LENGTH_LONG).show();
+            }
+        }
+    }
+
     private void openImagePicker() {
         ImagePicker.with(this)
                 .crop()
