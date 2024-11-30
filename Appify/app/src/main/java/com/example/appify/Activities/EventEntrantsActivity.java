@@ -151,7 +151,10 @@ public class EventEntrantsActivity extends AppCompatActivity{
                                     String entrantProfilePic = entrantData.get("profilePictureUrl").toString();
                                     boolean notifications = entrantData.getBoolean("notifications");
                                     String facilityID = entrantData.getString("facilityID");
-                                    Entrant entrant = new Entrant(entrantID, entrantName, phoneNumber, entrantEmail, entrantProfilePic, notifications, facilityID);
+                                    double latitude = entrantData.getDouble("latitude");
+                                    double longitude = entrantData.getDouble("longitude");
+                                    Entrant entrant = new Entrant(entrantID, entrantName, phoneNumber, entrantEmail, entrantProfilePic, notifications, facilityID, latitude, longitude);
+                                    entrant.setFacilityID(facilityID);
 
                                     db.collection("AndroidID").document(entrantID).collection("waitListedEvents").document(eventID).get().addOnSuccessListener(DocumentSnapshot -> {
                                         String status = DocumentSnapshot.getString("status");

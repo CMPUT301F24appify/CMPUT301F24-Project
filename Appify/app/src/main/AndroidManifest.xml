@@ -2,6 +2,11 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+    <uses-permission android:name="android.permission.INTERNET"/>
+
+
     <uses-feature
         android:name="android.hardware.camera"
         android:required="true" />
@@ -60,6 +65,7 @@
         <activity android:name=".Activities.EnlistConfirmationActivity" />
         <activity android:name=".Activities.EventActionsActivity" />
         <activity android:name=".Activities.ManageFacilityActivity" />
+        <activity android:name=".Activities.MapActivity" />
         <activity android:name=".Activities.AdminListActivity" />
         <activity android:name=".Activities.ImageGridActivity" />
 
@@ -68,7 +74,9 @@
             android:stateNotNeeded="true"
             android:theme="@style/zxing_CaptureTheme"/>
 
-
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="AIzaSyAAecNafLfMtPMKXMiKwuTAPLOgfqzJucA"/>
 
     </application>
 

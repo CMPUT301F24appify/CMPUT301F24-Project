@@ -450,6 +450,18 @@
                     app:backgroundTint="@color/buttons"
                     app:strokeColor="#FF8C00"
                     app:strokeWidth="1dp" />
+
+                <Button
+                    android:id="@+id/map_button"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="8dp"
+                    android:text="View map"
+                    android:textColor="@color/black"
+                    app:backgroundTint="@color/buttons"
+                    app:strokeColor="#FF8C00"
+                    app:strokeWidth="1dp" />
             </LinearLayout>
 
 

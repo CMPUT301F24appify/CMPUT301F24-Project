@@ -52,6 +52,7 @@ import java.util.concurrent.Executors;
 public class EventDetailActivity extends AppCompatActivity implements EditEventDialogFragment.EditEventDialogListener {
     private FirebaseFirestore db;
     private String eventID;
+    private Button showMap;
 
     // Variables to store different notification messages for participants
     private String waitlistedMessage = "";
@@ -84,6 +85,11 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
         db = FirebaseFirestore.getInstance();
         FirebaseStorage storage = FirebaseStorage.getInstance();
         eventID = getIntent().getStringExtra("eventID");
+        if (eventID == null || eventID.isEmpty()) {
+            Toast.makeText(this, "Invalid event ID", Toast.LENGTH_SHORT).show();
+            finish(); // Close the activity gracefully
+            return;
+        }
         StorageReference storageRef = storage.getReference().child("qrcode_images/" + eventID + ".jpg");
 
         // QR code generation for event-specific content
@@ -291,6 +297,26 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
                         }
                     }
                 });
+            }
+        });
+
+        // Set up map button to display the map of geolocations of entrants
+        showMap = findViewById(R.id.map_button);
+        showMap.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(EventDetailActivity.this, MapActivity.class);
+                intent.putExtra("name", name );
+                intent.putExtra("date", date);
+                intent.putExtra("facility", facility);
+                intent.putExtra("registrationEndDate", registrationEndDate);
+                intent.putExtra("description",description );
+                intent.putExtra("maxWaitEntrants", maxWaitEntrants);
+                intent.putExtra("maxSampleEntrants", maxSampleEntrants);
+                intent.putExtra("eventID", eventID);
+                intent.putExtra("posterUri", posterUriString);
+                intent.putExtra("isGeolocate", isGeolocate);
+                startActivity(intent);
             }
         });
 

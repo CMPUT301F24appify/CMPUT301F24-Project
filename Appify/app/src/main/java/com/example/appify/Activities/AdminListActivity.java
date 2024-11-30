@@ -165,8 +165,10 @@ public class AdminListActivity extends AppCompatActivity {
                     String phoneNumber = doc.getString("phoneNumber");
                     Boolean notifications = doc.getBoolean("notifications");
                     String profilePictureURL = doc.getString("profilePictureURL");
+                    Double latitude = doc.getDouble("latitude");
+                    Double longitude = doc.getDouble("longitude");
 
-                    Entrant entrant = new Entrant(id,name,phoneNumber,email,profilePictureURL,notifications, facilityID);
+                    Entrant entrant = new Entrant(id,name,phoneNumber,email,profilePictureURL,notifications, facilityID, latitude, longitude);
 
                     entrantList.add(entrant);
                 }
