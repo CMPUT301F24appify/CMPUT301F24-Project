@@ -35,8 +35,9 @@ import com.google.firebase.firestore.QuerySnapshot;
 
 
 import java.util.HashMap;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 
 public class MyApp extends Application {
@@ -218,10 +219,6 @@ public class MyApp extends Application {
         Log.d(TAG, "Started listening for new waitingList additions.");
     }
 
-    /**
-     * Sets up a listener for the 'waitingList' subcollections to detect changes in status to "invited"
-     * and sends a notification to those users.
-     */
     private void listenForInvitations() {
         waitingListListener = db.collection("events")
                 .addSnapshotListener((snapshots, e) -> {
@@ -239,6 +236,9 @@ public class MyApp extends Application {
                             if (dc.getType() == DocumentChange.Type.MODIFIED && eventDoc.contains("lotteryRan")) {
                                 Log.d(TAG, "Lottery counter updated for event: " + eventId);
 
+                                // Fetch the organizerID from the event document
+                                String organizerId = eventDoc.getString("organizerID");
+
                                 // Fetch the waiting list for this event
                                 db.collection("events").document(eventId)
                                         .collection("waitingList")
@@ -247,6 +247,12 @@ public class MyApp extends Application {
                                             for (DocumentSnapshot userDoc : waitingListSnapshot) {
                                                 String userId = userDoc.getId();
                                                 String status = userDoc.getString("status");
+
+                                                // Ignore the organizer
+                                                if (userId.equals(organizerId)) {
+                                                    Log.d(TAG, "Skipping notification for organizer: " + organizerId);
+                                                    continue;
+                                                }
 
                                                 if ("invited".equals(status)) {
                                                     // Send 'invited' notification
@@ -271,6 +277,8 @@ public class MyApp extends Application {
 
         Log.d(TAG, "Started listening for updates to the lottery counter.");
     }
+
+
 
 
 
@@ -428,7 +436,7 @@ public class MyApp extends Application {
 
 
     /**
-     * Sends a local notification to the device.
+     * Sends a local notification to the device and schedules a flag and message reset after a delay.
      *
      * @param eventId   The ID of the event.
      * @param status    The status of the user.
@@ -438,11 +446,14 @@ public class MyApp extends Application {
     private void sendNotification(String eventId, String status, String message, String eventName) {
         Log.d(TAG, "Attempting to send notification for eventId: " + eventId + ", status: " + status);
 
+
         // Create an intent to open EntrantEnlistActivity when the notification is tapped
         Intent intent = new Intent(this, EntrantEnlistActivity.class);
-        intent.putExtra("eventId", eventId); // Pass eventId to identify the event
-        intent.putExtra("status", status); // Pass status to determine invited behavior
+        intent.putExtra("eventID", eventId);
+        intent.putExtra("status", status);
+        intent.putExtra("eventName", eventName);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+
 
         PendingIntent pendingIntent;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
@@ -451,8 +462,10 @@ public class MyApp extends Application {
             pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_ONE_SHOT | PendingIntent.FLAG_IMMUTABLE);
         }
 
+
         // Build the notification
         String notificationTitle = eventName + " - " + capitalize(status) + " Notification";
+
 
         NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
                 .setSmallIcon(R.drawable.notification_bell) // Ensure this icon exists in res/drawable
@@ -462,20 +475,28 @@ public class MyApp extends Application {
                 .setContentIntent(pendingIntent)
                 .setPriority(NotificationCompat.PRIORITY_HIGH);
 
+
         // Get NotificationManager
         NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+
 
         if (notificationManager != null) {
             // Use a unique notification ID
             int notificationId = (int) System.currentTimeMillis();
             notificationManager.notify(notificationId, notificationBuilder.build());
             Log.d(TAG, "Notification sent for eventId: " + eventId + " with status: " + status);
+
+
+            // After sending the notification, set the statusNotified flag to true
+            setNotifiedFlag(eventId, status, true);
+
+
+            // Schedule the flag and message reset after the defined delay
+            scheduleFlagAndMessageReset(eventId, status, androidId);
         } else {
             Log.e(TAG, "Notification Manager is null. Cannot send notification for eventId: " + eventId);
         }
     }
-
-
 
 
     /**
