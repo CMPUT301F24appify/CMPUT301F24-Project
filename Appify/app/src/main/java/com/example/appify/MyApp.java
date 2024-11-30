@@ -257,15 +257,15 @@ public class MyApp extends Application {
                                                     Log.d(TAG, "Skipping notification for organizer (current user): " + androidId);
                                                     continue;
                                                 }
-
+                                                //For some reason the notifications are switched around, not sure why.
                                                 if ("invited".equals(status)) {
                                                     // Send 'invited' notification
-                                                    String message = "You have been invited to the event!";
+                                                    String message = "You have not been invited to the event!";
                                                     Log.d(TAG, "Sending 'invited' notification to user: " + userId);
                                                     sendNotification(eventId, "invited", message, "Event ID: " + eventId);
                                                 } else if ("enrolled".equals(status)) {
                                                     // Send 'not invited' notification
-                                                    String message = "You were not invited to the event.";
+                                                    String message = "You were invited to the event.";
                                                     Log.d(TAG, "Sending 'not invited' notification to user: " + userId);
                                                     sendNotification(eventId, "not_invited", message, "Event ID: " + eventId);
                                                 }
