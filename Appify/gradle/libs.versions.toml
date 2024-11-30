@@ -11,6 +11,7 @@ firebaseAuth = "23.1.0"
 firebaseStorage = "21.0.1"
 core = "1.6.1"
 junitJupiter = "5.8.1"
+mockitoJunit = "4.0.0"
 
 [libraries]
 junit = { group = "junit", name = "junit", version.ref = "junit" }
@@ -24,6 +25,8 @@ firebase-auth = { group = "com.google.firebase", name = "firebase-auth", version
 firebase-storage = { group = "com.google.firebase", name = "firebase-storage", version.ref = "firebaseStorage" }
 core = { group = "androidx.test", name = "core", version.ref = "core" }
 junit-jupiter = { group = "org.junit.jupiter", name = "junit-jupiter", version.ref = "junitJupiter" }
+mockito-core = { module = "org.mockito:mockito-core", version.ref = "mockitoJunit" }
+mockito-junit = { module = "org.mockito:mockito-junit", version.ref = "mockitoJunit" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

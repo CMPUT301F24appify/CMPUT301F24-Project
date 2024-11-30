@@ -1,11 +1,9 @@
 package com.example.appify;
 
 import com.example.appify.Model.Entrant;
-import com.example.appify.Model.Event;
-import com.google.firebase.firestore.FirebaseFirestore;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.MockitoAnnotations;
 
 import static org.junit.jupiter.api.Assertions.*;
 

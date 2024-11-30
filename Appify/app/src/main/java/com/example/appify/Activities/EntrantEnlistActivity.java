@@ -56,14 +56,14 @@ public class EntrantEnlistActivity extends AppCompatActivity {
      *                           shut down, then this Bundle contains the data it most recently
      *                           supplied in onSaveInstanceState(Bundle). Note: Otherwise, it is null.
      */
-     @Override
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
          setContentView(R.layout.entrant_home_page);
 
-         Intent intent = getIntent();
+        Intent intent = getIntent();
 
-         db = FirebaseFirestore.getInstance();
+        db = FirebaseFirestore.getInstance();
 
          Uri data = intent.getData();
          if (data != null && "myapp".equals(data.getScheme())) {
@@ -150,52 +150,52 @@ public class EntrantEnlistActivity extends AppCompatActivity {
              HeaderNavigation headerNavigation = new HeaderNavigation(this);
              headerNavigation.setupNavigation();
 
-             // Retrieve event details from the intent
-             String eventId = intent.getStringExtra("eventId");
-             name = intent.getStringExtra("name");
-             date = intent.getStringExtra("date");
-             registrationEndDate = intent.getStringExtra("registrationEndDate");
-             facility = intent.getStringExtra("facility");
-             String description = intent.getStringExtra("description");
-             int maxWishEntrants = intent.getIntExtra("maxWishEntrants", 0);
-             int maxSampleEntrants = intent.getIntExtra("maxSampleEntrants", 0);
-             String posterUriString = intent.getStringExtra("posterUri");
-             isGeolocate = intent.getBooleanExtra("geolocate", false);
+            // Retrieve event details from the intent
+            String eventId = intent.getStringExtra("eventId");
+            name = intent.getStringExtra("name");
+            date = intent.getStringExtra("date");
+            registrationEndDate = intent.getStringExtra("registrationEndDate");
+            facility = intent.getStringExtra("facility");
+            String description = intent.getStringExtra("description");
+            int maxWishEntrants = intent.getIntExtra("maxWishEntrants", 0);
+            int maxSampleEntrants = intent.getIntExtra("maxSampleEntrants", 0);
+            String posterUriString = intent.getStringExtra("posterUri");
+            isGeolocate = intent.getBooleanExtra("geolocate", false);
 
-             // Find views in the layout and set data
-             TextView eventName = findViewById(R.id.event_name);
-             TextView eventDate = findViewById(R.id.event_date);
-             TextView eventDescription = findViewById(R.id.event_description);
-             TextView eventFacility = findViewById(R.id.facility_name);
-             TextView eventRegistrationEnd = findViewById(R.id.registration_date);
-             TextView eventGeolocate = findViewById(R.id.geolocationText);
+            // Find views in the layout and set data
+            TextView eventName = findViewById(R.id.event_name);
+            TextView eventDate = findViewById(R.id.event_date);
+            TextView eventDescription = findViewById(R.id.event_description);
+            TextView eventFacility = findViewById(R.id.facility_name);
+            TextView eventRegistrationEnd = findViewById(R.id.registration_date);
+            TextView eventGeolocate = findViewById(R.id.geolocationText);
 
-             enlistLeaveButton = findViewById(R.id.enlist_leave_button);
-             acceptInviteButton = findViewById(R.id.accept_invite_button);
-             declineInviteButton = findViewById(R.id.decline_invite_button);
+            enlistLeaveButton = findViewById(R.id.enlist_leave_button);
+            acceptInviteButton = findViewById(R.id.accept_invite_button);
+            declineInviteButton = findViewById(R.id.decline_invite_button);
 
-             eventName.setText(name);
-             eventDate.setText(date);
-             eventDescription.setText(description);
-             eventRegistrationEnd.setText(registrationEndDate);
-             eventFacility.setText(facility);
+            eventName.setText(name);
+            eventDate.setText(date);
+            eventDescription.setText(description);
+            eventRegistrationEnd.setText(registrationEndDate);
+            eventFacility.setText(facility);
 
-             // Show Geolocation Requirement
-             if (isGeolocate) {
-                 eventGeolocate.setText("IMPORTANT: Registering for this event REQUIRES geolocation.");
-             } else {
-                 eventGeolocate.setText("IMPORTANT: Registering for this event DOES NOT REQUIRE geolocation.");
-             }
+            // Show Geolocation Requirement
+            if (isGeolocate) {
+                eventGeolocate.setText("IMPORTANT: Registering for this event REQUIRES geolocation.");
+            } else {
+                eventGeolocate.setText("IMPORTANT: Registering for this event DOES NOT REQUIRE geolocation.");
+            }
 
-             // Handle Enlist and Leave buttons
-             enlistLeaveButton = findViewById(R.id.enlist_leave_button);
+            // Handle Enlist and Leave buttons
+            enlistLeaveButton = findViewById(R.id.enlist_leave_button);
 
-             db = FirebaseFirestore.getInstance();
-             MyApp app = (MyApp) getApplication();
-             String androidId = app.getAndroidId();
-             // Check if user is already enlisted in the waiting list
-             checkUserEnrollmentStatus(eventId,androidId);
-         }
+            db = FirebaseFirestore.getInstance();
+            MyApp app = (MyApp) getApplication();
+            String androidId = app.getAndroidId();
+            // Check if user is already enlisted in the waiting list
+            checkUserEnrollmentStatus(eventId,androidId);
+        }
     }
 
     /**
