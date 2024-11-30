@@ -392,7 +392,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_columnWeight="1"
-                    android:text="Notify Enrolled"
+                    android:text="Notify Accepted"
                     android:textColor="@color/black"
                     app:backgroundTint="@color/buttons"
                     app:strokeColor="#FF8C00"
