@@ -11,6 +11,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.GridLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -151,6 +152,8 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
         String posterUriString = intent.getStringExtra("posterUri");
         boolean isGeolocate = intent.getBooleanExtra("isGeolocate", false);
         Uri posterUri = posterUriString != null && !posterUriString.isEmpty() ? Uri.parse(posterUriString) : null;
+        boolean isAdminPage = intent.getBooleanExtra("isAdminPage", false);
+        System.out.println("Viewed from admin page: "+isAdminPage);
 
         // Bind event data to UI elements
         TextView nameTextView = findViewById(R.id.textViewName);
@@ -169,31 +172,9 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
         Button notifyEnrolled = findViewById(R.id.buttonEnrolled);
         Button notifyCancelled = findViewById(R.id.buttonCancelled);
         Button notifyInvited = findViewById(R.id.buttonInvited);
+        Button backButton = findViewById(R.id.buttonBackToEvents);
+        Button editEventButton = findViewById(R.id.buttonEditEvent);
 
-        // Set up click listeners for notification buttons
-        notifyWaitlisted.setOnClickListener(v -> showNotificationInputDialog("Waitlisted Notification", waitlistedMessage, message -> {
-            waitlistedMessage = message;
-            updateNotificationMessage("waitlistedMessage", message, "notifyWaitlisted");
-            updateButtonAppearance(notifyWaitlisted, !message.isEmpty());
-        }));
-
-        notifyEnrolled.setOnClickListener(v -> showNotificationInputDialog("Enrolled Notification", enrolledMessage, message -> {
-            enrolledMessage = message;
-            updateNotificationMessage("enrolledMessage", message, "notifyEnrolled");
-            updateButtonAppearance(notifyEnrolled, !message.isEmpty());
-        }));
-
-        notifyCancelled.setOnClickListener(v -> showNotificationInputDialog("Cancelled Notification", cancelledMessage, message -> {
-            cancelledMessage = message;
-            updateNotificationMessage("cancelledMessage", message, "notifyCancelled");
-            updateButtonAppearance(notifyCancelled, !message.isEmpty());
-        }));
-
-        notifyInvited.setOnClickListener(v -> showNotificationInputDialog("Invited Notification", invitedMessage, message -> {
-            invitedMessage = message;
-            updateNotificationMessage("invitedMessage", message, "notifyInvited");
-            updateButtonAppearance(notifyInvited, !message.isEmpty());
-        }));
 
         // Bind retrieved data to respective UI components
         nameTextView.setText(name);
@@ -205,18 +186,58 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
         maxSampleTextView.setText(""+maxSampleEntrants);
         geolocateTextView.setText(isGeolocate ? "Geo-Location Enabled" : "Geo-Location Disabled");
 
-        // Set up the back button to return to EventActivity
-        Button backButton = findViewById(R.id.buttonBackToEvents);
-        backButton.setOnClickListener(v -> {
-            Intent intent2 = new Intent(EventDetailActivity.this, EventActivity.class);
-            intent2.putExtra("eventID", eventID);
-            startActivity(intent2);
-        });
+        // If viewed from the adminPage, hide some buttons, repurpose others.
+        if (isAdminPage){
+            notifyCancelled.setVisibility(View.GONE);
+            notifyEnrolled.setVisibility(View.GONE);
+            notifyInvited.setVisibility(View.GONE);
+            notifyWaitlisted.setVisibility(View.GONE);
+//            organizerActionsButton.setVisibility(View.GONE);
+//            editEventButton.setVisibility(View.GONE);
+            TextView notificationsHeaderText = findViewById(R.id.notificationsHeader);
+            notificationsHeaderText.setVisibility(View.GONE);
+            GridLayout notificationsBackground = findViewById(R.id.notificationsBackground);
+            notificationsBackground.setVisibility(View.GONE);
+            repurposeBackButton(backButton);
 
-        // Set up organizer actions button to navigate to EventActionsActivity
-        organizerActionsButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+        }
+        else{
+            // Set up click listeners for notification buttons
+            notifyWaitlisted.setOnClickListener(v -> showNotificationInputDialog("Waitlisted Notification", waitlistedMessage, message -> {
+                waitlistedMessage = message;
+                updateNotificationMessage("waitlistedMessage", message, "notifyWaitlisted");
+                updateButtonAppearance(notifyWaitlisted, !message.isEmpty());
+            }));
+
+            notifyEnrolled.setOnClickListener(v -> showNotificationInputDialog("Enrolled Notification", enrolledMessage, message -> {
+                enrolledMessage = message;
+                updateNotificationMessage("enrolledMessage", message, "notifyEnrolled");
+                updateButtonAppearance(notifyEnrolled, !message.isEmpty());
+            }));
+
+            notifyCancelled.setOnClickListener(v -> showNotificationInputDialog("Cancelled Notification", cancelledMessage, message -> {
+                cancelledMessage = message;
+                updateNotificationMessage("cancelledMessage", message, "notifyCancelled");
+                updateButtonAppearance(notifyCancelled, !message.isEmpty());
+            }));
+
+            notifyInvited.setOnClickListener(v -> showNotificationInputDialog("Invited Notification", invitedMessage, message -> {
+                invitedMessage = message;
+                updateNotificationMessage("invitedMessage", message, "notifyInvited");
+                updateButtonAppearance(notifyInvited, !message.isEmpty());
+            }));
+
+            // Set up the back button to return to EventActivity
+            backButton.setOnClickListener(v -> {
+                Intent intent2 = new Intent(EventDetailActivity.this, EventActivity.class);
+                intent2.putExtra("eventID", eventID);
+                startActivity(intent2);
+            });
+
+            // Set up organizer actions button to navigate to EventActionsActivity
+            organizerActionsButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
                     Intent intent = new Intent(EventDetailActivity.this, EventActionsActivity.class);
                     intent.putExtra("name", name );
                     intent.putExtra("date", date);
@@ -232,15 +253,16 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
                 }
             });
 
-        // Set up edit event button to open EditEventDialogFragment
-        Button editEventButton = findViewById(R.id.buttonEditEvent);
-        editEventButton.setOnClickListener(v -> {
-            EditEventDialogFragment dialog = new EditEventDialogFragment();
-            Bundle args = new Bundle();
-            args.putString("eventID", eventID);
-            dialog.setArguments(args);
-            dialog.show(getSupportFragmentManager(), "EditEventDialogFragment");
-        });
+            // Set up edit event button to open EditEventDialogFragment
+            editEventButton.setOnClickListener(v -> {
+                EditEventDialogFragment dialog = new EditEventDialogFragment();
+                Bundle args = new Bundle();
+                args.putString("eventID", eventID);
+                dialog.setArguments(args);
+                dialog.show(getSupportFragmentManager(), "EditEventDialogFragment");
+            });
+
+        }
 
         // Set up entrant list button to display entrants or show a message if none exist
         Button entrantListButton = findViewById(R.id.entrant_list_button);
@@ -261,7 +283,6 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
                             // If there are, switch to the view entrants activity.
                             Intent intent = new Intent(EventDetailActivity.this, EventEntrantsActivity.class);
                             intent.putExtra("eventID", eventID);
-
                             startActivity(intent);
                         }
                     }
@@ -273,6 +294,14 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
         if (posterUri != null) {
             Glide.with(this).load(posterUri).into(posterImageView);
         }
+    }
+
+    public void repurposeBackButton(Button backButton){
+        backButton.setText("Back to Admin Page");
+        backButton.setOnClickListener(v -> {
+            Intent intent2 = new Intent(EventDetailActivity.this, AdminListActivity.class);
+            startActivity(intent2);
+        });
     }
 
     /**
