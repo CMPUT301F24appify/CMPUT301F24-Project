@@ -168,11 +168,10 @@ public class AddEventDialogFragment extends DialogFragment {
                         String description = eventDescription.getText().toString();
                         int waitMax = parseInteger(maxWaitEntrant.getText().toString());
                         int sampleMax = parseInteger(maxSampleEntrant.getText().toString());
-
                         listener.onEventAdded(name, date, facilityID, registrationEndDate, description,
                                 waitMax, sampleMax, posterUri, isGeolocate, "", "", "", "");
                     } else {
-                        Toast.makeText(getContext(), "Please correct the highlighted fields", Toast.LENGTH_SHORT).show();
+                        //Toast.makeText(getContext(), "Please correct the highlighted fields", Toast.LENGTH_SHORT).show();
                     }
                 })
                 .setNegativeButton("CANCEL", (dialog, id) -> dialog.dismiss());
@@ -190,29 +189,46 @@ public class AddEventDialogFragment extends DialogFragment {
                 calendar.get(Calendar.YEAR),
                 calendar.get(Calendar.MONTH),
                 calendar.get(Calendar.DAY_OF_MONTH));
+        datePickerDialog.getDatePicker().setMinDate(System.currentTimeMillis() - 1000);
         datePickerDialog.show();
     }
 
     private boolean validateInputs(EditText eventName, EditText eventFacility, EditText eventDescription) {
         boolean isValid = true;
+        SimpleDateFormat sdf = new SimpleDateFormat("MMM dd, yyyy", Locale.getDefault());
+
         if (eventName.getText().toString().trim().isEmpty()) {
+            Toast.makeText(getContext(), "Event name is required", Toast.LENGTH_SHORT).show();
             eventName.setError("Event name is required");
             isValid = false;
         }
         if (eventFacility.getText().toString().trim().isEmpty()) {
+            Toast.makeText(getContext(), "Facility is required", Toast.LENGTH_SHORT).show();
             eventFacility.setError("Facility is required");
             isValid = false;
         }
         if (eventDescription.getText().toString().trim().isEmpty()) {
+            Toast.makeText(getContext(), "Description is required", Toast.LENGTH_SHORT).show();
             eventDescription.setError("Description is required");
             isValid = false;
         }
-        if (buttonEventDate.getText().toString().equals("Select Event Date")) {
+        if (buttonEventDate.getText().toString().equals("Event Date")) {
             Toast.makeText(getContext(), "Please select an event date", Toast.LENGTH_SHORT).show();
             isValid = false;
         }
-        if (buttonRegistrationEndDate.getText().toString().equals("Select Registration End Date")) {
+        if (buttonRegistrationEndDate.getText().toString().equals("Registration End Date")) {
             Toast.makeText(getContext(), "Please select a registration end date", Toast.LENGTH_SHORT).show();
+            isValid = false;
+        }
+        try {
+            Date eventDate = sdf.parse(buttonEventDate.getText().toString());
+            Date registrationEndDate = sdf.parse(buttonRegistrationEndDate.getText().toString());
+
+            if (registrationEndDate.after(eventDate)) {
+                Toast.makeText(getContext(), "Registration end date must be before or on the event date", Toast.LENGTH_SHORT).show();
+                isValid = false;
+            }
+        } catch (ParseException e) {
             isValid = false;
         }
         return isValid;

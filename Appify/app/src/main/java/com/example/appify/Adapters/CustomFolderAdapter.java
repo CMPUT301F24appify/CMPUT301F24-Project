@@ -26,6 +26,7 @@ public class CustomFolderAdapter extends ArrayAdapter {
     private Context context;
     private FirebaseStorage storage;
     private List<StorageReference> folderList;
+    private String folderName;
 
 
     public CustomFolderAdapter(Context context, List<StorageReference> folderList){
@@ -55,11 +56,16 @@ public class CustomFolderAdapter extends ArrayAdapter {
         storage = FirebaseStorage.getInstance();
         StorageReference ref = folderList.get(position);
         TextView name = convertView.findViewById(R.id.folder_Name);
-        name.setText(ref.getName());
+
+        if (ref.getName().equals("event_posters")){
+            name.setText("Event Posters");
+        } else if (ref.getName().equals("profile_images")) {
+            name.setText("Profile Images");
+        }
         MyApp app = (MyApp) context.getApplicationContext();
         convertView.setOnClickListener(view -> {
             Intent intent = new Intent(context, ImageGridActivity.class);
-            intent.putExtra("StorageReferenceName", ref.getName() );
+            intent.putExtra("StorageReferenceName", ref.getName());
             context.startActivity(intent);
         });
 

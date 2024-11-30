@@ -90,14 +90,8 @@
             android:layout_weight="1"
             android:gravity="center_horizontal"
             android:text="Admin"
-            android:textColor="@color/white" />
-
-        <ImageView
-            android:id="@+id/header_notifications"
-            android:layout_width="2dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            app:srcCompat="@drawable/notification_bell" />
+            android:textColor="@color/white"
+            android:visibility="gone"/>
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

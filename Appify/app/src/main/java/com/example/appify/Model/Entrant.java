@@ -22,6 +22,7 @@ public class Entrant {
     private String facilityID;
     private double latitude;
     private double longitude;
+    private boolean isAdmin;
 
 
     /**
@@ -44,6 +45,25 @@ public class Entrant {
         this.facilityID = facilityID;
         this.latitude = latitude;
         this.longitude = longitude;
+        this.isAdmin = false;
+    }
+
+    public boolean isAdmin() {
+        return isAdmin;
+    }
+
+    public void setAdmin(boolean admin) {
+        isAdmin = admin;
+    }
+
+    public Entrant(String id, String name, String phoneNumber, String email, String profilePicture, boolean notifications, String facilityID) {
+        this.id = id;
+        this.name = name;
+        this.phoneNumber = phoneNumber;
+        this.email = email;
+        this.profilePictureUrl = profilePicture;
+        this.notifications = notifications;
+        this.facilityID = facilityID;
     }
 
     public double getLatitude() {

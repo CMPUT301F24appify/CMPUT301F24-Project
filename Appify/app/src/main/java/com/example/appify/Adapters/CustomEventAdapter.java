@@ -36,6 +36,8 @@ import com.example.appify.MyApp;
 import com.example.appify.R;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
 import java.util.List;
 import java.util.Objects;
@@ -96,29 +98,30 @@ public class CustomEventAdapter extends ArrayAdapter<Event> {
         ConstraintLayout eventCard = convertView.findViewById(R.id.event_information);
 
         FirebaseFirestore db = FirebaseFirestore.getInstance();
+        if(!isAdminPage) {
+            db.collection("AndroidID").document(entrantID).collection("waitListedEvents").document(event.getEventId()).get().addOnSuccessListener(DocumentSnapshot -> {
+                String status = DocumentSnapshot.getString("status");
 
-        db.collection("AndroidID").document(entrantID).collection("waitListedEvents").document(event.getEventId()).get().addOnSuccessListener(DocumentSnapshot -> {
-            String status = DocumentSnapshot.getString("status");
+                statusIcon.setVisibility(View.VISIBLE);
 
-            statusIcon.setVisibility(View.VISIBLE);
-
-            // Change the icon based off the status
-            if (Objects.equals(status, "enrolled")) {
-                statusIcon.setImageResource(R.drawable.waiting_list_icon);
-                eventCard.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#FFDBBB")));
-            } else if (Objects.equals(status, "invited")) {
-                statusIcon.setImageResource(R.drawable.invited_icon);
-                eventCard.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#add8e6")));
-            } else if (Objects.equals(status, "accepted")) {
-                statusIcon.setImageResource(R.drawable.accepted_icon);
-                eventCard.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#a6ffa6")));
-            } else if (Objects.equals(status, "rejected")) {
-                eventCard.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#ffc0c0")));
-                statusIcon.setImageResource(R.drawable.rejected_icon);
-            } else {
-                statusIcon.setVisibility(View.INVISIBLE);
-            }
-        });
+                // Change the icon based off the status
+                if (Objects.equals(status, "enrolled")) {
+                    statusIcon.setImageResource(R.drawable.waiting_list_icon);
+                    eventCard.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#FFDBBB")));
+                } else if (Objects.equals(status, "invited")) {
+                    statusIcon.setImageResource(R.drawable.invited_icon);
+                    eventCard.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#add8e6")));
+                } else if (Objects.equals(status, "accepted")) {
+                    statusIcon.setImageResource(R.drawable.accepted_icon);
+                    eventCard.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#a6ffa6")));
+                } else if (Objects.equals(status, "rejected")) {
+                    eventCard.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#ffc0c0")));
+                    statusIcon.setImageResource(R.drawable.rejected_icon);
+                } else {
+                    statusIcon.setVisibility(View.INVISIBLE);
+                }
+            });
+        }
 
 
         eventTitle.setText(event.getName());
@@ -145,7 +148,7 @@ public class CustomEventAdapter extends ArrayAdapter<Event> {
                 Intent intent = new Intent(context, EventDetailActivity.class);
                 intent.putExtra("name", event.getName() );
                 intent.putExtra("date", event.getDate());
-                intent.putExtra("facility", event.getFacility());
+
                 intent.putExtra("registrationEndDate", event.getRegistrationEndDate());
                 intent.putExtra("description", event.getDescription() );
                 intent.putExtra("maxWaitEntrants", event.getMaxWaitEntrants());
@@ -154,7 +157,13 @@ public class CustomEventAdapter extends ArrayAdapter<Event> {
                 intent.putExtra("posterUri", event.getPosterUri());
                 intent.putExtra("isGeolocate", event.isGeolocate());
                 intent.putExtra("isAdminPage", true);
-                context.startActivity(intent);
+                String facilityID = event.getFacility();
+                db.collection("facilities").document(facilityID).get().addOnSuccessListener(documentSnapshot -> {
+                    String facilityName = documentSnapshot.getString("name");
+                    intent.putExtra("facility", facilityName);
+                    context.startActivity(intent);
+                });
+
             });
         } else {
             x_Icon.setVisibility(View.GONE);
@@ -192,12 +201,29 @@ public class CustomEventAdapter extends ArrayAdapter<Event> {
                                 }
                             })
                             .addOnCompleteListener(eventTask -> {
-                                // Delete the Event all together
+                                // Delete the Event along with its poster
                                 db.collection("events").document(event.getEventId())
-                                        .delete()
-                                        .addOnSuccessListener(aVoid -> {
-                                            eventList.remove(event);
-                                            notifyDataSetChanged();
+                                        .get()
+                                        .addOnSuccessListener(documentSnapshot -> {
+                                            if (documentSnapshot.exists()) {
+                                                String posterUri = documentSnapshot.getString("posterUri");
+
+                                                if (posterUri != null && !posterUri.isEmpty()) {
+                                                    // Delete the poster image from Firebase Storage
+                                                    FirebaseStorage storage = FirebaseStorage.getInstance();
+                                                    StorageReference imageRef = storage.getReferenceFromUrl(posterUri);
+
+                                                    imageRef.delete();
+                                                }
+                                            }
+
+                                            // Delete the Event all together
+                                            db.collection("events").document(event.getEventId())
+                                                    .delete()
+                                                    .addOnSuccessListener(aVoid -> {
+                                                        eventList.remove(event);
+                                                        notifyDataSetChanged();
+                                                    });
                                         });
                             });
                 }))
