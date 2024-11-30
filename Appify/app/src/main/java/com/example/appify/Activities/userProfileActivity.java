@@ -1,5 +1,6 @@
 package com.example.appify.Activities;
 
+import android.app.Activity;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
@@ -76,12 +77,12 @@ public class userProfileActivity extends AppCompatActivity {
                     .get()
                     .addOnSuccessListener(documentSnapshot -> {
                         if (documentSnapshot.exists()) {
-                            Boolean isAdmin = documentSnapshot.getBoolean("isAdmin");
+                            Boolean isAdmin = documentSnapshot.getBoolean("admin");
 
                             // Toggle isAdmin state
                             boolean newAdminState = isAdmin == null || !isAdmin; // Default to false if null
                             db.collection("AndroidID").document(android_id)
-                                    .update("isAdmin", newAdminState)
+                                    .update("admin", newAdminState)
                                     .addOnSuccessListener(aVoid -> {
                                         // Update button color and show a success message
                                         if (newAdminState) {
@@ -93,7 +94,7 @@ public class userProfileActivity extends AppCompatActivity {
                         } else {
                             // If the document doesn't exist, set isAdmin to true
                             db.collection("AndroidID").document(android_id)
-                                    .set(Collections.singletonMap("isAdmin", true), SetOptions.merge())
+                                    .set(Collections.singletonMap("admin", true), SetOptions.merge())
                                     .addOnSuccessListener(aVoid -> {
                                         adminButton.setBackgroundColor(Color.GREEN);
                                     });
@@ -110,7 +111,7 @@ public class userProfileActivity extends AppCompatActivity {
                             String phone = documentSnapshot.getString("phoneNumber");
                             String email = documentSnapshot.getString("email");
                             Boolean notificationsCheck = documentSnapshot.getBoolean("notifications");
-                            Boolean isAdmin = documentSnapshot.getBoolean("isAdmin");
+                            Boolean isAdmin = documentSnapshot.getBoolean("admin");
                             TextView phoneText = findViewById(R.id.phoneText);
                             //String profileImageUrl = documentSnapshot.getString("profilePictureUrl");
                             nameTextView.setText(name);

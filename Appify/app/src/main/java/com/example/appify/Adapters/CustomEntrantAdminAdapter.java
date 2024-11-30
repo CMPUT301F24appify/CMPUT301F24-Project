@@ -118,7 +118,7 @@ public class CustomEntrantAdminAdapter extends ArrayAdapter<Entrant> {
         db.collection("AndroidID").document(entrant.getId())
                 .get()
                 .addOnSuccessListener(documentSnapshot -> {
-                    if (documentSnapshot.exists() && documentSnapshot.getBoolean("isAdmin") != null && documentSnapshot.getBoolean("isAdmin")) {
+                    if (documentSnapshot.exists() && documentSnapshot.getBoolean("admin") != null && documentSnapshot.getBoolean("admin")) {
                         // Make the Toast that the user is an Admin and cannot be deleted
                         Toast.makeText(context, entrant.getName() + " is an admin and cannot be deleted.", Toast.LENGTH_SHORT).show();
                     } else {

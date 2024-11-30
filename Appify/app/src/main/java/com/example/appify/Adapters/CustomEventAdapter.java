@@ -148,7 +148,7 @@ public class CustomEventAdapter extends ArrayAdapter<Event> {
                 Intent intent = new Intent(context, EventDetailActivity.class);
                 intent.putExtra("name", event.getName() );
                 intent.putExtra("date", event.getDate());
-                intent.putExtra("facility", event.getFacility());
+
                 intent.putExtra("registrationEndDate", event.getRegistrationEndDate());
                 intent.putExtra("description", event.getDescription() );
                 intent.putExtra("maxWaitEntrants", event.getMaxWaitEntrants());
@@ -157,7 +157,13 @@ public class CustomEventAdapter extends ArrayAdapter<Event> {
                 intent.putExtra("posterUri", event.getPosterUri());
                 intent.putExtra("isGeolocate", event.isGeolocate());
                 intent.putExtra("isAdminPage", true);
-                context.startActivity(intent);
+                String facilityID = event.getFacility();
+                db.collection("facilities").document(facilityID).get().addOnSuccessListener(documentSnapshot -> {
+                    String facilityName = documentSnapshot.getString("name");
+                    intent.putExtra("facility", facilityName);
+                    context.startActivity(intent);
+                });
+
             });
         } else {
             x_Icon.setVisibility(View.GONE);
@@ -200,6 +206,14 @@ public class CustomEventAdapter extends ArrayAdapter<Event> {
                                         .get()
                                         .addOnSuccessListener(documentSnapshot -> {
                                             if (documentSnapshot.exists()) {
+                                                String qrCodeLocationUrl = documentSnapshot.getString("qrCodeLocationUrl");
+                                                if (qrCodeLocationUrl != null && !qrCodeLocationUrl.isEmpty()) {
+                                                    // Delete the qrCode image from Firebase Storage
+                                                    FirebaseStorage storage = FirebaseStorage.getInstance();
+                                                    StorageReference imageRef = storage.getReferenceFromUrl(qrCodeLocationUrl);
+                                                    imageRef.delete();
+                                                }
+
                                                 String posterUri = documentSnapshot.getString("posterUri");
 
                                                 if (posterUri != null && !posterUri.isEmpty()) {
