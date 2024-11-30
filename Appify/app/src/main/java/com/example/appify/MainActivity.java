@@ -37,7 +37,6 @@ import com.google.firebase.firestore.FirebaseFirestore;
 public class MainActivity extends AppCompatActivity {
     private FirebaseFirestore db;
     private String android_id;
-    private static final int REQUEST_CODE_POST_NOTIFICATIONS = 1001;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,16 +50,6 @@ public class MainActivity extends AppCompatActivity {
         // Set AndroidID in the global application class
         MyApp app = (MyApp) getApplication();
         app.setAndroidId(android_id);
-
-        // Request notification permission for Android 13 and above
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.POST_NOTIFICATIONS}, REQUEST_CODE_POST_NOTIFICATIONS);
-            } else {
-                // Permission already granted
-                Log.d("MainActivity", "Notification permission already granted.");
-            }
-        }
 
         // Adjust padding based on system bars (optional, depending on your UI design)
         View mainView = findViewById(R.id.main);
@@ -77,22 +66,6 @@ public class MainActivity extends AppCompatActivity {
 
         // Start the startup animation
         startUpAnimation();
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == REQUEST_CODE_POST_NOTIFICATIONS) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                // Permission granted
-                Log.d("MainActivity", "Notification permission granted.");
-            } else {
-                // Permission denied
-                Log.d("MainActivity", "Notification permission denied.");
-                // Optionally, inform the user
-                Toast.makeText(this, "Notification permission is required for event updates.", Toast.LENGTH_LONG).show();
-            }
-        }
     }
 
     /**

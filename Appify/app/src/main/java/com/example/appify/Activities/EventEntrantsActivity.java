@@ -153,7 +153,7 @@ public class EventEntrantsActivity extends AppCompatActivity{
                                     String facilityID = entrantData.getString("facilityID");
                                     double latitude = entrantData.getDouble("latitude");
                                     double longitude = entrantData.getDouble("longitude");
-                                    Entrant entrant = new Entrant(entrantID, entrantName, phoneNumber, entrantEmail, entrantProfilePic, notifications, latitude, longitude);
+                                    Entrant entrant = new Entrant(entrantID, entrantName, phoneNumber, entrantEmail, entrantProfilePic, notifications, facilityID, latitude, longitude);
                                     entrant.setFacilityID(facilityID);
 
                                     db.collection("AndroidID").document(entrantID).collection("waitListedEvents").document(eventID).get().addOnSuccessListener(DocumentSnapshot -> {

@@ -20,7 +20,8 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="50dp"
-        android:layout_marginBottom="16dp" />
+        android:layout_marginBottom="16dp"
+        android:background="@null"/>
 
     <!-- Profile Picture Label and Upload Button -->
     <LinearLayout
@@ -136,30 +137,7 @@
     <!-- Notifications Label and Checkbox -->
 
     <!-- Submit and Cancel Buttons -->
-    <LinearLayout
-        android:id="@+id/notificationsLayout"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:gravity="center"
-        android:orientation="horizontal"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/emailEditText">
 
-        <TextView
-            android:id="@+id/notificationsLabel"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Notifications:"
-            android:textSize="18sp" />
-
-        <CheckBox
-            android:id="@+id/notificationsCheckBox"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:checked="false" />
-    </LinearLayout>
 
     <LinearLayout
         android:layout_width="wrap_content"
@@ -167,7 +145,7 @@
         android:orientation="horizontal"
         android:gravity="center"
         android:layout_marginTop="20dp"
-        app:layout_constraintTop_toBottomOf="@id/notificationsLayout"
+        app:layout_constraintTop_toBottomOf="@id/emailEditText"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 

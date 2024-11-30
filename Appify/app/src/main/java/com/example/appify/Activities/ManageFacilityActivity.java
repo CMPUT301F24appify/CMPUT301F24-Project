@@ -3,6 +3,7 @@ package com.example.appify.Activities;
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -164,37 +165,75 @@ public class ManageFacilityActivity extends AppCompatActivity implements AddFaci
                 .setTitle("Delete Facility")
                 .setMessage("Are you sure you want to delete this facility? ALL EVENTS associated with the facility will also be deleted. This action cannot be undone.")
                 .setPositiveButton("Delete", (dialog, which) -> {
-                    // Fetch all events under the facility's subcollection
-                    db.collection("facilities").document(facilityID).collection("events")
+                    // Fetch the facility from Firestore
+                    db.collection("facilities").document(facilityID)
                             .get()
-                            .addOnSuccessListener(querySnapshot -> {
-                                // Delete each event found
-                                for (QueryDocumentSnapshot eventDoc : querySnapshot) {
-                                    String eventID = eventDoc.getId();
+                            .addOnSuccessListener(documentSnapshot -> {
+                                if (documentSnapshot.exists()) {
+                                    String organizerID = documentSnapshot.getString("organizerID");
 
-                                    // Delete the event from the 'events' collection
-                                    db.collection("events").document(eventID).delete();
+                                    // Fetch events inside facilities/facilityID/events
+                                    db.collection("facilities").document(facilityID).collection("events")
+                                            .get()
+                                            .addOnSuccessListener(querySnapshot -> {
+                                                for (QueryDocumentSnapshot eventDoc : querySnapshot) {
+                                                    String eventID = eventDoc.getId();
 
-                                    // Delete the event from the facility's subcollection
-                                    db.collection("facilities").document(facilityID).collection("events").document(eventID)
-                                            .delete();
+                                                    // Check for and process the waitingList for the event
+                                                    db.collection("events").document(eventID).collection("waitingList")
+                                                            .get()
+                                                            .addOnSuccessListener(waitingListSnapshot -> {
+                                                                for (QueryDocumentSnapshot waitDoc : waitingListSnapshot) {
+                                                                    String userID = waitDoc.getId();
+
+                                                                    // Delete the eventID from the user's waitListedEvents collection
+                                                                    db.collection("AndroidID").document(userID)
+                                                                            .collection("waitListedEvents")
+                                                                            .document(eventID)
+                                                                            .delete();
+
+                                                                    // Delete the individual waitingList entry
+                                                                    db.collection("events").document(eventID).collection("waitingList")
+                                                                            .document(userID)
+                                                                            .delete();
+                                                                }
+                                                            })
+                                                            .addOnCompleteListener(waitingListTask -> {
+                                                                // Delete event from 'events' collection
+                                                                db.collection("events").document(eventID)
+                                                                        .delete();
+
+                                                                // Delete event document from 'facilities/facilityID/events' collection
+                                                                db.collection("facilities").document(facilityID).collection("events")
+                                                                        .document(eventID)
+                                                                        .delete();
+                                                            });
+                                                }
+                                            })
+                                            .addOnCompleteListener(task -> {
+                                                // Once all events are processed, delete the facility itself
+                                                db.collection("facilities").document(facilityID)
+                                                        .delete()
+                                                        .addOnSuccessListener(aVoid -> {
+                                                            if (organizerID != null) {
+                                                                // Update organizer's facility ID to null
+                                                                db.collection("AndroidID").document(organizerID)
+                                                                        .update("facilityID", null)
+                                                                        .addOnSuccessListener(aVoid1 -> {
+                                                                            // Navigate to EntrantHomePageActivity after facility deletion
+                                                                            Intent intent = new Intent(this, EntrantHomePageActivity.class);
+                                                                            startActivity(intent);
+                                                                            finish(); // Close the current activity
+                                                                        });
+                                                            } else {
+                                                                // Navigate directly if no organizerID exists
+                                                                Intent intent = new Intent(this, EntrantHomePageActivity.class);
+                                                                startActivity(intent);
+                                                                finish(); // Close the current activity
+                                                            }
+                                                        });
+                                            });
                                 }
-
-                                // After all events are deleted, proceed to delete the facility itself
-                                db.collection("facilities").document(facilityID).delete()
-                                        .addOnSuccessListener(aVoid -> {
-                                            // Update user's facilityID to null
-                                            String androidId = ((MyApp) getApplication()).getAndroidId();
-                                            db.collection("AndroidID").document(androidId)
-                                                    .update("facilityID", null)
-                                                    .addOnSuccessListener(aVoid2 -> {
-                                                        Toast.makeText(this, "Facility and its events deleted.", Toast.LENGTH_SHORT).show();
-                                                        // Redirect to the EntrantHomePageActivity after deletion
-                                                        Intent intent = new Intent(ManageFacilityActivity.this, EntrantHomePageActivity.class);
-                                                        startActivity(intent);
-                                                        finish();
-                                                    });
-                                        });
                             });
                 })
                 .setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss())

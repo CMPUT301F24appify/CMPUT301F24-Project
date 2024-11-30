@@ -194,7 +194,7 @@ public class EditEventDialogFragment extends DialogFragment {
                         int waitMax = parseInteger(maxWaitEntrant.getText().toString());
                         int sampleMax = parseInteger(maxSampleEntrant.getText().toString());
 
-                        listener.onEventEdited(name, date, facilityID, registrationEndDate, description,
+                        listener.onEventEdited(name, date, facilityName, registrationEndDate, description,
                                 waitMax, sampleMax, posterUri, isGeolocate, "", "", "", "");
                     } else {
                         Toast.makeText(getContext(), "Please correct the highlighted fields", Toast.LENGTH_SHORT).show();

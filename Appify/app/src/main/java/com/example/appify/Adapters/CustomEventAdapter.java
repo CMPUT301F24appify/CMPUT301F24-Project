@@ -13,7 +13,9 @@
 
 package com.example.appify.Adapters;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.view.LayoutInflater;
@@ -27,13 +29,13 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.constraintlayout.widget.ConstraintLayout;
 
+import com.example.appify.Activities.EventDetailActivity;
 import com.example.appify.Model.Event;
 import com.example.appify.MyApp;
 import com.example.appify.R;
-import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 
@@ -45,6 +47,8 @@ public class CustomEventAdapter extends ArrayAdapter<Event> {
     private Context context;
     private List<Event> eventList;
     private boolean isOrganizePage;
+    private boolean isAdminPage;
+    private FirebaseFirestore db = FirebaseFirestore.getInstance();
 
     /**
      * Constructor for CustomEventAdapter.
@@ -53,11 +57,12 @@ public class CustomEventAdapter extends ArrayAdapter<Event> {
      * @param eventList     The list of events to be displayed.
      * @param isOrganizePage Boolean indicating if the adapter is used on the organizer's page.
      */
-    public CustomEventAdapter(Context context, List<Event> eventList, boolean isOrganizePage){
+    public CustomEventAdapter(Context context, List<Event> eventList, boolean isOrganizePage, boolean isAdminPage){
         super(context, 0, eventList);
         this.context = context;
         this.eventList = eventList;
         this.isOrganizePage = isOrganizePage;
+        this.isAdminPage = isAdminPage;
     }
 
 
@@ -86,6 +91,7 @@ public class CustomEventAdapter extends ArrayAdapter<Event> {
         TextView eventRegistrationEndDate = convertView.findViewById(R.id.registration_date);
         TextView eventStartDate = convertView.findViewById(R.id.event_date);
         ImageView statusIcon = convertView.findViewById(R.id.statusIcon);
+        ImageView x_Icon = convertView.findViewById(R.id.x_icon);
         ConstraintLayout eventCard = convertView.findViewById(R.id.event_information);
 
         FirebaseFirestore db = FirebaseFirestore.getInstance();
@@ -119,13 +125,100 @@ public class CustomEventAdapter extends ArrayAdapter<Event> {
         eventRegistrationEndDate.setText(event.getRegistrationEndDate());
         eventStartDate.setText(event.getDate());
 
-        if (Objects.equals(event.getOrganizerID(), entrantID) && !isOrganizePage){
+        if (Objects.equals(event.getOrganizerID(), entrantID) && !isOrganizePage && !isAdminPage){
             LinearLayout topPart = convertView.findViewById(R.id.top_part);
-            LinearLayout bottomPart = convertView.findViewById(R.id.event_dates);
+            LinearLayout bottomPart = convertView.findViewById(R.id.profile_information);
             bottomPart.setVisibility(View.GONE);
             topPart.setVisibility(View.GONE);
         }
 
+        notifyDataSetChanged();
+      
+        convertView.setOnClickListener(view -> {
+            Intent intent = new Intent(context, EventDetailActivity.class);
+            intent.putExtra("name", event.getName() );
+            intent.putExtra("date", event.getDate());
+            intent.putExtra("facility", event.getFacility());
+            intent.putExtra("registrationEndDate", event.getRegistrationEndDate());
+            intent.putExtra("description", event.getDescription() );
+            intent.putExtra("maxWaitEntrants", event.getMaxWaitEntrants());
+            intent.putExtra("maxSampleEntrants", event.getMaxSampleEntrants());
+            intent.putExtra("eventID", event.getEventId());
+            intent.putExtra("posterUri", event.getPosterUri());
+            intent.putExtra("isGeolocate", event.isGeolocate());
+            context.startActivity(intent);
+        });
+
+        // Check if it is the Admin Page:
+        if (isAdminPage) {
+            x_Icon.setVisibility(View.VISIBLE);
+            x_Icon.setOnClickListener(v -> {
+                showCancelEventDialog(event);
+            });
+            convertView.setOnClickListener(view -> {
+                Intent intent = new Intent(context, EventDetailActivity.class);
+                intent.putExtra("name", event.getName() );
+                intent.putExtra("date", event.getDate());
+                intent.putExtra("facility", event.getFacility());
+                intent.putExtra("registrationEndDate", event.getRegistrationEndDate());
+                intent.putExtra("description", event.getDescription() );
+                intent.putExtra("maxWaitEntrants", event.getMaxWaitEntrants());
+                intent.putExtra("maxSampleEntrants", event.getMaxSampleEntrants());
+                intent.putExtra("eventID", event.getEventId());
+                intent.putExtra("posterUri", event.getPosterUri());
+                intent.putExtra("isGeolocate", event.isGeolocate());
+                intent.putExtra("isAdminPage", true);
+                context.startActivity(intent);
+            });
+        } else {
+            x_Icon.setVisibility(View.GONE);
+        }
+
         return convertView;
+    }
+
+    private void showCancelEventDialog(Event event) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this.getContext());
+        builder
+                .setTitle("Delete Event: " + event.getName())
+                .setMessage("Please confirm that you want to delete: " + event.getName() + ". ALL users will be removed from the waiting list. This action cannot be undone.")
+                .setPositiveButton("Confirm", ((dialog, which) -> {
+                    // Delete the Event from the Users waitListedEvents
+                    db.collection("events").document(event.getEventId()).collection("waitingList")
+                            .get()
+                            .addOnSuccessListener(querySnapshot -> {
+                                for (QueryDocumentSnapshot userDoc : querySnapshot) {
+                                    String userID = userDoc.getId();
+
+                                    // Delete the event from the Users waitListedEvents
+                                    db.collection("AndroidID").document(userID)
+                                            .collection("waitListedEvents")
+                                            .document(event.getEventId())
+                                            .delete()
+                                            .addOnSuccessListener(v -> {
+                                                // Delete the User from the Event's waitingList
+                                                db.collection("events").document(event.getEventId())
+                                                        .collection("waitingList")
+                                                        .document(userID)
+                                                        .delete();
+                                            });
+
+                                }
+                            })
+                            .addOnCompleteListener(eventTask -> {
+                                // Delete the Event all together
+                                db.collection("events").document(event.getEventId())
+                                        .delete()
+                                        .addOnSuccessListener(aVoid -> {
+                                            eventList.remove(event);
+                                            notifyDataSetChanged();
+                                        });
+                            });
+                }))
+                .setNegativeButton("Cancel", ((dialog, which) -> {
+                    dialog.dismiss();
+                }));
+        builder.create();
+        builder.show();
     }
 }

@@ -2,6 +2,7 @@ package com.example.appify.Activities;
 
 
 import android.content.Context;
+import android.Manifest;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.content.pm.PackageManager;
@@ -18,6 +19,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Looper;
 import android.provider.MediaStore;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
@@ -34,7 +36,9 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+
 import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 import com.github.dhaval2404.imagepicker.ImagePicker;
 import com.google.android.gms.common.api.ApiException;
@@ -67,7 +71,6 @@ public class editUserActivity extends AppCompatActivity {
     private String android_id;
     private byte[] profilePictureByte;
     private EditText nameEditText, phoneEditText, emailEditText;
-    private CheckBox notifications;
     private String facilityID = null;
     private double deviceLatitude;
     private double deviceLongitude;
@@ -77,6 +80,7 @@ public class editUserActivity extends AppCompatActivity {
     private boolean defaultFlag = true;
     private boolean cameraFlag = false;
 
+    private static final int REQUEST_CODE_POST_NOTIFICATIONS = 10010001;
 
 
     /**
@@ -104,7 +108,6 @@ public class editUserActivity extends AppCompatActivity {
         Button uploadButton = findViewById(R.id.uploadButton);
         Button removeButton = findViewById(R.id.removeButton);
         Button submitButton = findViewById(R.id.submitButton);
-        notifications = findViewById(R.id.notificationsCheckBox);
         Button cancelButton = findViewById(R.id.cancelButton);
         deviceLocationButton = findViewById(R.id.locationButton);
 
@@ -113,6 +116,15 @@ public class editUserActivity extends AppCompatActivity {
         deviceLocationRequest.setInterval(5000);
         deviceLocationRequest.setFastestInterval(2000);
 
+        // Request notification permission for Android 13 and above
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.POST_NOTIFICATIONS}, REQUEST_CODE_POST_NOTIFICATIONS);
+            } else {
+                // Permission already granted
+                Log.d("MainActivity", "Notification permission already granted.");
+            }
+        }
 
         if (firstEntry) {
             cancelButton.setVisibility(View.GONE);
@@ -143,7 +155,6 @@ public class editUserActivity extends AppCompatActivity {
             String name = nameEditText.getText().toString();
             String phoneNumber = phoneEditText.getText().toString();
             String email = emailEditText.getText().toString();
-
 
             //Check Whether the Inputs are Correct for Name, Phone and Email
             if (name.isEmpty() || email.isEmpty()) {
@@ -199,7 +210,24 @@ public class editUserActivity extends AppCompatActivity {
                             sendEntrantData(android_id, name, phoneNumber, email, deviceLatitude, deviceLongitude);
                         });
             }
+
         });
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == REQUEST_CODE_POST_NOTIFICATIONS) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                // Permission granted
+                Log.d("MainActivity", "Notification permission granted.");
+            } else {
+                // Permission denied
+                Log.d("MainActivity", "Notification permission denied.");
+                // Optionally, inform the user
+                Toast.makeText(this, "Notification permission is required for event updates.", Toast.LENGTH_LONG).show();
+            }
+        }
     }
 
     private void getDeviceLocation(Runnable onSuccess) {
@@ -220,7 +248,6 @@ public class editUserActivity extends AppCompatActivity {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
         }
     }
-
     private void openImagePicker() {
         ImagePicker.with(this)
                 .crop()
@@ -300,7 +327,6 @@ public class editUserActivity extends AppCompatActivity {
         Bitmap profilePicture = getBitmapFromImageView(profileImageView);
         FirebaseStorage storage = FirebaseStorage.getInstance();
         StorageReference storageRef = storage.getReference().child("profile_images/" + android_id + ".jpg");
-        boolean notificationCheck = notifications.isChecked();
         // Convert Bitmap to ByteArray
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         profilePicture.compress(Bitmap.CompressFormat.JPEG, 100, baos);
@@ -310,8 +336,8 @@ public class editUserActivity extends AppCompatActivity {
                     String downloadUrl = uri.toString();
 
                     // Create Entrant object with the download URL
-                    Entrant user = new Entrant(id, name, phone, email, downloadUrl, notificationCheck, latitude, longitude);
-                    user.setFacilityID(facilityID);
+                    Entrant user = new Entrant(id, name, phone, email, downloadUrl, false, latitude, longitude, facilityID);
+
                     // Save Entrant data to Firestore
                     db.collection("AndroidID").document(android_id).set(user)
                             .addOnSuccessListener(aVoid -> {
@@ -343,7 +369,6 @@ public class editUserActivity extends AppCompatActivity {
                         nameEditText.setText(name);
                         phoneEditText.setText(phone);
                         emailEditText.setText(email);
-                        notifications.setChecked(documentSnapshot.getBoolean("notifications"));
                         loadProfilePicture(android_id);
                     }
                 });

@@ -67,6 +67,7 @@
         <activity android:name=".Activities.ManageFacilityActivity" />
         <activity android:name=".Activities.MapActivity" />
         <activity android:name=".Activities.AdminListActivity" />
+        <activity android:name=".Activities.ImageGridActivity" />
 
         <activity android:name=".Activities.CaptureAct"
             android:screenOrientation="portrait"
