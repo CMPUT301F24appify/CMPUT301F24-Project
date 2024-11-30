@@ -29,6 +29,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.constraintlayout.widget.ConstraintLayout;
 
+import com.example.appify.Activities.EntrantEnlistActivity;
 import com.example.appify.Activities.EventDetailActivity;
 import com.example.appify.Model.Event;
 import com.example.appify.MyApp;
@@ -133,21 +134,6 @@ public class CustomEventAdapter extends ArrayAdapter<Event> {
         }
 
         notifyDataSetChanged();
-      
-        convertView.setOnClickListener(view -> {
-            Intent intent = new Intent(context, EventDetailActivity.class);
-            intent.putExtra("name", event.getName() );
-            intent.putExtra("date", event.getDate());
-            intent.putExtra("facility", event.getFacility());
-            intent.putExtra("registrationEndDate", event.getRegistrationEndDate());
-            intent.putExtra("description", event.getDescription() );
-            intent.putExtra("maxWaitEntrants", event.getMaxWaitEntrants());
-            intent.putExtra("maxSampleEntrants", event.getMaxSampleEntrants());
-            intent.putExtra("eventID", event.getEventId());
-            intent.putExtra("posterUri", event.getPosterUri());
-            intent.putExtra("isGeolocate", event.isGeolocate());
-            context.startActivity(intent);
-        });
 
         // Check if it is the Admin Page:
         if (isAdminPage) {
