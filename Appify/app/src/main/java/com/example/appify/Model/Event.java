@@ -359,7 +359,7 @@ public class Event {
                                     eligibleEntrants.add(document.getId());
                                 }
 
-                                // Randomly select entrants until reaching available slots or list is empty
+                                // Randomly select entrants until reaching ava (ilable slots or list is empty
                                 while (selectedEntrants.size() < slotsAvailable && !eligibleEntrants.isEmpty()) {
                                     int randomIndex = random.nextInt(eligibleEntrants.size());
                                     String selectedEntrantId = eligibleEntrants.remove(randomIndex); // Remove to avoid re-selection
