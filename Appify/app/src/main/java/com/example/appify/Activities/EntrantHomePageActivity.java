@@ -84,7 +84,6 @@ public class EntrantHomePageActivity extends AppCompatActivity {
         eventListView.setOnItemClickListener((AdapterView<?> parent, View view, int position, long id) -> {
             Event selectedEvent = eventList.get(position);
 
-            System.out.println("abc " + selectedEvent.getName());
             Intent intent = new Intent(EntrantHomePageActivity.this, EntrantEnlistActivity.class);
 
             intent.putExtra("eventId", selectedEvent.getEventId());
