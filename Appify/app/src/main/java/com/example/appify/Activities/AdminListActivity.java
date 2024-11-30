@@ -5,6 +5,8 @@ import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
@@ -45,6 +47,8 @@ public class AdminListActivity extends AppCompatActivity {
     private CustomEntrantAdminAdapter entrantAdapter;
     private ArrayList<StorageReference> folderList;
     private CustomFolderAdapter folderAdapter;
+    private LinearLayout noFacilityView;
+    private LinearLayout noEventsView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,6 +67,8 @@ public class AdminListActivity extends AppCompatActivity {
         folderList = new ArrayList<>();
         folderAdapter = new CustomFolderAdapter(this, folderList);
         listView = findViewById(R.id.admin_list);
+        noFacilityView = findViewById(R.id.noFacilityView);
+        noEventsView = findViewById(R.id.noEventsView);
 
         // HeaderNavigation
         HeaderNavigation headerNavigation = new HeaderNavigation(this);
@@ -76,15 +82,21 @@ public class AdminListActivity extends AppCompatActivity {
         toggleGroup.setOnCheckedChangeListener((group, checkedId) -> {
             if (checkedId == R.id.toggle_facilities) {
                 listView.setAdapter(facilityAdapter);
+                noEventsView.setVisibility(View.GONE);
                 loadFacilitiesFromFirestore();
             } else if (checkedId == R.id.toggle_events) {
                 listView.setAdapter(eventAdapter);
+                noFacilityView.setVisibility(View.GONE);
                 loadEventsFromFirestore();
             } else if (checkedId == R.id.toggle_profiles) {
                 listView.setAdapter(entrantAdapter);
+                noFacilityView.setVisibility(View.GONE);
+                noEventsView.setVisibility(View.GONE);
                 loadProfilesFromFirestore();
             } else if (checkedId == R.id.toggle_images) {
                 listView.setAdapter(folderAdapter);
+                noFacilityView.setVisibility(View.GONE);
+                noEventsView.setVisibility(View.GONE);
                 loadImagesFromFirestore();
             } else {
                 Toast.makeText(this, "Invalid selection", Toast.LENGTH_SHORT).show();
@@ -112,9 +124,13 @@ public class AdminListActivity extends AppCompatActivity {
 
                     Facility facility = new Facility(id, name, location, email, description, capacity, organizerID);
                     facilityList.add(facility);
+                    noFacilityView.setVisibility(View.GONE);
                 }
-
                 facilityAdapter.notifyDataSetChanged();
+
+                if (facilityList.isEmpty()){
+                    noFacilityView.setVisibility(View.VISIBLE);
+                }
             }
         });
     }
@@ -144,8 +160,13 @@ public class AdminListActivity extends AppCompatActivity {
                     event.setPosterUri(posterURI);
                     event.setEventId(id);
                     eventList.add(event);
+                    noEventsView.setVisibility(View.GONE);
                 }
                 eventAdapter.notifyDataSetChanged();
+
+                if (eventList.isEmpty()){
+                    noEventsView.setVisibility(View.VISIBLE);
+                }
             }
         });
     }
