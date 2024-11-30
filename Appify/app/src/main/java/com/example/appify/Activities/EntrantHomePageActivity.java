@@ -90,14 +90,19 @@ public class EntrantHomePageActivity extends AppCompatActivity {
             intent.putExtra("name", selectedEvent.getName());
             intent.putExtra("date", selectedEvent.getDate());
             intent.putExtra("registrationEndDate", selectedEvent.getRegistrationEndDate());
-            intent.putExtra("facility", selectedEvent.getFacility());
+
             intent.putExtra("description", selectedEvent.getDescription());
             intent.putExtra("maxWaitEntrants", selectedEvent.getMaxWaitEntrants());
             intent.putExtra("maxSampleEntrants", selectedEvent.getMaxSampleEntrants());
             intent.putExtra("posterUri", selectedEvent.getPosterUri());
             intent.putExtra("geolocate", selectedEvent.isGeolocate());
 
-            startActivity(intent);
+            db.collection("facilities").document(selectedEvent.getFacility()).get().addOnSuccessListener(documentSnapshot -> {
+                String facName = documentSnapshot.getString("name");
+                intent.putExtra("facility", facName);
+                startActivity(intent);
+            });
+
         });
 
         // To add event, open a QR Code scanner

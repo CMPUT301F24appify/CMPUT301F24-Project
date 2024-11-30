@@ -206,6 +206,14 @@ public class CustomEventAdapter extends ArrayAdapter<Event> {
                                         .get()
                                         .addOnSuccessListener(documentSnapshot -> {
                                             if (documentSnapshot.exists()) {
+                                                String qrCodeLocationUrl = documentSnapshot.getString("qrCodeLocationUrl");
+                                                if (qrCodeLocationUrl != null && !qrCodeLocationUrl.isEmpty()) {
+                                                    // Delete the qrCode image from Firebase Storage
+                                                    FirebaseStorage storage = FirebaseStorage.getInstance();
+                                                    StorageReference imageRef = storage.getReferenceFromUrl(qrCodeLocationUrl);
+                                                    imageRef.delete();
+                                                }
+
                                                 String posterUri = documentSnapshot.getString("posterUri");
 
                                                 if (posterUri != null && !posterUri.isEmpty()) {
