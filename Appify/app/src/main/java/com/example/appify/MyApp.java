@@ -223,39 +223,55 @@ public class MyApp extends Application {
      * and sends a notification to those users.
      */
     private void listenForInvitations() {
-        waitingListListener = db.collectionGroup("waitingList")
+        waitingListListener = db.collection("events")
                 .addSnapshotListener((snapshots, e) -> {
                     if (e != null) {
-                        Log.w(TAG, "Listen failed for waitingList collection group.", e);
+                        Log.w(TAG, "Listen failed for events collection.", e);
                         return;
                     }
 
                     if (snapshots != null) {
                         for (DocumentChange dc : snapshots.getDocumentChanges()) {
-                            DocumentSnapshot userDoc = dc.getDocument();
-                            String userId = userDoc.getId();
-                            String status = userDoc.getString("status");
+                            DocumentSnapshot eventDoc = dc.getDocument();
+                            String eventId = eventDoc.getId();
 
-                            // Check if the document's status was modified to "invited"
-                            if (dc.getType() == DocumentChange.Type.MODIFIED && "invited".equals(status)) {
-                                Log.d(TAG, "User status changed to invited: " + userId);
+                            // Check if the document's lotteryRan counter was updated
+                            if (dc.getType() == DocumentChange.Type.MODIFIED && eventDoc.contains("lotteryRan")) {
+                                Log.d(TAG, "Lottery counter updated for event: " + eventId);
 
-                                // Retrieve the eventId from the document's path
-                                String eventId = userDoc.getReference().getParent().getParent().getId();
-                                Log.d(TAG, "Associated eventId for user " + userId + ": " + eventId);
+                                // Fetch the waiting list for this event
+                                db.collection("events").document(eventId)
+                                        .collection("waitingList")
+                                        .get()
+                                        .addOnSuccessListener(waitingListSnapshot -> {
+                                            for (DocumentSnapshot userDoc : waitingListSnapshot) {
+                                                String userId = userDoc.getId();
+                                                String status = userDoc.getString("status");
 
-                                // Send notification with a hardcoded message
-                                String message = "You have been invited to an event!";
-                                String eventName = "Event ID: " + eventId; // Use eventId as a placeholder name
-                                Log.d(TAG, "Sending 'invited' notification to user: " + userId);
-                                sendNotification(eventId, "invited", message, eventName);
+                                                if ("invited".equals(status)) {
+                                                    // Send 'invited' notification
+                                                    String message = "You have been invited to the event!";
+                                                    Log.d(TAG, "Sending 'invited' notification to user: " + userId);
+                                                    sendNotification(eventId, "invited", message, "Event ID: " + eventId);
+                                                } else if ("enrolled".equals(status)) {
+                                                    // Send 'not invited' notification
+                                                    String message = "You were not invited to the event.";
+                                                    Log.d(TAG, "Sending 'not invited' notification to user: " + userId);
+                                                    sendNotification(eventId, "not_invited", message, "Event ID: " + eventId);
+                                                }
+                                            }
+                                        })
+                                        .addOnFailureListener(err -> {
+                                            Log.e(TAG, "Error fetching waiting list for event: " + eventId, err);
+                                        });
                             }
                         }
                     }
                 });
 
-        Log.d(TAG, "Started listening for status changes to 'invited'.");
+        Log.d(TAG, "Started listening for updates to the lottery counter.");
     }
+
 
 
 
