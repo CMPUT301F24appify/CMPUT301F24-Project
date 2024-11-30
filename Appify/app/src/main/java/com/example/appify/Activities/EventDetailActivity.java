@@ -1,6 +1,7 @@
 package com.example.appify.Activities;
 
 import android.annotation.SuppressLint;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -55,6 +56,7 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
     private String enrolledMessage = "";
     private String cancelledMessage = "";
     private String invitedMessage = "";
+
 
     /**
      * Called when the activity is created. Sets up the UI and initializes data fields.
@@ -198,6 +200,7 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
             notificationsHeaderText.setVisibility(View.GONE);
             GridLayout notificationsBackground = findViewById(R.id.notificationsBackground);
             notificationsBackground.setVisibility(View.GONE);
+            setDeleteQRCodeButton(organizerActionsButton);
             repurposeBackButton(backButton);
 
         }
@@ -296,11 +299,49 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
         }
     }
 
+    public void setDeleteQRCodeButton(Button oldButton){
+        oldButton.setText("Delete QR Code");
+        oldButton.setOnClickListener(new View.OnClickListener(){
+
+            @Override
+            public void onClick(View v) {
+                AlertDialog.Builder builder = new AlertDialog.Builder(EventDetailActivity.this);
+                builder.setTitle("Confirm QR Code Deletion");
+                builder.setMessage("Are you sure you want to delete this events' QR Code? This will deactivate this QR Code and generate a new one.");
+
+                builder.setPositiveButton("Confirm Deletion", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        Toast.makeText(EventDetailActivity.this, "Deleted QR Code.", Toast.LENGTH_SHORT).show();
+
+                        deleteQRCode();
+
+                        dialog.dismiss();
+                    }
+                });
+                builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        Toast.makeText(EventDetailActivity.this, "Cancelled.", Toast.LENGTH_SHORT).show();
+                        dialog.dismiss();
+                    }
+                });
+                AlertDialog dialog = builder.create();
+                dialog.show();
+            }
+        });
+    }
+
+    public void deleteQRCode(){
+        db.collection("events").document(eventID).get().addOnSuccessListener(documentSnapshot -> {
+            String qrCodeLocationURL = documentSnapshot.getString("qrCodeLocationUrl");
+        });
+    }
+
     public void repurposeBackButton(Button backButton){
         backButton.setText("Back to Admin Page");
         backButton.setOnClickListener(v -> {
-            Intent intent2 = new Intent(EventDetailActivity.this, AdminListActivity.class);
-            startActivity(intent2);
+            finish();
         });
     }
 
