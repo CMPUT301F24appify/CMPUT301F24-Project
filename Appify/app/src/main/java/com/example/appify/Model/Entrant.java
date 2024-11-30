@@ -22,6 +22,7 @@ public class Entrant {
     private String facilityID;
     private double latitude;
     private double longitude;
+    private boolean isAdmin;
 
 
     /**
@@ -44,6 +45,15 @@ public class Entrant {
         this.facilityID = facilityID;
         this.latitude = latitude;
         this.longitude = longitude;
+        this.isAdmin = false;
+    }
+
+    public boolean isAdmin() {
+        return isAdmin;
+    }
+
+    public void setAdmin(boolean admin) {
+        isAdmin = admin;
     }
 
     public double getLatitude() {
