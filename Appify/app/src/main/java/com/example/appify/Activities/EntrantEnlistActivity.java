@@ -65,6 +65,7 @@ public class EntrantEnlistActivity extends AppCompatActivity {
     private double deviceLatitude;
     private double deviceLongitude;
     private LocationRequest deviceLocationRequest;
+    private boolean isEnrolled;
 
     /**
      * Initializes the activity, sets up the navigation header, retrieves event details from
@@ -169,8 +170,9 @@ public class EntrantEnlistActivity extends AppCompatActivity {
                             }
                          }
                      });
-         }
-         else {
+        }
+        else {
+            System.out.println("no qr");
              HeaderNavigation headerNavigation = new HeaderNavigation(this);
              headerNavigation.setupNavigation();
 
@@ -244,12 +246,19 @@ public class EntrantEnlistActivity extends AppCompatActivity {
                 waitingListRef.get().addOnSuccessListener(querySnapshot -> {
 
                     int currentEntrants = querySnapshot.size();
+                    waitingListRef.document(androidId).get().addOnSuccessListener(DocumentSnapshot -> {
+                        if (DocumentSnapshot.exists()) {
+                            isEnrolled = true;
+                        } else {
+                            isEnrolled = false;
+                        }
 
-                    if (currentEntrants < maxWaitEntrants) {
+                    System.out.println(""+isEnrolled);
+                    if (currentEntrants < maxWaitEntrants || isEnrolled ) {
 
-                        waitingListRef.document(androidId).get().addOnSuccessListener(DocumentSnapshot ->{
+                        waitingListRef.document(androidId).get().addOnSuccessListener(DocumentSnapshot1 ->{
 
-                            String status = DocumentSnapshot.getString("status");
+                            String status = DocumentSnapshot1.getString("status");
 
                             if(Objects.equals(status, "enrolled")){
                                 enlistLeaveButton.setText("Leave");
@@ -378,6 +387,7 @@ public class EntrantEnlistActivity extends AppCompatActivity {
                         enlistLeaveButton.setText("Full");
                         enlistLeaveButton.setOnClickListener(null); // Disable button
                     }
+                    });
                 }).addOnFailureListener(e -> Toast.makeText(this, "Error fetching waiting list data.", Toast.LENGTH_SHORT).show());
             } else {
                 Toast.makeText(this, "Event not found.", Toast.LENGTH_SHORT).show();
