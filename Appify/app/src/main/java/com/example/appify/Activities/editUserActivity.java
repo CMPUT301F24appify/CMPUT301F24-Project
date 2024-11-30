@@ -79,6 +79,7 @@ public class editUserActivity extends AppCompatActivity {
     private Bitmap bitmapImage = null;
     private boolean defaultFlag = true;
     private boolean cameraFlag = false;
+    private Bitmap uriBitmap = null;
 
     private static final int REQUEST_CODE_POST_NOTIFICATIONS = 10010001;
 
@@ -200,6 +201,7 @@ public class editUserActivity extends AppCompatActivity {
                                 String firstLetter = String.valueOf(name.charAt(0)).toUpperCase();
                                 if (defaultFlag) {
                                     Bitmap profilePicture = generateProfilePicture(firstLetter);
+                                    uriBitmap = profilePicture;
                                     profileImageView.setImageBitmap(profilePicture);
                                 } else {
                                     profileImageView.setImageBitmap(bitmapImage);
@@ -265,6 +267,11 @@ public class editUserActivity extends AppCompatActivity {
         if (resultCode == RESULT_OK && data != null) {
             // Retrieve the URI of the selected image
             imageUri = data.getData();
+            try {
+                uriBitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), imageUri);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
             profileImageView.setImageURI(imageUri);
         }
     }
@@ -299,7 +306,6 @@ public class editUserActivity extends AppCompatActivity {
         int y = (int) ((canvas.getHeight() / 2) - ((paint.descent() + paint.ascent()) / 2));
 
         canvas.drawText(firstLetter, x, y, paint);
-
         return bitmap;
     }
 
@@ -325,6 +331,9 @@ public class editUserActivity extends AppCompatActivity {
      */
     private void sendEntrantData(String id,String name, String phone, String email, double latitude, double longitude){
         Bitmap profilePicture = getBitmapFromImageView(profileImageView);
+        if(uriBitmap != null){
+            profilePicture = uriBitmap;
+        }
         FirebaseStorage storage = FirebaseStorage.getInstance();
         StorageReference storageRef = storage.getReference().child("profile_images/" + android_id + ".jpg");
         // Convert Bitmap to ByteArray
