@@ -78,6 +78,7 @@ public class editUserActivity extends AppCompatActivity {
     private boolean cameraFlag = false;
 
 
+
     /**
      *
      * Called when the activity is first created.
@@ -200,6 +201,26 @@ public class editUserActivity extends AppCompatActivity {
             }
         });
     }
+
+    private void getDeviceLocation(Runnable onSuccess) {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            LocationServices.getFusedLocationProviderClient(this)
+                    .getLastLocation()
+                    .addOnSuccessListener(location -> {
+                        if (location != null) {
+                            deviceLatitude = location.getLatitude();
+                            deviceLongitude = location.getLongitude();
+                            Toast.makeText(this, "Location obtained: Lat = " + deviceLatitude + ", Lon = " + deviceLongitude, Toast.LENGTH_SHORT).show();
+                            onSuccess.run();
+                        } else {
+                            Toast.makeText(this, "Unable to obtain location. Please try again.", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+        } else {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
+        }
+    }
+
     private void openImagePicker() {
         ImagePicker.with(this)
                 .crop()

@@ -13,10 +13,24 @@ import android.widget.Toast;
 
 import com.example.appify.Model.Entrant;
 import com.example.appify.Model.Event;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+
+import android.Manifest;
+import android.content.Context;
+import android.content.IntentSender;
+import android.content.pm.PackageManager;
+import android.location.LocationManager;
+import android.os.Looper;
+import androidx.annotation.NonNull;
+import androidx.core.app.ActivityCompat;
+import com.google.android.gms.common.api.ApiException;
+import com.google.android.gms.common.api.ResolvableApiException;
+import com.google.android.gms.location.*;
+
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -40,12 +54,17 @@ public class EntrantEnlistActivity extends AppCompatActivity {
     private Button enlistLeaveButton;
     private Button acceptInviteButton;
     private Button declineInviteButton;
+    private String eventId;
     private String name;
     private String date;
     private String registrationEndDate;
     private String facility;
     private boolean isGeolocate;
+    private String androidId;
     private String description;
+    private double deviceLatitude;
+    private double deviceLongitude;
+    private LocationRequest deviceLocationRequest;
 
     /**
      * Initializes the activity, sets up the navigation header, retrieves event details from
@@ -56,135 +75,141 @@ public class EntrantEnlistActivity extends AppCompatActivity {
      *                           shut down, then this Bundle contains the data it most recently
      *                           supplied in onSaveInstanceState(Bundle). Note: Otherwise, it is null.
      */
-     @Override
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.enlist_page);
 
-         Intent intent = getIntent();
+        Intent intent = getIntent();
 
-         db = FirebaseFirestore.getInstance();
+        db = FirebaseFirestore.getInstance();
 
-         Uri data = intent.getData();
-         if (data != null && "myapp".equals(data.getScheme())) {
-             List<String> params = data.getPathSegments();
-             String eventId = params.get(0);
-
-             // Fetch event details using eventId
-             FirebaseFirestore db = FirebaseFirestore.getInstance();
-             db.collection("events").document(eventId)
-                     .get()
-                     .addOnSuccessListener(documentSnapshot -> {
-                         if (documentSnapshot.exists()) {
-
-                             HeaderNavigation headerNavigation = new HeaderNavigation(this);
-                             headerNavigation.setupNavigation();
-
-                             // Get the users AndroidID
-                             MyApp app = (MyApp) getApplication();
-                             String androidId = app.getAndroidId();
-
-                             // Find Views in the layout
-                             TextView eventName = findViewById(R.id.event_name);
-                             TextView eventDate = findViewById(R.id.event_date);
-                             TextView eventDescription = findViewById(R.id.event_description);
-                             TextView eventFacility = findViewById(R.id.facility_name);
-                             TextView eventRegistrationEnd = findViewById(R.id.registration_date);
-                             TextView eventGeolocate = findViewById(R.id.geolocationText);
-
-                             enlistLeaveButton = findViewById(R.id.enlist_leave_button);
-                             acceptInviteButton = findViewById(R.id.accept_invite_button);
-                             declineInviteButton = findViewById(R.id.decline_invite_button);
-
-                             db.collection("events").document(eventId).get().addOnCompleteListener(task ->{
-                                 if (task.isSuccessful()){
-
-                                     DocumentSnapshot eventData = task.getResult();
-                                     name = eventData.getString("name");
-
-                                     date = eventData.getString("date");
-                                     description = eventData.getString("description");
-                                     facility = eventData.getString("facility");
-                                     registrationEndDate = eventData.getString("registrationEndDate");
-                                     isGeolocate = eventData.getBoolean("geolocate");
-
-                                     eventName.setText(name);
-                                     eventDate.setText(date);
-                                     eventDescription.setText(description);
-                                     eventRegistrationEnd.setText(registrationEndDate);
-                                     eventFacility.setText(facility);
+        deviceLocationRequest = LocationRequest.create();
+        deviceLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+        deviceLocationRequest.setInterval(5000);
+        deviceLocationRequest.setFastestInterval(2000);
 
 
-                                     // Show Geolocation Requirement
-                                     if (isGeolocate) {
-                                         eventGeolocate.setText("IMPORTANT: Registering for this event REQUIRES geolocation.");
-                                     } else {
-                                         eventGeolocate.setText("IMPORTANT: Registering for this event DOES NOT REQUIRE geolocation.");
-                                     }
+        Uri data = intent.getData();
+        if (data != null && "myapp".equals(data.getScheme())) {
+            List<String> params = data.getPathSegments();
+            eventId = params.get(0);
 
-                                     // Handle Enlist and Leave buttons
-                                     enlistLeaveButton = findViewById(R.id.enlist_leave_button);
+            // Fetch event details using eventId
+            FirebaseFirestore db = FirebaseFirestore.getInstance();
+            db.collection("events").document(eventId)
+                    .get()
+                    .addOnSuccessListener(documentSnapshot -> {
+                        if (documentSnapshot.exists()) {
 
-                                     // Check if user is already enlisted in the waiting list
+                            HeaderNavigation headerNavigation = new HeaderNavigation(this);
+                            headerNavigation.setupNavigation();
 
-                                     checkUserEnrollmentStatus(eventId, androidId);
+                            // Get the users AndroidID
+                            MyApp app = (MyApp) getApplication();
+                            androidId = app.getAndroidId();
 
-                                 }
-                             });
+                            // Find Views in the layout
+                            TextView eventName = findViewById(R.id.event_name);
+                            TextView eventDate = findViewById(R.id.event_date);
+                            TextView eventDescription = findViewById(R.id.event_description);
+                            TextView eventFacility = findViewById(R.id.facility_name);
+                            TextView eventRegistrationEnd = findViewById(R.id.registration_date);
+                            TextView eventGeolocate = findViewById(R.id.geolocationText);
 
-                         }
-                     });
-         }
-         else {
-             HeaderNavigation headerNavigation = new HeaderNavigation(this);
-             headerNavigation.setupNavigation();
+                            enlistLeaveButton = findViewById(R.id.enlist_leave_button);
+                            acceptInviteButton = findViewById(R.id.accept_invite_button);
+                            declineInviteButton = findViewById(R.id.decline_invite_button);
 
-             // Retrieve event details from the intent
-             String eventId = intent.getStringExtra("eventId");
-             name = intent.getStringExtra("name");
-             date = intent.getStringExtra("date");
-             registrationEndDate = intent.getStringExtra("registrationEndDate");
-             facility = intent.getStringExtra("facility");
-             String description = intent.getStringExtra("description");
-             int maxWishEntrants = intent.getIntExtra("maxWishEntrants", 0);
-             int maxSampleEntrants = intent.getIntExtra("maxSampleEntrants", 0);
-             String posterUriString = intent.getStringExtra("posterUri");
-             isGeolocate = intent.getBooleanExtra("geolocate", false);
+                            db.collection("events").document(eventId).get().addOnCompleteListener(task ->{
+                                if (task.isSuccessful()){
 
-             // Find views in the layout and set data
-             TextView eventName = findViewById(R.id.event_name);
-             TextView eventDate = findViewById(R.id.event_date);
-             TextView eventDescription = findViewById(R.id.event_description);
-             TextView eventFacility = findViewById(R.id.facility_name);
-             TextView eventRegistrationEnd = findViewById(R.id.registration_date);
-             TextView eventGeolocate = findViewById(R.id.geolocationText);
+                                    DocumentSnapshot eventData = task.getResult();
+                                    name = eventData.getString("name");
 
-             enlistLeaveButton = findViewById(R.id.enlist_leave_button);
-             acceptInviteButton = findViewById(R.id.accept_invite_button);
-             declineInviteButton = findViewById(R.id.decline_invite_button);
+                                    date = eventData.getString("date");
+                                    description = eventData.getString("description");
+                                    facility = eventData.getString("facility");
+                                    registrationEndDate = eventData.getString("registrationEndDate");
+                                    isGeolocate = eventData.getBoolean("geolocate");
 
-             eventName.setText(name);
-             eventDate.setText(date);
-             eventDescription.setText(description);
-             eventRegistrationEnd.setText(registrationEndDate);
-             eventFacility.setText(facility);
+                                    eventName.setText(name);
+                                    eventDate.setText(date);
+                                    eventDescription.setText(description);
+                                    eventRegistrationEnd.setText(registrationEndDate);
+                                    eventFacility.setText(facility);
 
-             // Show Geolocation Requirement
-             if (isGeolocate) {
-                 eventGeolocate.setText("IMPORTANT: Registering for this event REQUIRES geolocation.");
-             } else {
-                 eventGeolocate.setText("IMPORTANT: Registering for this event DOES NOT REQUIRE geolocation.");
-             }
 
-             // Handle Enlist and Leave buttons
-             enlistLeaveButton = findViewById(R.id.enlist_leave_button);
+                                    // Show Geolocation Requirement
+                                    if (isGeolocate) {
+                                        eventGeolocate.setText("IMPORTANT: Registering for this event REQUIRES geolocation.");
+                                    } else {
+                                        eventGeolocate.setText("IMPORTANT: Registering for this event DOES NOT REQUIRE geolocation.");
+                                    }
 
-             db = FirebaseFirestore.getInstance();
-             MyApp app = (MyApp) getApplication();
-             String androidId = app.getAndroidId();
-             // Check if user is already enlisted in the waiting list
-             checkUserEnrollmentStatus(eventId,androidId);
-         }
+                                    // Handle Enlist and Leave buttons
+                                    enlistLeaveButton = findViewById(R.id.enlist_leave_button);
+
+                                    // Check if user is already enlisted in the waiting list
+
+                                    checkUserEnrollmentStatus(eventId, androidId);
+
+                                }
+                            });
+
+                        }
+                    });
+        }
+        else {
+            HeaderNavigation headerNavigation = new HeaderNavigation(this);
+            headerNavigation.setupNavigation();
+
+            // Retrieve event details from the intent
+            String eventId = intent.getStringExtra("eventId");
+            name = intent.getStringExtra("name");
+            date = intent.getStringExtra("date");
+            registrationEndDate = intent.getStringExtra("registrationEndDate");
+            facility = intent.getStringExtra("facility");
+            String description = intent.getStringExtra("description");
+            int maxWishEntrants = intent.getIntExtra("maxWishEntrants", 0);
+            int maxSampleEntrants = intent.getIntExtra("maxSampleEntrants", 0);
+            String posterUriString = intent.getStringExtra("posterUri");
+            isGeolocate = intent.getBooleanExtra("geolocate", false);
+
+            // Find views in the layout and set data
+            TextView eventName = findViewById(R.id.event_name);
+            TextView eventDate = findViewById(R.id.event_date);
+            TextView eventDescription = findViewById(R.id.event_description);
+            TextView eventFacility = findViewById(R.id.facility_name);
+            TextView eventRegistrationEnd = findViewById(R.id.registration_date);
+            TextView eventGeolocate = findViewById(R.id.geolocationText);
+
+            enlistLeaveButton = findViewById(R.id.enlist_leave_button);
+            acceptInviteButton = findViewById(R.id.accept_invite_button);
+            declineInviteButton = findViewById(R.id.decline_invite_button);
+
+            eventName.setText(name);
+            eventDate.setText(date);
+            eventDescription.setText(description);
+            eventRegistrationEnd.setText(registrationEndDate);
+            eventFacility.setText(facility);
+
+            // Show Geolocation Requirement
+            if (isGeolocate) {
+                eventGeolocate.setText("IMPORTANT: Registering for this event REQUIRES geolocation.");
+            } else {
+                eventGeolocate.setText("IMPORTANT: Registering for this event DOES NOT REQUIRE geolocation.");
+            }
+
+            // Handle Enlist and Leave buttons
+            enlistLeaveButton = findViewById(R.id.enlist_leave_button);
+
+            db = FirebaseFirestore.getInstance();
+            MyApp app = (MyApp) getApplication();
+            String androidId = app.getAndroidId();
+            // Check if user is already enlisted in the waiting list
+            checkUserEnrollmentStatus(eventId,androidId);
+        }
     }
 
     /**
@@ -250,7 +275,7 @@ public class EntrantEnlistActivity extends AppCompatActivity {
                                                     entrantDoc.getDouble("latitude"),
                                                     entrantDoc.getDouble("longitude")
 
-                                                    );
+                                            );
                                             entrant.acceptEvent(db, eventId);
                                             Intent intent = new Intent(EntrantEnlistActivity.this, EntrantHomePageActivity.class);
                                             startActivity(intent);
@@ -309,11 +334,30 @@ public class EntrantEnlistActivity extends AppCompatActivity {
                                 enlistLeaveButton.setText("Enlist");
                                 enlistLeaveButton.setOnClickListener(v -> {
                                     if (isGeolocate) {
-                                        showGeolocationConfirmationDialog(() -> enlistInEvent(eventId, name, date, registrationEndDate, facility, isGeolocate, androidId));
+                                        showGeolocationConfirmationDialog(() -> {
+                                            // Check location permission and services before enlisting
+                                            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                                                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
+                                            } else if (!isDeviceLocationEnabled()) {
+                                                requestDeviceLocation();
+                                            } else {
+                                                getDeviceLocation(() -> {
+                                                    enlistInEvent(eventId, name, date, registrationEndDate, facility, isGeolocate, androidId);
+                                                });
+                                            }
+                                        });
                                     } else {
                                         enlistInEvent(eventId, name, date, registrationEndDate, facility, isGeolocate, androidId);
                                     }
                                 });
+
+//                                enlistLeaveButton.setOnClickListener(v -> {
+//                                    if (isGeolocate) {
+//                                        showGeolocationConfirmationDialog(() -> enlistInEvent(eventId, name, date, registrationEndDate, facility, isGeolocate, androidId));
+//                                    } else {
+//                                        enlistInEvent(eventId, name, date, registrationEndDate, facility, isGeolocate, androidId);
+//                                    }
+//                                });
                             }
                         });
                     } else {
@@ -363,6 +407,8 @@ public class EntrantEnlistActivity extends AppCompatActivity {
         // Add user to waiting list
         HashMap<String, Object> waitlistData = new HashMap<>();
         waitlistData.put("status", "enrolled");
+        waitlistData.put("latitude", deviceLatitude);
+        waitlistData.put("longitude", deviceLongitude);
 
         waitingListRef.document(androidId).set(waitlistData)
                 .addOnSuccessListener(aVoid -> {
@@ -429,5 +475,96 @@ public class EntrantEnlistActivity extends AppCompatActivity {
                 })
                 .addOnFailureListener(e -> Toast.makeText(this, "Failed to leave the event's waiting list. Try again.", Toast.LENGTH_SHORT).show());
     }
+
+    private void getDeviceLocation(Runnable onSuccess) {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            LocationServices.getFusedLocationProviderClient(this)
+                    .getLastLocation()
+                    .addOnSuccessListener(location -> {
+                        if (location != null) {
+                            deviceLatitude = location.getLatitude();
+                            deviceLongitude = location.getLongitude();
+                            Toast.makeText(this, "Location obtained: Lat = " + deviceLatitude + ", Lon = " + deviceLongitude, Toast.LENGTH_SHORT).show();
+                            onSuccess.run();
+                        } else {
+                            Toast.makeText(this, "Unable to obtain location. Please try again.", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+        } else {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
+        }
+    }
+
+    private boolean isDeviceLocationEnabled() {
+        LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
+    }
+
+    private void requestDeviceLocation() {
+        LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder()
+                .addLocationRequest(deviceLocationRequest);
+        builder.setAlwaysShow(true);
+
+        Task<LocationSettingsResponse> result = LocationServices.getSettingsClient(getApplicationContext())
+                .checkLocationSettings(builder.build());
+
+        result.addOnCompleteListener(task -> {
+            try {
+                LocationSettingsResponse response = task.getResult(ApiException.class);
+                Toast.makeText(this, "GPS is already turned on", Toast.LENGTH_SHORT).show();
+                // Proceed to get location
+                getDeviceLocation(() -> {
+                    enlistInEvent(eventId, name, date, registrationEndDate, facility, isGeolocate, androidId);
+                });
+            } catch (ApiException e) {
+                if (e.getStatusCode() == LocationSettingsStatusCodes.RESOLUTION_REQUIRED) {
+                    try {
+                        ResolvableApiException resolvableApiException = (ResolvableApiException) e;
+                        resolvableApiException.startResolutionForResult(this, 2);
+                    } catch (IntentSender.SendIntentException ex) {
+                        ex.printStackTrace();
+                    }
+                }
+            }
+        });
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == 1) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                if (isDeviceLocationEnabled()) {
+                    getDeviceLocation(() -> {
+                        enlistInEvent(eventId, name, date, registrationEndDate, facility, isGeolocate, androidId);
+                    });
+                } else {
+                    requestDeviceLocation();
+                }
+            } else {
+                Toast.makeText(this, "Location permission is required to enlist in this event.", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == 2) {
+            if (resultCode == RESULT_OK) {
+                Toast.makeText(this, "GPS is turned on", Toast.LENGTH_SHORT).show();
+                getDeviceLocation(() -> {
+                    enlistInEvent(eventId, name, date, registrationEndDate, facility, isGeolocate, androidId);
+                });
+            } else {
+                Toast.makeText(this, "GPS is required to enlist in this event.", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+
+
+
+
 
 }
