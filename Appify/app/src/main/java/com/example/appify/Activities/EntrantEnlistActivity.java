@@ -457,9 +457,15 @@ public class EntrantEnlistActivity extends AppCompatActivity {
                                 intent.putExtra("name", name);
                                 intent.putExtra("date", date);
                                 intent.putExtra("registrationEndDate", registrationEndDate);
-                                intent.putExtra("facility", facility);
+
                                 intent.putExtra("geolocate", isGeolocate);
-                                startActivity(intent);
+
+                                db.collection("facilities").document(facility).get().addOnSuccessListener(documentSnapshot -> {
+                                    String facName = documentSnapshot.getString("name");
+                                    intent.putExtra("facility", facName);
+                                    startActivity(intent);
+                                });
+
 //                                finish();
                             })
                             .addOnFailureListener(e -> Toast.makeText(this, "Failed to add event to your waitlisted events.", Toast.LENGTH_SHORT).show());
