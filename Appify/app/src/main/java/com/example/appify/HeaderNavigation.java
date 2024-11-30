@@ -178,7 +178,7 @@ public class HeaderNavigation {
             db.collection("AndroidID").document(androidId)
                     .get()
                     .addOnSuccessListener(documentSnapshot -> {
-                        if (documentSnapshot.exists() && Boolean.TRUE.equals(documentSnapshot.getBoolean("isAdmin"))) {
+                        if (documentSnapshot.exists() && Boolean.TRUE.equals(documentSnapshot.getBoolean("admin"))) {
                             navigateToFacilities();
                         } else {
                             Toast.makeText(activity, "You are not an admin.", Toast.LENGTH_SHORT).show();
