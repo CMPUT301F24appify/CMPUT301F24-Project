@@ -384,7 +384,8 @@
                     android:textColor="@color/black"
                     app:backgroundTint="@color/buttons"
                     app:strokeColor="#FF8C00"
-                    app:strokeWidth="1dp" />
+                    app:strokeWidth="1dp"
+                    android:layout_marginEnd="8dp"/>
 
                 <Button
                     android:id="@+id/buttonEnrolled"
@@ -395,7 +396,8 @@
                     android:textColor="@color/black"
                     app:backgroundTint="@color/buttons"
                     app:strokeColor="#FF8C00"
-                    app:strokeWidth="1dp" />
+                    app:strokeWidth="1dp"
+                    android:layout_marginStart="8dp"/>
 
                 <Button
                     android:id="@+id/buttonCancelled"
@@ -406,7 +408,8 @@
                     android:textColor="@color/black"
                     app:backgroundTint="@color/buttons"
                     app:strokeColor="#FF8C00"
-                    app:strokeWidth="1dp" />
+                    app:strokeWidth="1dp"
+                    android:layout_marginEnd="8dp"/>
 
                 <Button
                     android:id="@+id/buttonInvited"
@@ -417,52 +420,60 @@
                     android:textColor="@color/black"
                     app:backgroundTint="@color/buttons"
                     app:strokeColor="#FF8C00"
-                    app:strokeWidth="1dp" />
+                    app:strokeWidth="1dp"
+                    android:layout_marginStart="8dp"/>
             </GridLayout>
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center"
-                android:layout_marginTop="16dp">
+                android:orientation="vertical">
 
-                <Button
-                    android:id="@+id/buttonBackToEvents"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:layout_marginEnd="8dp"
-                    android:text="Back to Events"
-                    android:textColor="@color/black"
-                    app:backgroundTint="@color/buttons"
-                    app:strokeColor="#FF8C00"
-                    app:strokeWidth="1dp" />
-
-                <Button
-                    android:id="@+id/entrant_list_button"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:layout_marginStart="8dp"
-                    android:text="View Entrants"
-                    android:textColor="@color/black"
-                    app:backgroundTint="@color/buttons"
-                    app:strokeColor="#FF8C00"
-                    app:strokeWidth="1dp" />
 
                 <Button
                     android:id="@+id/map_button"
-                    android:layout_width="0dp"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:layout_marginStart="8dp"
+                    android:layout_gravity="center"
                     android:text="View map"
                     android:textColor="@color/black"
                     app:backgroundTint="@color/buttons"
                     app:strokeColor="#FF8C00"
                     app:strokeWidth="1dp" />
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center">
+
+                    <Button
+                        android:id="@+id/buttonBackToEvents"
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:layout_marginEnd="8dp"
+                        android:text="Back to Events"
+                        android:textColor="@color/black"
+                        app:backgroundTint="@color/buttons"
+                        app:strokeColor="#FF8C00"
+                        app:strokeWidth="1dp" />
+
+                    <Button
+                        android:id="@+id/entrant_list_button"
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:layout_marginStart="8dp"
+                        android:text="View Entrants"
+                        android:textColor="@color/black"
+                        app:backgroundTint="@color/buttons"
+                        app:strokeColor="#FF8C00"
+                        app:strokeWidth="1dp" />
+                </LinearLayout>
+
             </LinearLayout>
+
 
 
         </LinearLayout>

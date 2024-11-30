@@ -66,9 +66,10 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
+    implementation("androidx.work:work-runtime:2.8.1")
     implementation ("com.journeyapps:zxing-android-embedded:4.3.0")
     implementation ("com.journeyapps:zxing-android-embedded:4.3.0")
     implementation ("com.github.Dhaval2404:ImagePicker:2.1")
-    implementation("androidx.work:work-runtime:2.8.1")
+
 
 }
