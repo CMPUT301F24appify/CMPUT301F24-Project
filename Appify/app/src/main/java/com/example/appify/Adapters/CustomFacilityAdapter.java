@@ -90,27 +90,23 @@ public class CustomFacilityAdapter extends ArrayAdapter<Facility> {
                                                                     db.collection("AndroidID").document(userID)
                                                                             .collection("waitListedEvents")
                                                                             .document(eventID)
-                                                                            .delete()
-                                                                            .addOnSuccessListener(aVoid -> Log.d("WaitList", "Removed eventID from user's waitListedEvents: " + userID));
+                                                                            .delete();
 
                                                                     // Delete the individual waitingList entry
                                                                     db.collection("events").document(eventID).collection("waitingList")
                                                                             .document(userID)
-                                                                            .delete()
-                                                                            .addOnSuccessListener(aVoid -> Log.d("WaitList", "Deleted waitingList entry for userID: " + userID));
+                                                                            .delete();
                                                                 }
                                                             })
                                                             .addOnCompleteListener(waitingListTask -> {
                                                                 // Delete event from 'events' collection
                                                                 db.collection("events").document(eventID)
-                                                                        .delete()
-                                                                        .addOnSuccessListener(aVoid -> Log.d("Event", "Deleted event from 'events': " + eventID));
+                                                                        .delete();
 
                                                                 // Delete event document from 'facilities/facilityID/events' collection
                                                                 db.collection("facilities").document(facility.getId()).collection("events")
                                                                         .document(eventID)
-                                                                        .delete()
-                                                                        .addOnSuccessListener(aVoid -> Log.d("FacilityEvent", "Deleted event from 'facilities/facilityID/events': " + eventID));
+                                                                        .delete();
                                                             });
                                                 }
                                             })
@@ -119,7 +115,6 @@ public class CustomFacilityAdapter extends ArrayAdapter<Facility> {
                                                 db.collection("facilities").document(facility.getId())
                                                         .delete()
                                                         .addOnSuccessListener(aVoid -> {
-                                                            Log.d("Facility", "Deleted Facility with ID: " + facility.getId());
                                                             if (organizerID != null) {
                                                                 // Update organizer's facility ID to null
                                                                 db.collection("AndroidID").document(organizerID)
