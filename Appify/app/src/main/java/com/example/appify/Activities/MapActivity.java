@@ -92,10 +92,10 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     public void onMapReady(@NonNull GoogleMap googleMap) {
         this.gglMap = googleMap;
 
-        LatLng mapCanada = new LatLng(56.1304, -106.3468);
-        Marker marker = this.gglMap.addMarker(new MarkerOptions().position(mapCanada).title("Marker in Canada"));
-        this.gglMap.moveCamera(CameraUpdateFactory.newLatLng(mapCanada));
-        markerList.add(marker);
+//        LatLng mapCanada = new LatLng(56.1304, -106.3468);
+//        Marker marker = this.gglMap.addMarker(new MarkerOptions().position(mapCanada).title("Marker in Canada"));
+//        this.gglMap.moveCamera(CameraUpdateFactory.newLatLng(mapCanada));
+//        markerList.add(marker);
 
         // Call reloadData here, now that gglMap is initialized
         Intent intent = getIntent();
