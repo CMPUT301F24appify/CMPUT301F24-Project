@@ -220,59 +220,35 @@ public class MyApp extends Application {
 
     /**
      * Sets up a listener for the 'waitingList' subcollections to detect changes in status to "invited"
-     * and sends a notification to those not invited.
+     * and sends a notification to those users.
      */
     private void listenForInvitations() {
         waitingListListener = db.collectionGroup("waitingList")
-                .addSnapshotListener(new EventListener<QuerySnapshot>() {
-                    @Override
-                    public void onEvent(@androidx.annotation.Nullable QuerySnapshot snapshots,
-                                        @androidx.annotation.Nullable FirebaseFirestoreException e) {
-                        if (e != null) {
-                            Log.w(TAG, "Listen failed for waitingList collection group.", e);
-                            return;
-                        }
+                .addSnapshotListener((snapshots, e) -> {
+                    if (e != null) {
+                        Log.w(TAG, "Listen failed for waitingList collection group.", e);
+                        return;
+                    }
 
-                        if (snapshots != null) {
-                            // Map to store the non-invited users for notifying later
-                            Map<String, DocumentSnapshot> nonInvitedUsers = new HashMap<>();
+                    if (snapshots != null) {
+                        for (DocumentChange dc : snapshots.getDocumentChanges()) {
+                            DocumentSnapshot userDoc = dc.getDocument();
+                            String userId = userDoc.getId();
+                            String status = userDoc.getString("status");
 
-                            for (DocumentChange dc : snapshots.getDocumentChanges()) {
-                                DocumentSnapshot userDoc = dc.getDocument();
-                                String userId = userDoc.getId();
-                                String status = userDoc.getString("status");
+                            // Check if the document's status was modified to "invited"
+                            if (dc.getType() == DocumentChange.Type.MODIFIED && "invited".equals(status)) {
+                                Log.d(TAG, "User status changed to invited: " + userId);
 
-                                // Check for modified documents where the status changed to "invited"
-                                if (dc.getType() == DocumentChange.Type.MODIFIED && "invited".equals(status)) {
-                                    Log.d(TAG, "User status changed to invited: " + userId);
+                                // Retrieve the eventId from the document's path
+                                String eventId = userDoc.getReference().getParent().getParent().getId();
+                                Log.d(TAG, "Associated eventId for user " + userId + ": " + eventId);
 
-                                    // Retrieve the eventId from the document's path
-                                    String eventId = userDoc.getReference().getParent().getParent().getId();
-                                    Log.d(TAG, "Associated eventId for user " + userId + ": " + eventId);
-
-                                    // Fetch the Event document to get the invitedMessage and eventName
-                                    db.collection("events").document(eventId).get()
-                                            .addOnSuccessListener(eventDoc -> {
-                                                if (eventDoc.exists()) {
-                                                    String message = eventDoc.getString("invitedMessage");
-                                                    String eventName = eventDoc.getString("name");
-                                                    if (message != null && !message.isEmpty()) {
-                                                        Log.d(TAG, "Sending invited notification to user: " + userId);
-                                                        sendNotification(eventId, "invited", message, eventName);
-                                                    } else {
-                                                        Log.d(TAG, "Invited message is empty for eventId: " + eventId + ". No notification sent.");
-                                                    }
-
-                                                    // Notify users who were not invited
-                                                    notifyNonInvitedUsers(eventId, snapshots.getDocuments(), eventName);
-                                                } else {
-                                                    Log.d(TAG, "Event document does not exist for eventId: " + eventId);
-                                                }
-                                            })
-                                            .addOnFailureListener(err -> {
-                                                Log.e(TAG, "Error fetching event document for eventId: " + eventId, err);
-                                            });
-                                }
+                                // Send notification with a hardcoded message
+                                String message = "You have been invited to an event!";
+                                String eventName = "Event ID: " + eventId; // Use eventId as a placeholder name
+                                Log.d(TAG, "Sending 'invited' notification to user: " + userId);
+                                sendNotification(eventId, "invited", message, eventName);
                             }
                         }
                     }
@@ -281,26 +257,6 @@ public class MyApp extends Application {
         Log.d(TAG, "Started listening for status changes to 'invited'.");
     }
 
-    /**
-     * Notifies users who were not invited to the event.
-     *
-     * @param eventId     The ID of the event.
-     * @param userDocs    The list of all user documents in the waitingList.
-     * @param eventName   The name of the event.
-     */
-    private void notifyNonInvitedUsers(String eventId, List<DocumentSnapshot> userDocs, String eventName) {
-        for (DocumentSnapshot userDoc : userDocs) {
-            String userId = userDoc.getId();
-            String status = userDoc.getString("status");
-
-            // Notify only users with "enrolled" status who were not invited
-            if ("enrolled".equals(status)) {
-                String message = "You were not invited to the event: " + eventName;
-                Log.d(TAG, "Sending 'not invited' notification to user: " + userId);
-                sendNotification(eventId, "not_invited", message, eventName);
-            }
-        }
-    }
 
 
 
