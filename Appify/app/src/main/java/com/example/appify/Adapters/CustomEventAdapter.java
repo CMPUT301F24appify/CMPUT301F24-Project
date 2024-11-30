@@ -131,6 +131,7 @@ public class CustomEventAdapter extends ArrayAdapter<Event> {
             bottomPart.setVisibility(View.GONE);
             topPart.setVisibility(View.GONE);
         }
+        notifyDataSetChanged();
         convertView.setOnClickListener(view -> {
             Intent intent = new Intent(context, EventDetailActivity.class);
             intent.putExtra("name", event.getName() );
