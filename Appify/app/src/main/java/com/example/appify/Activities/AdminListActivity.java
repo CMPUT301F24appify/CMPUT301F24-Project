@@ -56,7 +56,7 @@ public class AdminListActivity extends AppCompatActivity {
         facilityList = new ArrayList<>();
         facilityAdapter = new CustomFacilityAdapter(this, facilityList);
         eventList = new ArrayList<>();
-        eventAdapter = new CustomEventAdapter(this, eventList,false);
+        eventAdapter = new CustomEventAdapter(this, eventList,false, true);
         entrantList = new ArrayList<>();
         entrantAdapter = new CustomEntrantAdminAdapter(this, entrantList);
         folderList = new ArrayList<>();
@@ -160,10 +160,8 @@ public class AdminListActivity extends AppCompatActivity {
                     Boolean notifications = doc.getBoolean("notifications");
                     String profilePictureURL = doc.getString("profilePictureURL");
 
-                    Entrant entrant = new Entrant(id,name,phoneNumber,email,profilePictureURL,notifications);
-                    if(facilityID != null) {
-                        entrant.setFacilityID(facilityID);
-                    }
+                    Entrant entrant = new Entrant(id,name,phoneNumber,email,profilePictureURL,notifications, facilityID);
+
                     entrantList.add(entrant);
                 }
                 entrantAdapter.notifyDataSetChanged();

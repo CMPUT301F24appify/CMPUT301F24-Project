@@ -65,7 +65,7 @@ public class EntrantHomePageActivity extends AppCompatActivity {
         noEventsText.setVisibility(View.GONE);
         // Initialize the ListView and the Adapter
         eventList = new ArrayList<>();
-        eventAdapter = new CustomEventAdapter(this, eventList, false);
+        eventAdapter = new CustomEventAdapter(this, eventList, false, false);
         eventListView = findViewById(R.id.home_events);
         eventListView.setAdapter(eventAdapter);
 

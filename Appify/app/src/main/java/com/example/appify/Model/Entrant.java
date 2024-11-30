@@ -32,7 +32,7 @@ public class Entrant {
      * @param profilePicture    the URL of the entrant's profile picture
      * @param notifications     the notification preference of the entrant
      */
-    public Entrant(String id, String name, String phoneNumber, String email, String profilePicture, boolean notifications) {
+    public Entrant(String id, String name, String phoneNumber, String email, String profilePicture, boolean notifications, String facilityID) {
         this.id = id;
         this.name = name;
         this.phoneNumber = phoneNumber;

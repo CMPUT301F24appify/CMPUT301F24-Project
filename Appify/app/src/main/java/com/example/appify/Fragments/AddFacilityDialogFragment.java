@@ -1,5 +1,6 @@
 package com.example.appify.Fragments;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -13,6 +14,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
 
+import com.example.appify.Activities.EntrantHomePageActivity;
+import com.example.appify.Activities.EventActivity;
 import com.example.appify.Model.Facility;
 import com.example.appify.MyApp;
 import com.example.appify.R;
@@ -99,7 +102,10 @@ public class AddFacilityDialogFragment extends DialogFragment {
             addButton.setText("Update"); // Change button text for clarity
         }
 
-        addButton.setOnClickListener(v -> addOrUpdateFacility());
+        addButton.setOnClickListener(v -> {
+            addOrUpdateFacility();
+
+        });
         cancelButton.setOnClickListener(v -> dismiss());
 
         return view;
