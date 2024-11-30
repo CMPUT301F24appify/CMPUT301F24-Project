@@ -46,6 +46,16 @@ public class Entrant {
         this.longitude = longitude;
     }
 
+    public Entrant(String id, String name, String phoneNumber, String email, String profilePicture, boolean notifications, String facilityID) {
+        this.id = id;
+        this.name = name;
+        this.phoneNumber = phoneNumber;
+        this.email = email;
+        this.profilePictureUrl = profilePicture;
+        this.notifications = notifications;
+        this.facilityID = facilityID;
+    }
+
     public double getLatitude() {
         return latitude;
     }
