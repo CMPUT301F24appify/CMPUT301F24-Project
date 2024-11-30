@@ -1,5 +1,6 @@
 package com.example.appify.Fragments;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -13,6 +14,9 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
 
+import com.example.appify.HeaderNavigation;
+import com.example.appify.Activities.EntrantHomePageActivity;
+import com.example.appify.Activities.EventActivity;
 import com.example.appify.Model.Facility;
 import com.example.appify.MyApp;
 import com.example.appify.R;
@@ -99,7 +103,10 @@ public class AddFacilityDialogFragment extends DialogFragment {
             addButton.setText("Update"); // Change button text for clarity
         }
 
-        addButton.setOnClickListener(v -> addOrUpdateFacility());
+        addButton.setOnClickListener(v -> {
+            addOrUpdateFacility();
+
+        });
         cancelButton.setOnClickListener(v -> dismiss());
 
         return view;
@@ -131,6 +138,12 @@ public class AddFacilityDialogFragment extends DialogFragment {
 
         if (TextUtils.isEmpty(name) || TextUtils.isEmpty(location) || TextUtils.isEmpty(email) || TextUtils.isEmpty(description) || TextUtils.isEmpty(capacityStr)) {
             Toast.makeText(getContext(), "All fields are required.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Email validation using regex
+        if (!email.matches("[a-zA-Z0-9._-]+@[a-z]+\\.+[a-z]+")) {
+            Toast.makeText(getContext(), "Please enter a valid email address.", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -167,6 +180,12 @@ public class AddFacilityDialogFragment extends DialogFragment {
                     .addOnSuccessListener(aVoid -> {
                         db.collection("AndroidID").document(organizerID).update("facilityID", newFacilityID)
                                 .addOnSuccessListener(aVoid2 -> {
+                                    // Navigate to organizer page after adding the facility
+                                    if (getActivity() != null) {
+                                        HeaderNavigation headerNavigation = new HeaderNavigation(getActivity());
+                                        headerNavigation.navigateToOrganize();
+                                    }
+
                                     dismiss();
                                 });
                     });

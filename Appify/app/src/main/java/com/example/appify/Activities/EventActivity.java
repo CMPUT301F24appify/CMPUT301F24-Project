@@ -49,13 +49,13 @@ public class EventActivity extends AppCompatActivity implements AddEventDialogFr
         HeaderNavigation headerNavigation = new HeaderNavigation(this);
         headerNavigation.setupNavigation();
         TextView organizeText = findViewById(R.id.organizeText_navBar);
-        organizeText.setTextColor(Color.parseColor("#800080"));
+        organizeText.setTextColor(Color.parseColor("#000000"));
         organizeText.setTypeface(organizeText.getTypeface(), Typeface.BOLD);
 
         db = FirebaseFirestore.getInstance();  // Initialize Firestore instance
 
         eventListView = findViewById(R.id.event_list);
-        eventAdapter = new CustomEventAdapter(this, eventList, true);
+        eventAdapter = new CustomEventAdapter(this, eventList, true, false);
         eventListView.setAdapter(eventAdapter);
 
         loadEventsFromFirestore();  // Load events from Firestore
@@ -149,6 +149,7 @@ public class EventActivity extends AppCompatActivity implements AddEventDialogFr
         String organizerID = app.getAndroidId();
 
         // Create new Event object with details from the dialog
+        String eventID = "";
         Event newEvent = new Event(name, date, facility, registrationEndDate, description,
                 maxWaitEntrants, maxSampleEntrants, posterUri, isGeolocate,
                 false, false, false, false,

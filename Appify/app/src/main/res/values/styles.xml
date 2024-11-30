@@ -4,5 +4,10 @@
     <style name="roundedImageViewRounded">
         <item name="cornerFamily">rounded</item>
         <item name="cornerSize">50%</item>
+        <!-- Ensure no border is applied -->
+        <item name="strokeWidth">0dp</item>
+        <item name="strokeColor">@android:color/transparent</item>
+        <!-- Set background to transparent -->
+        <item name="android:background">@android:color/transparent</item>
     </style>
 </resources>

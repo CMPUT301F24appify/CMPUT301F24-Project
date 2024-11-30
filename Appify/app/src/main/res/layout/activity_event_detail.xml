@@ -35,8 +35,9 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:background="@drawable/rounded_list_item"
-                android:backgroundTint="#0085b4"
+                android:backgroundTint="@color/navbar"
                 >
+<!--                android:backgroundTint="#0085b4"-->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -59,10 +60,10 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:background="@drawable/rounded_list_item"
-                        android:backgroundTint="#daf3ff"
+
                         android:layout_margin="10dp"
                         >
-
+<!--                        android:backgroundTint="#daf3ff"-->
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
@@ -251,9 +252,10 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:background="@drawable/rounded_list_item"
-                        android:backgroundTint="#daf3ff"
+
                         android:layout_margin="10dp"
                         >
+<!--                        android:backgroundTint="#daf3ff"-->
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"

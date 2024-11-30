@@ -42,4 +42,41 @@
         app:strokeColor="#FF8C00"
         app:strokeWidth="1dp" />
 
+    <LinearLayout
+        android:id="@+id/noEventsLayout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+        <ImageView
+
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:srcCompat="@drawable/empty_events_icon"
+            android:gravity="center"
+            android:layout_marginLeft="15dp"/>
+        <TextView
+
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Your registered events list is empty."
+            android:gravity="center"
+            android:textColor="#808080"
+            android:padding="10dp"
+            android:textStyle="bold"
+            android:textSize="20dp"/>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Scan an event QR Code to get started."
+            android:textColor="#808080"
+            android:gravity="center"/>
+    </LinearLayout>
+
+
+
 </androidx.constraintlayout.widget.ConstraintLayout>
