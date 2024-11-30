@@ -41,7 +41,12 @@ public class ImageGridActivity extends AppCompatActivity {
             finish();
         });
         TextView titleText = findViewById(R.id.title_text);
-        titleText.setText(refName);
+        if (refName.equals("event_posters")){
+
+            titleText.setText("Event Posters");
+        } else if (refName.equals("profile_images")) {
+            titleText.setText("Profile Images");
+        }
 
         ref.listAll().addOnSuccessListener(listResult -> {
             for (StorageReference item : listResult.getItems()) {

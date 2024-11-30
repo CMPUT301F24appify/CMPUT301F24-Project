@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.view.View;
 import android.widget.TextView;
 import android.widget.ImageView;
 import android.widget.Toast;
@@ -45,25 +46,31 @@ public class HeaderNavigation {
             eventsText.setOnClickListener(v -> navigateToEvents());
         }
 
-        // Facilities
-        TextView facilitiesText = activity.findViewById(R.id.adminText_navBar);
-        if (facilitiesText != null) {
-            facilitiesText.setOnClickListener(v -> checkAdminStatus());
-        }
+        // Admin
+        TextView adminText = activity.findViewById(R.id.adminText_navBar);
+
+        // Check if user is admin or not
+
+        MyApp app = (MyApp) activity.getApplication();
+        String currentUserID = app.getAndroidId();
+
+        db.collection("AndroidID").document(currentUserID).get().addOnSuccessListener(documentSnapshot->{
+            if (documentSnapshot.exists()){
+                boolean isAdmin = documentSnapshot.getBoolean("admin");
+                if (adminText != null && isAdmin) {
+                    adminText.setVisibility(View.VISIBLE);
+                    adminText.setOnClickListener(v -> checkAdminStatus());
+                }
+            }
+
+        });
 
         // Organize
         TextView organizeText = activity.findViewById(R.id.organizeText_navBar);
         if (organizeText != null) {
-
             organizeText.setOnClickListener(v -> {
                 checkOrganizerStatus();
             });
-        }
-
-        // Notifications
-        ImageView notificationBell = activity.findViewById(R.id.header_notifications);
-        if (notificationBell != null) {
-            notificationBell.setOnClickListener(v -> navigateToNotifications());
         }
 
         // Entrant Home
@@ -103,14 +110,6 @@ public class HeaderNavigation {
     public void navigateToOrganize() {
         Intent intent = new Intent(activity, EventActivity.class);
         activity.startActivity(intent);
-    }
-
-    /**
-     * Navigates to the notifications page. (Placeholder, modify as needed)
-     */
-    private void navigateToNotifications() {
-//        Intent intent = new Intent(activity, NotificationsActivity.class);
-//        activity.startActivity(intent);
     }
 
     /**
