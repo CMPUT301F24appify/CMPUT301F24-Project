@@ -28,7 +28,9 @@ import com.example.appify.Model.Event;
 import com.example.appify.MyApp;
 import com.example.appify.R;
 import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.zxing.BarcodeFormat;
@@ -56,6 +58,7 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
     private String enrolledMessage = "";
     private String cancelledMessage = "";
     private String invitedMessage = "";
+    String qrCodeLocationURL;
 
 
     /**
@@ -73,9 +76,9 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
         // Initialize header navigation with highlighting for the "Organize" section
         HeaderNavigation headerNavigation = new HeaderNavigation(this);
         headerNavigation.setupNavigation();
-        TextView organizeText = findViewById(R.id.organizeText_navBar);
-        organizeText.setTextColor(Color.parseColor("#800080"));
-        organizeText.setTypeface(organizeText.getTypeface(), Typeface.BOLD);
+//        TextView organizeText = findViewById(R.id.organizeText_navBar);
+//        organizeText.setTextColor(Color.parseColor("#800080"));
+//        organizeText.setTypeface(organizeText.getTypeface(), Typeface.BOLD);
 
         // Initialize Firebase Firestore instance
         db = FirebaseFirestore.getInstance();
@@ -194,8 +197,6 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
             notifyEnrolled.setVisibility(View.GONE);
             notifyInvited.setVisibility(View.GONE);
             notifyWaitlisted.setVisibility(View.GONE);
-//            organizerActionsButton.setVisibility(View.GONE);
-//            editEventButton.setVisibility(View.GONE);
             TextView notificationsHeaderText = findViewById(R.id.notificationsHeader);
             notificationsHeaderText.setVisibility(View.GONE);
             GridLayout notificationsBackground = findViewById(R.id.notificationsBackground);
@@ -256,17 +257,17 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
                 }
             });
 
-            // Set up edit event button to open EditEventDialogFragment
-            editEventButton.setOnClickListener(v -> {
-                EditEventDialogFragment dialog = new EditEventDialogFragment();
-                Bundle args = new Bundle();
-                args.putString("eventID", eventID);
-                dialog.setArguments(args);
-                dialog.show(getSupportFragmentManager(), "EditEventDialogFragment");
-            });
+
 
         }
-
+        // Set up edit event button to open EditEventDialogFragment
+        editEventButton.setOnClickListener(v -> {
+            EditEventDialogFragment dialog = new EditEventDialogFragment();
+            Bundle args = new Bundle();
+            args.putString("eventID", eventID);
+            dialog.setArguments(args);
+            dialog.show(getSupportFragmentManager(), "EditEventDialogFragment");
+        });
         // Set up entrant list button to display entrants or show a message if none exist
         Button entrantListButton = findViewById(R.id.entrant_list_button);
         entrantListButton.setOnClickListener(new View.OnClickListener() {
@@ -333,8 +334,17 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
     }
 
     public void deleteQRCode(){
+
         db.collection("events").document(eventID).get().addOnSuccessListener(documentSnapshot -> {
-            String qrCodeLocationURL = documentSnapshot.getString("qrCodeLocationUrl");
+            qrCodeLocationURL = documentSnapshot.getString("qrCodeLocationUrl");
+            System.out.println(qrCodeLocationURL);
+            db.collection("events").document(eventID).update("qrCodeLocationUrl", null);
+            db.collection("events").document(eventID).update("qrCodePassKey", null);
+            FirebaseStorage storage = FirebaseStorage.getInstance();
+            StorageReference qrCodeRef = storage.getReferenceFromUrl(qrCodeLocationURL);
+            qrCodeRef.delete().addOnSuccessListener(v -> {
+                this.recreate();
+            });
         });
     }
 

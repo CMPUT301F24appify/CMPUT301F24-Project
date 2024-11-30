@@ -125,12 +125,14 @@ public class CustomEventAdapter extends ArrayAdapter<Event> {
         eventRegistrationEndDate.setText(event.getRegistrationEndDate());
         eventStartDate.setText(event.getDate());
 
-        if (Objects.equals(event.getOrganizerID(), entrantID) && !isOrganizePage){
+        if (Objects.equals(event.getOrganizerID(), entrantID) && !isOrganizePage && !isAdminPage){
             LinearLayout topPart = convertView.findViewById(R.id.top_part);
             LinearLayout bottomPart = convertView.findViewById(R.id.profile_information);
             bottomPart.setVisibility(View.GONE);
             topPart.setVisibility(View.GONE);
         }
+
+
         convertView.setOnClickListener(view -> {
             Intent intent = new Intent(context, EventDetailActivity.class);
             intent.putExtra("name", event.getName() );
