@@ -73,12 +73,6 @@ public class HeaderNavigation {
             });
         }
 
-        // Notifications
-        ImageView notificationBell = activity.findViewById(R.id.header_notifications);
-        if (notificationBell != null) {
-            notificationBell.setOnClickListener(v -> navigateToNotifications());
-        }
-
         // Entrant Home
         ImageView appifyLogo = activity.findViewById(R.id.logo);
         if (appifyLogo != null) {
@@ -116,14 +110,6 @@ public class HeaderNavigation {
     public void navigateToOrganize() {
         Intent intent = new Intent(activity, EventActivity.class);
         activity.startActivity(intent);
-    }
-
-    /**
-     * Navigates to the notifications page. (Placeholder, modify as needed)
-     */
-    private void navigateToNotifications() {
-//        Intent intent = new Intent(activity, NotificationsActivity.class);
-//        activity.startActivity(intent);
     }
 
     /**
