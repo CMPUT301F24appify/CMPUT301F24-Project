@@ -7,6 +7,7 @@ import android.os.Bundle;
 
 import androidx.appcompat.app.AppCompatActivity;
 import android.content.Intent;
+import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -22,6 +23,7 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
 import java.util.Collections;
+import java.util.Objects;
 
 /**
  * Activity to display the user's profile information.
@@ -31,7 +33,7 @@ public class userProfileActivity extends AppCompatActivity {
 
     private FirebaseFirestore db;
     private ImageView profileImageView, headerImageView;
-    private TextView nameTextView, phoneTextView, emailTextView, notificationTextView;
+    private TextView nameTextView, phoneTextView, emailTextView;
     private ListenerRegistration listenerRegistration;
     private Button editButton, adminButton;
 
@@ -57,7 +59,6 @@ public class userProfileActivity extends AppCompatActivity {
         nameTextView = findViewById(R.id.nameTextView);
         phoneTextView = findViewById(R.id.phoneTextView);
         emailTextView = findViewById(R.id.emailTextView);
-        notificationTextView = findViewById(R.id.notificationTextView);
         editButton = findViewById(R.id.editButton);
         adminButton = findViewById(R.id.adminButton);
         headerImageView = findViewById(R.id.profileImageViewHeader);
@@ -110,21 +111,17 @@ public class userProfileActivity extends AppCompatActivity {
                             String email = documentSnapshot.getString("email");
                             Boolean notificationsCheck = documentSnapshot.getBoolean("notifications");
                             Boolean isAdmin = documentSnapshot.getBoolean("isAdmin");
+                            TextView phoneText = findViewById(R.id.phoneText);
                             //String profileImageUrl = documentSnapshot.getString("profilePictureUrl");
-                            nameTextView.setText("Name: " + name);
-                            if(phone == ""){
-                                phoneTextView.setText("");
+                            nameTextView.setText(name);
+                            if(Objects.equals(phone, "")){
+                                phoneTextView.setVisibility(View.GONE);
+                                phoneText.setVisibility(View.GONE);
                             }
                             else{
-                                phoneTextView.setText("Phone: " + phone);
+                                phoneTextView.setText(phone);
                             }
-                            emailTextView.setText("Email Address: " + email);
-
-                            if (notificationsCheck != null && notificationsCheck) {
-                                notificationTextView.setText("Notifications: ON");
-                            } else {
-                                notificationTextView.setText("Notifications: OFF");
-                            }
+                            emailTextView.setText(email);
 
                             // Set Admin Button based on isAdmin
                             if (isAdmin != null && isAdmin) {

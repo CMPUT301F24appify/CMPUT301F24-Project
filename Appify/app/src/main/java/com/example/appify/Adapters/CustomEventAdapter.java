@@ -125,13 +125,15 @@ public class CustomEventAdapter extends ArrayAdapter<Event> {
         eventRegistrationEndDate.setText(event.getRegistrationEndDate());
         eventStartDate.setText(event.getDate());
 
-        if (Objects.equals(event.getOrganizerID(), entrantID) && !isOrganizePage){
+        if (Objects.equals(event.getOrganizerID(), entrantID) && !isOrganizePage && !isAdminPage){
             LinearLayout topPart = convertView.findViewById(R.id.top_part);
             LinearLayout bottomPart = convertView.findViewById(R.id.profile_information);
             bottomPart.setVisibility(View.GONE);
             topPart.setVisibility(View.GONE);
         }
+
         notifyDataSetChanged();
+      
         convertView.setOnClickListener(view -> {
             Intent intent = new Intent(context, EventDetailActivity.class);
             intent.putExtra("name", event.getName() );
@@ -152,6 +154,21 @@ public class CustomEventAdapter extends ArrayAdapter<Event> {
             x_Icon.setVisibility(View.VISIBLE);
             x_Icon.setOnClickListener(v -> {
                 showCancelEventDialog(event);
+            });
+            convertView.setOnClickListener(view -> {
+                Intent intent = new Intent(context, EventDetailActivity.class);
+                intent.putExtra("name", event.getName() );
+                intent.putExtra("date", event.getDate());
+                intent.putExtra("facility", event.getFacility());
+                intent.putExtra("registrationEndDate", event.getRegistrationEndDate());
+                intent.putExtra("description", event.getDescription() );
+                intent.putExtra("maxWaitEntrants", event.getMaxWaitEntrants());
+                intent.putExtra("maxSampleEntrants", event.getMaxSampleEntrants());
+                intent.putExtra("eventID", event.getEventId());
+                intent.putExtra("posterUri", event.getPosterUri());
+                intent.putExtra("isGeolocate", event.isGeolocate());
+                intent.putExtra("isAdminPage", true);
+                context.startActivity(intent);
             });
         } else {
             x_Icon.setVisibility(View.GONE);

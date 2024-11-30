@@ -46,7 +46,6 @@ public class editUserActivity extends AppCompatActivity {
     private String android_id;
     private byte[] profilePictureByte;
     private EditText nameEditText, phoneEditText, emailEditText;
-    private CheckBox notifications;
     private String facilityID = null;
     private Bitmap bitmapImage = null;
     private boolean defaultFlag = true;
@@ -78,9 +77,7 @@ public class editUserActivity extends AppCompatActivity {
         Button uploadButton = findViewById(R.id.uploadButton);
         Button removeButton = findViewById(R.id.removeButton);
         Button submitButton = findViewById(R.id.submitButton);
-        notifications = findViewById(R.id.notificationsCheckBox);
         Button cancelButton = findViewById(R.id.cancelButton);
-
 
         if (firstEntry) {
             cancelButton.setVisibility(View.GONE);
@@ -214,7 +211,6 @@ public class editUserActivity extends AppCompatActivity {
         Bitmap profilePicture = getBitmapFromImageView(profileImageView);
         FirebaseStorage storage = FirebaseStorage.getInstance();
         StorageReference storageRef = storage.getReference().child("profile_images/" + android_id + ".jpg");
-        boolean notificationCheck = notifications.isChecked();
         // Convert Bitmap to ByteArray
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         profilePicture.compress(Bitmap.CompressFormat.JPEG, 100, baos);
@@ -224,7 +220,7 @@ public class editUserActivity extends AppCompatActivity {
                     String downloadUrl = uri.toString();
 
                     // Create Entrant object with the download URL
-                    Entrant user = new Entrant(id, name, phone, email, downloadUrl, notificationCheck, facilityID);
+                    Entrant user = new Entrant(id, name, phone, email, downloadUrl, false, facilityID);
 
                     // Save Entrant data to Firestore
                     db.collection("AndroidID").document(android_id).set(user)
@@ -257,7 +253,6 @@ public class editUserActivity extends AppCompatActivity {
                         nameEditText.setText(name);
                         phoneEditText.setText(phone);
                         emailEditText.setText(email);
-                        notifications.setChecked(documentSnapshot.getBoolean("notifications"));
                         loadProfilePicture(android_id);
                     }
                 });

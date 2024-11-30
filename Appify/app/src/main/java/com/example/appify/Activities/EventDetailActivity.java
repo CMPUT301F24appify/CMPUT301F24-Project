@@ -1,6 +1,7 @@
 package com.example.appify.Activities;
 
 import android.annotation.SuppressLint;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -11,6 +12,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.GridLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -26,7 +28,9 @@ import com.example.appify.Model.Event;
 import com.example.appify.MyApp;
 import com.example.appify.R;
 import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.zxing.BarcodeFormat;
@@ -54,6 +58,8 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
     private String enrolledMessage = "";
     private String cancelledMessage = "";
     private String invitedMessage = "";
+    String qrCodeLocationURL;
+
 
     /**
      * Called when the activity is created. Sets up the UI and initializes data fields.
@@ -70,9 +76,9 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
         // Initialize header navigation with highlighting for the "Organize" section
         HeaderNavigation headerNavigation = new HeaderNavigation(this);
         headerNavigation.setupNavigation();
-        TextView organizeText = findViewById(R.id.organizeText_navBar);
-        organizeText.setTextColor(Color.parseColor("#800080"));
-        organizeText.setTypeface(organizeText.getTypeface(), Typeface.BOLD);
+//        TextView organizeText = findViewById(R.id.organizeText_navBar);
+//        organizeText.setTextColor(Color.parseColor("#800080"));
+//        organizeText.setTypeface(organizeText.getTypeface(), Typeface.BOLD);
 
         // Initialize Firebase Firestore instance
         db = FirebaseFirestore.getInstance();
@@ -151,6 +157,8 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
         String posterUriString = intent.getStringExtra("posterUri");
         boolean isGeolocate = intent.getBooleanExtra("isGeolocate", false);
         Uri posterUri = posterUriString != null && !posterUriString.isEmpty() ? Uri.parse(posterUriString) : null;
+        boolean isAdminPage = intent.getBooleanExtra("isAdminPage", false);
+        System.out.println("Viewed from admin page: "+isAdminPage);
 
         // Bind event data to UI elements
         TextView nameTextView = findViewById(R.id.textViewName);
@@ -169,31 +177,9 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
         Button notifyEnrolled = findViewById(R.id.buttonEnrolled);
         Button notifyCancelled = findViewById(R.id.buttonCancelled);
         Button notifyInvited = findViewById(R.id.buttonInvited);
+        Button backButton = findViewById(R.id.buttonBackToEvents);
+        Button editEventButton = findViewById(R.id.buttonEditEvent);
 
-        // Set up click listeners for notification buttons
-        notifyWaitlisted.setOnClickListener(v -> showNotificationInputDialog("Waitlisted Notification", waitlistedMessage, message -> {
-            waitlistedMessage = message;
-            updateNotificationMessage("waitlistedMessage", message, "notifyWaitlisted");
-            updateButtonAppearance(notifyWaitlisted, !message.isEmpty());
-        }));
-
-        notifyEnrolled.setOnClickListener(v -> showNotificationInputDialog("Enrolled Notification", enrolledMessage, message -> {
-            enrolledMessage = message;
-            updateNotificationMessage("enrolledMessage", message, "notifyEnrolled");
-            updateButtonAppearance(notifyEnrolled, !message.isEmpty());
-        }));
-
-        notifyCancelled.setOnClickListener(v -> showNotificationInputDialog("Cancelled Notification", cancelledMessage, message -> {
-            cancelledMessage = message;
-            updateNotificationMessage("cancelledMessage", message, "notifyCancelled");
-            updateButtonAppearance(notifyCancelled, !message.isEmpty());
-        }));
-
-        notifyInvited.setOnClickListener(v -> showNotificationInputDialog("Invited Notification", invitedMessage, message -> {
-            invitedMessage = message;
-            updateNotificationMessage("invitedMessage", message, "notifyInvited");
-            updateButtonAppearance(notifyInvited, !message.isEmpty());
-        }));
 
         // Bind retrieved data to respective UI components
         nameTextView.setText(name);
@@ -205,18 +191,57 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
         maxSampleTextView.setText(""+maxSampleEntrants);
         geolocateTextView.setText(isGeolocate ? "Geo-Location Enabled" : "Geo-Location Disabled");
 
-        // Set up the back button to return to EventActivity
-        Button backButton = findViewById(R.id.buttonBackToEvents);
-        backButton.setOnClickListener(v -> {
-            Intent intent2 = new Intent(EventDetailActivity.this, EventActivity.class);
-            intent2.putExtra("eventID", eventID);
-            startActivity(intent2);
-        });
+        // If viewed from the adminPage, hide some buttons, repurpose others.
+        if (isAdminPage){
+            notifyCancelled.setVisibility(View.GONE);
+            notifyEnrolled.setVisibility(View.GONE);
+            notifyInvited.setVisibility(View.GONE);
+            notifyWaitlisted.setVisibility(View.GONE);
+            TextView notificationsHeaderText = findViewById(R.id.notificationsHeader);
+            notificationsHeaderText.setVisibility(View.GONE);
+            GridLayout notificationsBackground = findViewById(R.id.notificationsBackground);
+            notificationsBackground.setVisibility(View.GONE);
+            setDeleteQRCodeButton(organizerActionsButton);
+            repurposeBackButton(backButton);
 
-        // Set up organizer actions button to navigate to EventActionsActivity
-        organizerActionsButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+        }
+        else{
+            // Set up click listeners for notification buttons
+            notifyWaitlisted.setOnClickListener(v -> showNotificationInputDialog("Waitlisted Notification", waitlistedMessage, message -> {
+                waitlistedMessage = message;
+                updateNotificationMessage("waitlistedMessage", message, "notifyWaitlisted");
+                updateButtonAppearance(notifyWaitlisted, !message.isEmpty());
+            }));
+
+            notifyEnrolled.setOnClickListener(v -> showNotificationInputDialog("Enrolled Notification", enrolledMessage, message -> {
+                enrolledMessage = message;
+                updateNotificationMessage("enrolledMessage", message, "notifyEnrolled");
+                updateButtonAppearance(notifyEnrolled, !message.isEmpty());
+            }));
+
+            notifyCancelled.setOnClickListener(v -> showNotificationInputDialog("Cancelled Notification", cancelledMessage, message -> {
+                cancelledMessage = message;
+                updateNotificationMessage("cancelledMessage", message, "notifyCancelled");
+                updateButtonAppearance(notifyCancelled, !message.isEmpty());
+            }));
+
+            notifyInvited.setOnClickListener(v -> showNotificationInputDialog("Invited Notification", invitedMessage, message -> {
+                invitedMessage = message;
+                updateNotificationMessage("invitedMessage", message, "notifyInvited");
+                updateButtonAppearance(notifyInvited, !message.isEmpty());
+            }));
+
+            // Set up the back button to return to EventActivity
+            backButton.setOnClickListener(v -> {
+                Intent intent2 = new Intent(EventDetailActivity.this, EventActivity.class);
+                intent2.putExtra("eventID", eventID);
+                startActivity(intent2);
+            });
+
+            // Set up organizer actions button to navigate to EventActionsActivity
+            organizerActionsButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
                     Intent intent = new Intent(EventDetailActivity.this, EventActionsActivity.class);
                     intent.putExtra("name", name );
                     intent.putExtra("date", date);
@@ -232,8 +257,10 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
                 }
             });
 
+
+
+        }
         // Set up edit event button to open EditEventDialogFragment
-        Button editEventButton = findViewById(R.id.buttonEditEvent);
         editEventButton.setOnClickListener(v -> {
             EditEventDialogFragment dialog = new EditEventDialogFragment();
             Bundle args = new Bundle();
@@ -241,7 +268,6 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
             dialog.setArguments(args);
             dialog.show(getSupportFragmentManager(), "EditEventDialogFragment");
         });
-
         // Set up entrant list button to display entrants or show a message if none exist
         Button entrantListButton = findViewById(R.id.entrant_list_button);
         entrantListButton.setOnClickListener(new View.OnClickListener() {
@@ -261,7 +287,6 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
                             // If there are, switch to the view entrants activity.
                             Intent intent = new Intent(EventDetailActivity.this, EventEntrantsActivity.class);
                             intent.putExtra("eventID", eventID);
-
                             startActivity(intent);
                         }
                     }
@@ -273,6 +298,61 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
         if (posterUri != null) {
             Glide.with(this).load(posterUri).into(posterImageView);
         }
+    }
+
+    public void setDeleteQRCodeButton(Button oldButton){
+        oldButton.setText("Delete QR Code");
+        oldButton.setOnClickListener(new View.OnClickListener(){
+
+            @Override
+            public void onClick(View v) {
+                AlertDialog.Builder builder = new AlertDialog.Builder(EventDetailActivity.this);
+                builder.setTitle("Confirm QR Code Deletion");
+                builder.setMessage("Are you sure you want to delete this events' QR Code? This will deactivate this QR Code and generate a new one.");
+
+                builder.setPositiveButton("Confirm Deletion", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        Toast.makeText(EventDetailActivity.this, "Deleted QR Code.", Toast.LENGTH_SHORT).show();
+
+                        deleteQRCode();
+
+                        dialog.dismiss();
+                    }
+                });
+                builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        Toast.makeText(EventDetailActivity.this, "Cancelled.", Toast.LENGTH_SHORT).show();
+                        dialog.dismiss();
+                    }
+                });
+                AlertDialog dialog = builder.create();
+                dialog.show();
+            }
+        });
+    }
+
+    public void deleteQRCode(){
+
+        db.collection("events").document(eventID).get().addOnSuccessListener(documentSnapshot -> {
+            qrCodeLocationURL = documentSnapshot.getString("qrCodeLocationUrl");
+            System.out.println(qrCodeLocationURL);
+            db.collection("events").document(eventID).update("qrCodeLocationUrl", null);
+            db.collection("events").document(eventID).update("qrCodePassKey", null);
+            FirebaseStorage storage = FirebaseStorage.getInstance();
+            StorageReference qrCodeRef = storage.getReferenceFromUrl(qrCodeLocationURL);
+            qrCodeRef.delete().addOnSuccessListener(v -> {
+                this.recreate();
+            });
+        });
+    }
+
+    public void repurposeBackButton(Button backButton){
+        backButton.setText("Back to Admin Page");
+        backButton.setOnClickListener(v -> {
+            finish();
+        });
     }
 
     /**
