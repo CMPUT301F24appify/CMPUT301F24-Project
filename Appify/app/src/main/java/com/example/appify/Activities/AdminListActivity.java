@@ -134,9 +134,14 @@ public class AdminListActivity extends AppCompatActivity {
                     int maxSampleEntrants = doc.getLong("maxSampleEntrants").intValue();
                     int maxWaitEntrants = doc.getLong("maxWaitEntrants").intValue();
                     String organizerID = doc.getString("organizerID");
+                    String posterURI = doc.getString("posterUri");
+
 
                     Event event = new Event(name,date,facility,registrationEndDate,
                             maxWaitEntrants,maxSampleEntrants,organizerID);
+                    event.setEventId(id);
+                    event.setDescription(doc.getString("description"));
+                    event.setPosterUri(posterURI);
                     event.setEventId(id);
                     eventList.add(event);
                 }

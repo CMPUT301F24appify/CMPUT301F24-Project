@@ -2,7 +2,6 @@ package com.example.appify;
 
 import android.content.Context;
 import android.content.Intent;
-import android.widget.TextView;
 
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.espresso.intent.Intents;
