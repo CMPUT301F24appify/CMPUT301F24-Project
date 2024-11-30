@@ -257,7 +257,8 @@ public class EntrantEnlistActivity extends AppCompatActivity {
                                                     entrantDoc.getString("phoneNumber"),
                                                     entrantDoc.getString("email"),
                                                     entrantDoc.getString("profilePictureUrl"),
-                                                    entrantDoc.getBoolean("notifications") != null && entrantDoc.getBoolean("notifications")
+                                                    entrantDoc.getBoolean("notifications") != null && entrantDoc.getBoolean("notifications"),
+                                                    entrantDoc.getString("facilityID")
                                             );
                                             entrant.acceptEvent(db, eventId);
                                             Intent intent = new Intent(EntrantEnlistActivity.this, EntrantHomePageActivity.class);
@@ -275,7 +276,8 @@ public class EntrantEnlistActivity extends AppCompatActivity {
                                                     entrantDoc.getString("phoneNumber"),
                                                     entrantDoc.getString("email"),
                                                     entrantDoc.getString("profilePictureUrl"),
-                                                    entrantDoc.getBoolean("notifications") != null && entrantDoc.getBoolean("notifications")
+                                                    entrantDoc.getBoolean("notifications") != null && entrantDoc.getBoolean("notifications"),
+                                                    entrantDoc.getString("facilityID")
                                             );
 
                                             eventRef.get().addOnSuccessListener(eventDoc -> {

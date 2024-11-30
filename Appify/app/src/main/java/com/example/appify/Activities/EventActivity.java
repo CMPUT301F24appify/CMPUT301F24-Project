@@ -55,7 +55,7 @@ public class EventActivity extends AppCompatActivity implements AddEventDialogFr
         db = FirebaseFirestore.getInstance();  // Initialize Firestore instance
 
         eventListView = findViewById(R.id.event_list);
-        eventAdapter = new CustomEventAdapter(this, eventList, true);
+        eventAdapter = new CustomEventAdapter(this, eventList, true, false);
         eventListView.setAdapter(eventAdapter);
 
         loadEventsFromFirestore();  // Load events from Firestore
