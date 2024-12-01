@@ -3,7 +3,6 @@ package com.example.appify.Model;
 
 import android.util.Log;
 
-import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
@@ -31,7 +30,6 @@ public class Event {
     private boolean notifyEnrolled;
     private boolean notifyCancelled;
     private boolean notifyInvited;
-    private int lotteryRan; // Field changed to int
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
     private String organizerID;
 
@@ -89,7 +87,6 @@ public class Event {
         this.cancelledMessage = cancelledMessage;
         this.invitedMessage = invitedMessage;
         this.organizerID = organizerID;
-        this.lotteryRan = 0; // Initialize to 0
     }
     /**
      * Constructor used for Admin View, only taking required fields.
@@ -197,10 +194,6 @@ public class Event {
         return invitedMessage;
     }
 
-    public int getLotteryRan() {
-        return lotteryRan;
-    }
-
     // Setters
 
     public void setGeolocate(boolean geolocate) {
@@ -283,10 +276,6 @@ public class Event {
         this.eventId = eventId;
     }
 
-    public void setLotteryRan(int lotteryRan) {
-        this.lotteryRan = lotteryRan;
-    }
-
     /**
      * Interface for callback after adding an event to Firestore.
      */
@@ -322,6 +311,7 @@ public class Event {
      * Runs a lottery to randomly select entrants with "enrolled" status from the waiting list of a specified event
      * and updates their status to "invited." The method first checks the number of entrants already accepted and
      * adjusts the number of additional entrants to invite based on the remaining available slots (`maxSampleEntrants - acceptedCount`).
+     * The lottery continues to invite entrants until this adjusted limit is reached or no more eligible entrants are available.
      * Additionally, it updates the entrant's status in their AndroidID collection under "waitListedEvents" for the specific event.
      *
      * @param db      The Firestore database instance used to access and update the database.
@@ -344,7 +334,6 @@ public class Event {
                     // If there are no slots available, exit early
                     if (slotsAvailable <= 0) {
                         Log.d("Lottery", "No slots available for additional invites.");
-                        incrementLotteryRanFlag(db, eventID);
                         return;
                     }
 
@@ -359,7 +348,7 @@ public class Event {
                                     eligibleEntrants.add(document.getId());
                                 }
 
-                                // Randomly select entrants until reaching ava (ilable slots or list is empty
+                                // Randomly select entrants until reaching available slots or list is empty
                                 while (selectedEntrants.size() < slotsAvailable && !eligibleEntrants.isEmpty()) {
                                     int randomIndex = random.nextInt(eligibleEntrants.size());
                                     String selectedEntrantId = eligibleEntrants.remove(randomIndex); // Remove to avoid re-selection
@@ -391,19 +380,14 @@ public class Event {
                                             });
                                 }
 
-                                incrementLotteryRanFlag(db, eventID);
                                 Log.d("Lottery", "Lottery completed. Total invited entrants: " + selectedEntrants.size());
                             })
-                            .addOnFailureListener(e -> Log.e("Lottery", "Error retrieving waiting list for event " + eventID, e));
+                            .addOnFailureListener(e -> {
+                                Log.e("Lottery", "Error retrieving waiting list for event " + eventID, e);
+                            });
                 })
-                .addOnFailureListener(e -> Log.e("Lottery", "Error retrieving accepted entrants for event " + eventID, e));
-    }
-
-
-    private void incrementLotteryRanFlag(FirebaseFirestore db, String eventID) {
-        db.collection("events").document(eventID)
-                .update("lotteryRan", FieldValue.increment(1))
-                .addOnSuccessListener(aVoid -> Log.d("Lottery", "LotteryRan counter incremented for event " + eventID))
-                .addOnFailureListener(e -> Log.e("Lottery", "Error incrementing lotteryRan counter for event " + eventID, e));
+                .addOnFailureListener(e -> {
+                    Log.e("Lottery", "Error retrieving accepted entrants for event " + eventID, e);
+                });
     }
 }
