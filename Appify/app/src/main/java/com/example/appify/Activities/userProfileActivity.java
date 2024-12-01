@@ -38,6 +38,7 @@ public class userProfileActivity extends AppCompatActivity {
     private TextView nameTextView, phoneTextView, emailTextView;
     private ListenerRegistration listenerRegistration;
     private Button editButton, adminButton;
+    private boolean generatePicture = false;
 
     /**
      * Called when the activity is first created.
@@ -69,6 +70,7 @@ public class userProfileActivity extends AppCompatActivity {
         editButton.setOnClickListener(v -> {
             Intent intent = new Intent(userProfileActivity.this, editUserActivity.class);
             intent.putExtra("AndroidID", android_id);
+            intent.putExtra("pictureFlag", generatePicture);
             startActivity(intent);
         });
 
@@ -114,6 +116,7 @@ public class userProfileActivity extends AppCompatActivity {
                             Boolean notificationsCheck = documentSnapshot.getBoolean("notifications");
                             Boolean isAdmin = documentSnapshot.getBoolean("admin");
                             TextView phoneText = findViewById(R.id.phoneText);
+                            generatePicture = documentSnapshot.getBoolean("generatedPicture");
                             //String profileImageUrl = documentSnapshot.getString("profilePictureUrl");
                             nameTextView.setText(name);
                             if(Objects.equals(phone, "")){
