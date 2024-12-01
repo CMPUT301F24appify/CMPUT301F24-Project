@@ -208,9 +208,10 @@ public class AdminListActivity extends AppCompatActivity {
                 .addOnSuccessListener(result -> {
                     folderList.clear();
                     for (StorageReference folder : result.getPrefixes()) {
-                        if(!folder.getName().contains("qrcode")) {
-                            folderList.add(folder);
+                        if(folder.getName().contains("qrcode") || folder.getName().contains("generated")) {
+                            continue;
                         }
+                        folderList.add(folder);
                     }
                     folderAdapter.notifyDataSetChanged();
                 });

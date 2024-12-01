@@ -23,6 +23,7 @@ public class Entrant {
     private double latitude;
     private double longitude;
     private boolean isAdmin;
+    private boolean generatedPicture;
 
 
     /**
@@ -245,6 +246,14 @@ public class Entrant {
                 .addOnFailureListener(e -> {
                     Log.w("Entrant", "Error updating status in waiting list for entrant " + this.id, e);
                 });
+    }
+
+    public boolean isGeneratedPicture() {
+        return generatedPicture;
+    }
+
+    public void setGeneratedPicture(boolean generatedPicture) {
+        this.generatedPicture = generatedPicture;
     }
 }
 

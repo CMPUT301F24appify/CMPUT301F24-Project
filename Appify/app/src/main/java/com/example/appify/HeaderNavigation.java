@@ -18,6 +18,8 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
+import java.util.concurrent.atomic.AtomicReference;
+
 /**
  * The HeaderNavigation class handles navigation within the application by setting up listeners for
  * various header components, including events, facilities, organizing, notifications, home, and profile.
@@ -131,18 +133,28 @@ public class HeaderNavigation {
 
         if (androidId != null && !androidId.isEmpty()) {
             FirebaseStorage storage = FirebaseStorage.getInstance();
-            StorageReference storageRef = storage.getReference().child("profile_images/" + androidId + ".jpg");
+            AtomicReference<String> path = new AtomicReference<>("profile_images/");
+            db.collection("AndroidID").document(androidId).get()
+                    .addOnSuccessListener(documentSnapshot -> {
+                        if (documentSnapshot.exists()) {
+                            boolean generated = documentSnapshot.getBoolean("generatedPicture");
+                            String imagePath = generated ? "generated_pictures/" : "profile_images/";
+                            StorageReference storageRef = storage.getReference().child(imagePath + androidId + ".jpg");
 
-            long size = 1024 * 1024; // Adjust the size as needed
-            storageRef.getBytes(size)
-                    .addOnSuccessListener(bytes -> {
-                        Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
-                        profilePicture.setImageBitmap(bitmap);
-                    })
-                    .addOnFailureListener(e -> {
-                        // Optionally set a default image if loading fails
-                        profilePicture.setImageResource(R.drawable.default_pfp);
+                            long size = 1024 * 1024; // Adjust the size as needed
+                            storageRef.getBytes(size)
+                                    .addOnSuccessListener(bytes -> {
+                                        Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+                                        profilePicture.setImageBitmap(bitmap);
+                                    })
+                                    .addOnFailureListener(e -> {
+                                        // Optionally set a default image if loading fails
+                                        profilePicture.setImageResource(R.drawable.default_pfp);
+                                    });
+                        }
                     });
+
+
         }
     }
 

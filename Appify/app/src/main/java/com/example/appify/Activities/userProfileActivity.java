@@ -25,6 +25,7 @@ import com.google.firebase.storage.StorageReference;
 
 import java.util.Collections;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Activity to display the user's profile information.
@@ -143,15 +144,23 @@ public class userProfileActivity extends AppCompatActivity {
      */
     private void loadProfilePicture(String android_id) {
         FirebaseStorage storage = FirebaseStorage.getInstance();
-        StorageReference storageRef = storage.getReference().child("profile_images/" + android_id + ".jpg");
+        db.collection("AndroidID").document(android_id).get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        boolean generated = documentSnapshot.getBoolean("generatedPicture");
+                        String path = generated ? "generated_pictures/" : "profile_images/";
+                        StorageReference storageRef = storage.getReference().child(path + android_id + ".jpg");
 
-        long size = 1024 * 1024;
-        storageRef.getBytes(size)
-                .addOnSuccessListener(bytes -> {
-                    // Convert the byte array to a Bitmap
-                    Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
-                    profileImageView.setImageBitmap(bitmap);
-                    //headerImageView.setImageBitmap(bitmap);
+                        long size = 1024 * 1024;
+                        storageRef.getBytes(size)
+                                .addOnSuccessListener(bytes -> {
+                                    // Convert the byte array to a Bitmap
+                                    Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+                                    profileImageView.setImageBitmap(bitmap);
+                                    //headerImageView.setImageBitmap(bitmap);
+                                });
+                    }
                 });
+
     }
 }
