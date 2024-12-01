@@ -79,6 +79,7 @@ public class editUserActivity extends AppCompatActivity {
         bitmapImage = (Bitmap) getIntent().getExtras().get("Image Bitmap");
         android_id = getIntent().getStringExtra("AndroidID");
         boolean firstEntry = getIntent().getBooleanExtra("firstEntry", false);
+        boolean pictureFlag = getIntent().getBooleanExtra("pictureFlag", false);
         HeaderNavigation headerNavigation = new HeaderNavigation(this);
         headerNavigation.setupNavigation();
 
@@ -153,6 +154,10 @@ public class editUserActivity extends AppCompatActivity {
                         uriBitmap = profilePicture;
                         profileImageView.setImageBitmap(profilePicture);
                     } else {
+                        if(pictureFlag){
+                            generatedPicture = true;
+                        }
+                        uriBitmap = bitmapImage;
                         profileImageView.setImageBitmap(bitmapImage);
                     }
                 }

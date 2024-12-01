@@ -89,12 +89,21 @@ public class CustomEntrantAdminAdapter extends ArrayAdapter<Entrant> {
 
 
         FirebaseStorage storage = FirebaseStorage.getInstance();
-        StorageReference storageRef = storage.getReference().child("profile_images/" + entrantID + ".jpg");
         long size = 1024 * 1024;
-        storageRef.getBytes(size).addOnSuccessListener(bytes -> {
-            // Convert the byte array to a Bitmap
+
+        StorageReference profileImageRef = storage.getReference().child("profile_images/" + entrantID + ".jpg");
+        StorageReference generatedImageRef = storage.getReference().child("generated_pictures/" + entrantID + ".jpg");
+
+        profileImageRef.getBytes(size).addOnSuccessListener(bytes -> {
+            // If profile_images/ has the image
             Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
             statusIcon.setImageBitmap(bitmap);
+        }).addOnFailureListener(e -> {
+            // If fails, check generated_pictures
+            generatedImageRef.getBytes(size).addOnSuccessListener(bytesGenerated -> {
+                Bitmap bitmap = BitmapFactory.decodeByteArray(bytesGenerated, 0, bytesGenerated.length);
+                statusIcon.setImageBitmap(bitmap);
+            });
         });
         email.setText("Email: " + entrant.getEmail());
         name.setText(entrant.getName());
