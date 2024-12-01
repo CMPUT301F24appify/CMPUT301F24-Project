@@ -279,7 +279,7 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
                                 // Update button appearance and disable it after running the lottery
                                 organizerActionsButton.setText("Lottery has been ran");
                                 organizerActionsButton.setEnabled(false);
-                                organizerActionsButton.setBackgroundColor(getResources().getColor(android.R.color.holo_green_light));
+                                organizerActionsButton.setBackgroundColor(getResources().getColor(android.R.color.holo_blue_light));
 
                                 Log.d("EventDetailActivity", "Lottery successfully ran for event ID: " + eventID);
                             } else {

@@ -232,6 +232,14 @@ public class MyApp extends Application {
                             DocumentSnapshot eventDoc = dc.getDocument();
                             String eventId = eventDoc.getId();
 
+                            String eventName = eventDoc.getString("name"); // Ensure "name" field exists in Firestore
+                            if (eventName == null) {
+                                eventName = "Unknown Event"; // Fallback in case the name is missing
+
+                            }
+
+                            final String finalEventName = eventName;
+
                             // Check if the document's lotteryRan counter was updated
                             if (dc.getType() == DocumentChange.Type.MODIFIED && eventDoc.contains("lotteryRan")) {
                                 Log.d(TAG, "Lottery counter updated for event: " + eventId);
@@ -262,12 +270,12 @@ public class MyApp extends Application {
                                                     // Send 'invited' notification
                                                     String message = "You have not been invited to the event!";
                                                     Log.d(TAG, "Sending 'invited' notification to user: " + userId);
-                                                    sendNotification(eventId, "invited", message, "Event ID: " + eventId);
+                                                    sendNotification(eventId, "invited", message, finalEventName);
                                                 } else if ("enrolled".equals(status)) {
                                                     // Send 'not invited' notification
                                                     String message = "You were invited to the event.";
                                                     Log.d(TAG, "Sending 'not invited' notification to user: " + userId);
-                                                    sendNotification(eventId, "not_invited", message, "Event ID: " + eventId);
+                                                    sendNotification(eventId, "not_invited", message, finalEventName);
                                                 }
                                             }
                                         })
