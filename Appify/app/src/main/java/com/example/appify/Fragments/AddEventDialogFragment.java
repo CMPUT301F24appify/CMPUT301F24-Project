@@ -45,6 +45,8 @@ public class AddEventDialogFragment extends DialogFragment {
     private String facilityID;  // ID for the facility
     private String facilityName;  // Name of the facility
     private EditText eventFacility, eventDescription, maxWaitEntrant, maxSampleEntrant;  // EditTexts for other fields
+    private Uri selectedImageUri; // Store the selected image URI
+
 
     private Calendar calendar;  // Calendar instance for date pickers
 
@@ -67,7 +69,7 @@ public class AddEventDialogFragment extends DialogFragment {
          * @param invitedMessage    Notification message for invited entrants.
          */
         void onEventAdded(String name, String date, String facility, String registrationEndDate,
-                          String description, int maxWaitEntrants, int maxSampleEntrants,
+                          String description, @Nullable Integer maxWaitEntrants, int maxSampleEntrants,
                           String posterUri, boolean isGeolocate,
                           String waitlistedMessage, String enrolledMessage,
                           String cancelledMessage, String invitedMessage);
@@ -160,23 +162,75 @@ public class AddEventDialogFragment extends DialogFragment {
         // Build dialog
         builder.setView(view)
                 .setTitle("Add Event")
-                .setPositiveButton("CONFIRM", (dialog, id) -> {
-                    if (validateInputs(eventName, eventFacility, eventDescription)) {
-                        String name = eventName.getText().toString();
-                        String date = buttonEventDate.getText().toString();
-                        String registrationEndDate = buttonRegistrationEndDate.getText().toString();
-                        String description = eventDescription.getText().toString();
-                        int waitMax = parseInteger(maxWaitEntrant.getText().toString());
-                        int sampleMax = parseInteger(maxSampleEntrant.getText().toString());
-                        listener.onEventAdded(name, date, facilityID, registrationEndDate, description,
-                                waitMax, sampleMax, posterUri, isGeolocate, "", "", "", "");
-                    } else {
-                        //Toast.makeText(getContext(), "Please correct the highlighted fields", Toast.LENGTH_SHORT).show();
-                    }
-                })
+                .setPositiveButton("CONFIRM", null) // Set to null to override later
                 .setNegativeButton("CANCEL", (dialog, id) -> dialog.dismiss());
 
-        return builder.create();
+        AlertDialog dialog = builder.create();
+
+        // Override the positive button listener
+        dialog.setOnShowListener(dialogInterface -> {
+            Button positiveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
+            positiveButton.setOnClickListener(v -> {
+                if (validateInputs(eventName, eventFacility, eventDescription, maxWaitEntrant, maxSampleEntrant)) {
+                    String name = eventName.getText().toString();
+                    String date = buttonEventDate.getText().toString();
+                    String registrationEndDate = buttonRegistrationEndDate.getText().toString();
+                    String description = eventDescription.getText().toString();
+                    Integer waitMax = parseIntegerOptional(maxWaitEntrant.getText().toString());
+                    int sampleMax = Integer.parseInt(maxSampleEntrant.getText().toString());
+
+                    positiveButton.setEnabled(false); // Disable to prevent multiple clicks
+
+                    if (selectedImageUri != null) {
+                        // Show a progress indicator if desired
+                        // Upload the image
+                        uploadImageToFirebase(selectedImageUri, new ImageUploadCallback() {
+                            @Override
+                            public void onSuccess(String posterUri) {
+                                // Proceed after image upload
+                                listener.onEventAdded(name, date, facilityID, registrationEndDate, description,
+                                        waitMax != null ? waitMax : 0, sampleMax, posterUri, isGeolocate, "", "", "", "");
+                                dialog.dismiss();
+                            }
+
+                            @Override
+                            public void onFailure(Exception e) {
+                                positiveButton.setEnabled(true); // Re-enable on failure
+                                Toast.makeText(getContext(), "Failed to upload image: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                    } else {
+                        // No image selected; proceed without posterUri
+                        listener.onEventAdded(name, date, facilityID, registrationEndDate, description,
+                                waitMax != null ? waitMax : 0, sampleMax, null, isGeolocate, "", "", "", "");
+                        dialog.dismiss();
+                    }
+                } else {
+                    Toast.makeText(getContext(), "Please correct the highlighted fields", Toast.LENGTH_SHORT).show();
+                }
+            });
+        });
+
+        return dialog;
+
+
+//                .setPositiveButton("CONFIRM", (dialog, id) -> {
+//                    if (validateInputs(eventName, eventFacility, eventDescription, maxWaitEntrant, maxSampleEntrant)) {
+//                        String name = eventName.getText().toString();
+//                        String date = buttonEventDate.getText().toString();
+//                        String registrationEndDate = buttonRegistrationEndDate.getText().toString();
+//                        String description = eventDescription.getText().toString();
+//                        int waitMax = parseInteger(maxWaitEntrant.getText().toString());
+//                        int sampleMax = parseInteger(maxSampleEntrant.getText().toString());
+//                        listener.onEventAdded(name, date, facilityID, registrationEndDate, description,
+//                                waitMax, sampleMax, posterUri, isGeolocate, "", "", "", "");
+//                    } else {
+//                        //Toast.makeText(getContext(), "Please correct the highlighted fields", Toast.LENGTH_SHORT).show();
+//                    }
+//                })
+//                .setNegativeButton("CANCEL", (dialog, id) -> dialog.dismiss());
+//
+//        return builder.create();
     }
 
     private void openDatePicker(Button button) {
@@ -193,8 +247,10 @@ public class AddEventDialogFragment extends DialogFragment {
         datePickerDialog.show();
     }
 
-    private boolean validateInputs(EditText eventName, EditText eventFacility, EditText eventDescription) {
+    private boolean validateInputs(EditText eventName, EditText eventFacility, EditText eventDescription, EditText maxWaitEntrant, EditText maxSampleEntrant) {
         boolean isValid = true;
+        Integer waitMax = parseIntegerOptional(maxWaitEntrant.getText().toString());
+        Integer sampleMax = parseIntegerOptional(maxSampleEntrant.getText().toString());
         SimpleDateFormat sdf = new SimpleDateFormat("MMM dd, yyyy", Locale.getDefault());
 
         if (eventName.getText().toString().trim().isEmpty()) {
@@ -219,6 +275,18 @@ public class AddEventDialogFragment extends DialogFragment {
         if (buttonRegistrationEndDate.getText().toString().equals("Registration End Date")) {
             Toast.makeText(getContext(), "Please select a registration end date", Toast.LENGTH_SHORT).show();
             isValid = false;
+        }
+        if (maxSampleEntrant.getText().toString().trim().isEmpty()) {
+            Toast.makeText(getContext(), "Please select number of max sample entrants", Toast.LENGTH_SHORT).show();
+            maxSampleEntrant.setError("Please select number of max sample entrants");
+            isValid = false;
+        }
+        if (waitMax != null) {
+            if (sampleMax > waitMax) {
+                Toast.makeText(getContext(), "Max sample entrants cannot exceed max waitlist entrants (" + waitMax + ")", Toast.LENGTH_SHORT).show();
+                maxSampleEntrant.setError("Cannot exceed max waitlist entrants");
+                isValid = false;
+            }
         }
         try {
             Date eventDate = sdf.parse(buttonEventDate.getText().toString());
@@ -304,12 +372,14 @@ public class AddEventDialogFragment extends DialogFragment {
      * @param text The text to parse.
      * @return The integer value if parsing is successful, otherwise 0.
      */
-    private int parseInteger(String text) {
+    private Integer parseIntegerOptional(String text) {
+        if (text == null || text.trim().isEmpty()) {
+            return null;
+        }
         try {
-            return Integer.parseInt(text);
+            return Integer.parseInt(text.trim());
         } catch (NumberFormatException e) {
-            Toast.makeText(getContext(), "Please enter a valid number for max entrants", Toast.LENGTH_SHORT).show();
-            return 0;
+            return null;
         }
     }
 
@@ -335,29 +405,34 @@ public class AddEventDialogFragment extends DialogFragment {
         super.onActivityResult(requestCode, resultCode, data);
 
         if (requestCode == PICK_IMAGE_REQUEST && resultCode == getActivity().RESULT_OK && data != null && data.getData() != null) {
-            uploadImageToFirebase(data.getData());
+            selectedImageUri = data.getData();
             uploadPosterButton.setBackgroundColor(getResources().getColor(android.R.color.holo_blue_light));
         }
     }
+
+    // Define the callback interface
+    public interface ImageUploadCallback {
+        void onSuccess(String posterUri);
+        void onFailure(Exception e);
+    }
+
 
     /**
      * Uploads the selected image to Firebase storage and sets the poster URI.
      *
      * @param imageUri The URI of the image to upload.
      */
-    private void uploadImageToFirebase(Uri imageUri) {
+    private void uploadImageToFirebase(Uri imageUri, ImageUploadCallback callback) {
         StorageReference storageRef = FirebaseStorage.getInstance().getReference();
         StorageReference posterRef = storageRef.child("event_posters/" + UUID.randomUUID().toString() + ".jpg");
 
-        posterRef.putFile(imageUri).addOnSuccessListener(taskSnapshot -> {
-            posterRef.getDownloadUrl().addOnSuccessListener(downloadUri -> {
-                posterUri = downloadUri.toString();
-                Toast.makeText(getContext(), "Poster uploaded successfully!", Toast.LENGTH_SHORT).show();
-            }).addOnFailureListener(e -> {
-                Toast.makeText(getContext(), "Failed to get download URL: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-            });
-        }).addOnFailureListener(e -> {
-            Toast.makeText(getContext(), "Failed to upload poster: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-        });
+        posterRef.putFile(imageUri)
+                .addOnSuccessListener(taskSnapshot -> posterRef.getDownloadUrl()
+                        .addOnSuccessListener(downloadUri -> {
+                            String posterUri = downloadUri.toString();
+                            callback.onSuccess(posterUri);
+                        })
+                        .addOnFailureListener(callback::onFailure))
+                .addOnFailureListener(callback::onFailure);
     }
 }

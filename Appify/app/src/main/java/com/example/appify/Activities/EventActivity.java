@@ -9,6 +9,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.appify.Adapters.CustomEventAdapter;
@@ -140,7 +141,7 @@ public class EventActivity extends AppCompatActivity implements AddEventDialogFr
      */
     @Override
     public void onEventAdded(String name, String date, String facility, String registrationEndDate,
-                             String description, int maxWaitEntrants, int maxSampleEntrants,
+                             String description, @Nullable Integer maxWaitEntrants, int maxSampleEntrants,
                              String posterUri, boolean isGeolocate,
                              String waitlistedMessage, String enrolledMessage,
                              String cancelledMessage, String invitedMessage) {

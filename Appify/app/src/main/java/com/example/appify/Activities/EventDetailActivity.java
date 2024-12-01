@@ -302,6 +302,12 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
 
         // Set up map button to display the map of geolocations of entrants
         showMap = findViewById(R.id.map_button);
+        if (isGeolocate) {
+            showMap.setVisibility(View.VISIBLE);
+        } else {
+            showMap.setVisibility(View.GONE);
+
+        }
         showMap.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
