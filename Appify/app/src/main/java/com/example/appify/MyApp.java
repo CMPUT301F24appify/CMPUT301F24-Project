@@ -35,7 +35,9 @@ import com.google.firebase.firestore.QuerySnapshot;
 
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 
 public class MyApp extends Application {
@@ -91,6 +93,8 @@ public class MyApp extends Application {
 
         // **Start listening for waitingList subcollection changes**
         listenForWaitingListAdditions();
+
+        listenForInvitations();
     }
 
 
@@ -214,6 +218,84 @@ public class MyApp extends Application {
 
         Log.d(TAG, "Started listening for new waitingList additions.");
     }
+
+    private void listenForInvitations() {
+        waitingListListener = db.collection("events")
+                .addSnapshotListener((snapshots, e) -> {
+                    if (e != null) {
+                        Log.w(TAG, "Listen failed for events collection.", e);
+                        return;
+                    }
+
+                    if (snapshots != null) {
+                        for (DocumentChange dc : snapshots.getDocumentChanges()) {
+                            DocumentSnapshot eventDoc = dc.getDocument();
+                            String eventId = eventDoc.getId();
+
+                            String eventName = eventDoc.getString("name"); // Ensure "name" field exists in Firestore
+                            if (eventName == null) {
+                                eventName = "Unknown Event"; // Fallback in case the name is missing
+
+                            }
+
+                            final String finalEventName = eventName;
+
+                            // Check if the document's lotteryRan counter was updated
+                            if (dc.getType() == DocumentChange.Type.MODIFIED && eventDoc.contains("lotteryRan")) {
+                                Log.d(TAG, "Lottery counter updated for event: " + eventId);
+
+                                // Retrieve the event's organizerID
+                                String organizerId = eventDoc.getString("organizerID");
+                                if (organizerId != null && organizerId.equals(androidId)) {
+                                    Log.d(TAG, "Organizer detected. Skipping notifications for organizer: " + androidId);
+                                    continue; // Skip processing for the organizer's device
+                                }
+
+                                // Fetch the waiting list for this event
+                                db.collection("events").document(eventId)
+                                        .collection("waitingList")
+                                        .get()
+                                        .addOnSuccessListener(waitingListSnapshot -> {
+                                            for (DocumentSnapshot userDoc : waitingListSnapshot) {
+                                                String userId = userDoc.getId();
+                                                String status = userDoc.getString("status");
+
+                                                // Ignore notifications for the organizer (current user)
+                                                if (userId.equals(androidId)) {
+                                                    Log.d(TAG, "Skipping notification for organizer (current user): " + androidId);
+                                                    continue;
+                                                }
+                                                //For some reason the notifications are switched around, not sure why.
+                                                if ("invited".equals(status)) {
+                                                    // Send 'invited' notification
+                                                    String message = "You have not been invited to the event!";
+                                                    Log.d(TAG, "Sending 'invited' notification to user: " + userId);
+                                                    sendNotification(eventId, "invited", message, finalEventName);
+                                                } else if ("enrolled".equals(status)) {
+                                                    // Send 'not invited' notification
+                                                    String message = "You were invited to the event.";
+                                                    Log.d(TAG, "Sending 'not invited' notification to user: " + userId);
+                                                    sendNotification(eventId, "not_invited", message, finalEventName);
+                                                }
+                                            }
+                                        })
+                                        .addOnFailureListener(err -> {
+                                            Log.e(TAG, "Error fetching waiting list for event: " + eventId, err);
+                                        });
+                            }
+                        }
+                    }
+                });
+
+        Log.d(TAG, "Started listening for updates to the lottery counter.");
+    }
+
+
+
+
+
+
+
 
 
     /**

@@ -9,6 +9,7 @@ import android.graphics.Color;
 import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -245,22 +246,47 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
             });
 
             // Set up organizer actions button to navigate to EventActionsActivity
-            organizerActionsButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    Intent intent = new Intent(EventDetailActivity.this, EventActionsActivity.class);
-                    intent.putExtra("name", name );
-                    intent.putExtra("date", date);
-                    intent.putExtra("facility", facility);
-                    intent.putExtra("registrationEndDate", registrationEndDate);
-                    intent.putExtra("description",description );
-                    intent.putExtra("maxWaitEntrants", maxWaitEntrants);
-                    intent.putExtra("maxSampleEntrants", maxSampleEntrants);
-                    intent.putExtra("eventID", eventID);
-                    intent.putExtra("posterUri", posterUriString);
-                    intent.putExtra("isGeolocate", isGeolocate);
-                    startActivity(intent);
-                }
+            organizerActionsButton.setOnClickListener(v -> {
+                db.collection("events").document(eventID)
+                        .get()
+                        .addOnSuccessListener(documentSnapshot -> {
+                            if (documentSnapshot.exists()) {
+                                // Run the lottery directly for the event using existing variables
+                                Event event = new Event(
+                                        name,
+                                        date,
+                                        facility,
+                                        registrationEndDate,
+                                        description,
+                                        maxWaitEntrants,
+                                        maxSampleEntrants,
+                                        posterUriString,
+                                        isGeolocate,
+                                        documentSnapshot.getBoolean("notifyWaitlisted"),
+                                        documentSnapshot.getBoolean("notifyEnrolled"),
+                                        documentSnapshot.getBoolean("notifyCancelled"),
+                                        documentSnapshot.getBoolean("notifyInvited"),
+                                        documentSnapshot.getString("waitlistedMessage"),
+                                        documentSnapshot.getString("enrolledMessage"),
+                                        documentSnapshot.getString("cancelledMessage"),
+                                        documentSnapshot.getString("invitedMessage"),
+                                        documentSnapshot.getString("organizerID")
+                                );
+
+                                // Run the lottery for this event
+                                event.lottery(db, eventID);
+
+                                // Update button appearance and disable it after running the lottery
+                                organizerActionsButton.setText("Lottery has been ran");
+                                organizerActionsButton.setEnabled(false);
+                                organizerActionsButton.setBackgroundColor(getResources().getColor(android.R.color.holo_blue_light));
+
+                                Log.d("EventDetailActivity", "Lottery successfully ran for event ID: " + eventID);
+                            } else {
+                                Log.w("EventDetailActivity", "No event found with ID: " + eventID);
+                            }
+                        })
+                        .addOnFailureListener(e -> Log.e("EventDetailActivity", "Error retrieving event with ID: " + eventID, e));
             });
 
 
