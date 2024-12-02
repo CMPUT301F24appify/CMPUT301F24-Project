@@ -163,7 +163,6 @@ public class AddFacilityDialogFragment extends DialogFragment {
             db.collection("facilities").document(facilityID)
                     .update("name", name, "location", location, "email", email, "description", description, "capacity", capacity)
                     .addOnSuccessListener(aVoid -> {
-                        Toast.makeText(getContext(), "Facility updated successfully!", Toast.LENGTH_SHORT).show();
                         // Notify the listener with updated details
                         if (updateListener != null) {
                             updateListener.onFacilityUpdated(name, location, email, description, capacity);
