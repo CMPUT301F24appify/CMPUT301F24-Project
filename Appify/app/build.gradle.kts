@@ -41,6 +41,26 @@ android {
     }
 
 }
+tasks.register("updateGoogleServicesJson") {
+    doLast {
+        val apiKey = System.getenv("GOOGLE_API_KEY") ?: ""
+        if (apiKey.isEmpty()) {
+            throw GradleException("GOOGLE_API_KEY environment variable is not set!")
+        }
+
+        val googleServicesFile = file("${projectDir}/app/google-services.json")
+        if (googleServicesFile.exists()) {
+            val content = googleServicesFile.readText()
+            val updatedContent = content.replace(
+                Regex("\"current_key\":\\s*\"[^\"]*\""),
+                "\"current_key\": \"$apiKey\""
+            )
+            googleServicesFile.writeText(updatedContent)
+        } else {
+            throw GradleException("google-services.json file not found!")
+        }
+    }
+}
 
 
 dependencies {
