@@ -16,12 +16,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
-import androidx.core.content.ContextCompat;
-import androidx.core.app.ActivityCompat;
-
-import android.Manifest;
-import android.content.pm.PackageManager;
-import android.os.Build;
 
 import com.example.appify.Activities.EntrantHomePageActivity;
 import com.example.appify.Activities.editUserActivity;
@@ -38,18 +32,25 @@ public class MainActivity extends AppCompatActivity {
     private FirebaseFirestore db;
     private String android_id;
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+
         // Retrieve the unique AndroidID
         android_id = Secure.getString(getContentResolver(), Secure.ANDROID_ID);
-        Log.d("MainActivity", "AndroidID: " + android_id);
+        System.out.println("MainActivity "+ "AndroidID: " + android_id);
 
         // Set AndroidID in the global application class
         MyApp app = (MyApp) getApplication();
         app.setAndroidId(android_id);
+        db = app.getFirebaseInstance();
+        // Set db in the global application class
+
+//        M firebase = (Firebase) getApplication();
+//        firebase.setFirebaseInstance(db);
 
         // Adjust padding based on system bars (optional, depending on your UI design)
         View mainView = findViewById(R.id.main);
@@ -61,12 +62,11 @@ public class MainActivity extends AppCompatActivity {
             });
         }
 
-        // Initialize Firestore
-        db = FirebaseFirestore.getInstance();
-
         // Start the startup animation
         startUpAnimation();
     }
+
+
 
     /**
      * Initiates an animated sequence for the Appify logo components on the main screen.
@@ -150,16 +150,13 @@ public class MainActivity extends AppCompatActivity {
                         DocumentSnapshot document = task.getResult();
                         if (document != null && document.exists()) {
                             // Existing user, navigate to HomePage
-                            Log.d("MainActivity", "User exists. Navigating to EntrantHomePageActivity.");
                             navigateToHomePage(androidId);
                         } else {
                             // New user, navigate to editUserActivity
-                            Log.d("MainActivity", "User is new. Navigating to editUserActivity.");
                             navigateToEditUser(androidId);
                         }
                     } else {
                         // Handle the error
-                        Log.w("MainActivity", "Error checking for AndroidID", task.getException());
                         Toast.makeText(MainActivity.this, "Error checking user status. Please try again.", Toast.LENGTH_SHORT).show();
 
                         // Log additional information

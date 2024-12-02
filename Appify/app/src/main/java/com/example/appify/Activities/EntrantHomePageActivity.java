@@ -59,7 +59,8 @@ public class EntrantHomePageActivity extends AppCompatActivity {
 
         setContentView(R.layout.entrant_home_page);
 
-        db = FirebaseFirestore.getInstance();
+        MyApp app = (MyApp) getApplication();
+        db = app.getFirebaseInstance();
 
         noEventsText = findViewById(R.id.noEventsLayout);
         noEventsText.setVisibility(View.GONE);

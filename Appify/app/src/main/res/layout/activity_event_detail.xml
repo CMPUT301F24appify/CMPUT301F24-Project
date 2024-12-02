@@ -319,6 +319,18 @@
                 android:layout_height="200dp"
                 android:layout_gravity="center"
                 android:contentDescription="@string/qr_code_image"/>
+            <Button
+                android:id="@+id/RegenerateQrCode"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Regenerate QR Code"
+                android:textColor="@color/black"
+                app:backgroundTint="@color/buttons"
+                app:strokeColor="#FF8C00"
+                app:strokeWidth="1dp"
+                android:layout_marginTop="8dp"
+                android:layout_gravity="center" />
 
             <LinearLayout
                 android:layout_width="match_parent"

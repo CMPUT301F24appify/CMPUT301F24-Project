@@ -9,6 +9,7 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Handler;
@@ -18,7 +19,9 @@ import android.util.Log;
 
 
 import androidx.annotation.NonNull;
+import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
 
 
 import com.example.appify.Activities.EntrantEnlistActivity;
@@ -31,11 +34,16 @@ import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.ListenerRegistration;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 
 public class MyApp extends Application {
@@ -59,22 +67,23 @@ public class MyApp extends Application {
 
     // Handler for scheduling flag and message resets
     private Handler handler = new Handler(Looper.getMainLooper());
+    private ScheduledExecutorService scheduler;
 
 
     @Override
     public void onCreate() {
         super.onCreate();
 
-
         // Initialize Firestore
         db = FirebaseFirestore.getInstance();
-
+        setFirebaseInstance(db);
 
         // Retrieve Android ID
         androidId = getAndroidId();
         Log.d(TAG, "Android ID: " + androidId);
 
-
+        scheduler = Executors.newScheduledThreadPool(1);
+        scheduler.scheduleWithFixedDelay(this::checkFirestore, 0, 10, TimeUnit.SECONDS);
         if (androidId == null) {
             Log.e(TAG, "Failed to retrieve Android ID.");
             // Handle the error as needed, possibly exit the app or retry
@@ -92,7 +101,68 @@ public class MyApp extends Application {
         // **Start listening for waitingList subcollection changes**
         listenForWaitingListAdditions();
     }
+    private void checkFirestore() {
+        String android_id2 = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
 
+        db.collection("AndroidID").document(android_id2).collection("waitListedEvents").get().addOnCompleteListener(task -> {
+
+            if (task.isSuccessful()){
+                QuerySnapshot querySnapshot = task.getResult();
+                if (querySnapshot !=null){
+
+                    // Loop through the waitingList of each event
+                    for (QueryDocumentSnapshot queryDocumentSnapshot : querySnapshot){
+                        String eventID = queryDocumentSnapshot.getId();
+                        db.collection("events").document(eventID).get().addOnSuccessListener(documentSnapshot -> {
+                            if (documentSnapshot.exists()){
+                                Boolean lotteryRanFlag = documentSnapshot.getBoolean("lotteryRanFlag"); // NOT FINALIZED NAME
+
+                                String status = queryDocumentSnapshot.getString("status");
+
+                                // If user gets invited, send them a notification
+                                Boolean inviteNotificationSent = queryDocumentSnapshot.getBoolean("inviteNotificationSent");
+                                if (Objects.equals(status, "invited") && Boolean.FALSE.equals(inviteNotificationSent)){
+
+                                    NotificationCompat.Builder builder = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
+                                            .setSmallIcon(R.drawable.notification_bell) // Replace with your own icon
+                                            .setContentTitle("TODO: Event Name Here")
+                                            .setContentText("You have been invited")
+                                            .setPriority(NotificationCompat.PRIORITY_DEFAULT);
+
+                                    // Get the NotificationManager
+                                    NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+                                    int notificationId = (int) System.currentTimeMillis();
+                                    notificationManager.notify(notificationId, builder.build());
+                                    db.collection("AndroidID").document(android_id2).collection("waitListedEvents").document(eventID).update("inviteNotificationSent", true);
+                                }
+
+                                // If lottery is ran, send notification to users who did not get invited.
+
+                                Boolean notSelectedNotificationSent = queryDocumentSnapshot.getBoolean("notSelectedNotificationSent");
+                                // check lottery ran for the specific event, if its been ran check if not selected notifs have been sent out,
+                                // if not send them out.
+                                if (Objects.equals(status, "enrolled") && Boolean.FALSE.equals(notSelectedNotificationSent) && Boolean.TRUE.equals(lotteryRanFlag)){
+
+                                    NotificationCompat.Builder builder = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
+                                            .setSmallIcon(R.drawable.notification_bell) // Replace with your own icon
+                                            .setContentTitle("TODO: Event Name Here")
+                                            .setContentText("You have not been invited")
+                                            .setPriority(NotificationCompat.PRIORITY_DEFAULT);
+
+                                    // Get the NotificationManager
+                                    NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+                                    int notificationId = (int) System.currentTimeMillis();
+                                    notificationManager.notify(notificationId, builder.build());
+                                    db.collection("AndroidID").document(android_id2).collection("waitListedEvents").document(eventID).update("notSelectedNotificationSent", true);
+                                        }
+                            }
+                        });
+                    }
+
+                }
+            }
+        });
+    }
 
     /**
      * Retrieves the device's Android ID.
@@ -113,6 +183,14 @@ public class MyApp extends Application {
         }
     }
 
+
+    public FirebaseFirestore getFirebaseInstance() {
+        return db;
+    }
+
+    public void setFirebaseInstance(FirebaseFirestore db){
+        this.db = db;
+    }
 
     /**
      * Sets the device's Android ID in SharedPreferences.
@@ -394,10 +472,8 @@ public class MyApp extends Application {
             pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_ONE_SHOT | PendingIntent.FLAG_IMMUTABLE);
         }
 
-
         // Build the notification
         String notificationTitle = eventName + " - " + capitalize(status) + " Notification";
-
 
         NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
                 .setSmallIcon(R.drawable.notification_bell) // Ensure this icon exists in res/drawable

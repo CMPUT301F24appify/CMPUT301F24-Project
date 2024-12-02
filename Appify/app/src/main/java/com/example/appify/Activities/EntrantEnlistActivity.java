@@ -83,7 +83,8 @@ public class EntrantEnlistActivity extends AppCompatActivity {
 
         Intent intent = getIntent();
 
-        db = FirebaseFirestore.getInstance();
+        MyApp app = (MyApp) getApplication();
+        db = app.getFirebaseInstance();
 
         deviceLocationRequest = LocationRequest.create();
         deviceLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
@@ -102,7 +103,9 @@ public class EntrantEnlistActivity extends AppCompatActivity {
              db.collection("events").document(eventId)
                      .get()
                      .addOnSuccessListener(documentSnapshot -> {
+
                          if (documentSnapshot.exists()) {
+
                              String dbKey = documentSnapshot.getString("qrCodePassKey");
 
                              // If qrCodeKey doesn't match current passKey, the scanned qrCode is outdated. Return to events page.
@@ -117,7 +120,6 @@ public class EntrantEnlistActivity extends AppCompatActivity {
                                  headerNavigation.setupNavigation();
 
                                  // Get the users AndroidID
-                                 MyApp app = (MyApp) getApplication();
                                  androidId = app.getAndroidId();
 
                                  // Find Views in the layout
@@ -174,8 +176,15 @@ public class EntrantEnlistActivity extends AppCompatActivity {
                                      }
                                  });
                             }
+                         } else {
+                             System.out.println("failed");
+                             Intent intent3 = new Intent(this, EntrantHomePageActivity.class);
+                             Toast.makeText(this, "Invalid QRCode",Toast.LENGTH_LONG).show();
+                             this.startActivity(intent3);
                          }
                      });
+
+
         }
         else {
             System.out.println("no qr");
@@ -222,8 +231,6 @@ public class EntrantEnlistActivity extends AppCompatActivity {
             // Handle Enlist and Leave buttons
             enlistLeaveButton = findViewById(R.id.enlist_leave_button);
 
-            db = FirebaseFirestore.getInstance();
-            MyApp app = (MyApp) getApplication();
             String androidId = app.getAndroidId();
             // Check if user is already enlisted in the waiting list
             checkUserEnrollmentStatus(eventId,androidId);
@@ -378,14 +385,6 @@ public class EntrantEnlistActivity extends AppCompatActivity {
                                         enlistInEvent(eventId, name, date, registrationEndDate, facility, isGeolocate, androidId);
                                     }
                                 });
-
-//                                enlistLeaveButton.setOnClickListener(v -> {
-//                                    if (isGeolocate) {
-//                                        showGeolocationConfirmationDialog(() -> enlistInEvent(eventId, name, date, registrationEndDate, facility, isGeolocate, androidId));
-//                                    } else {
-//                                        enlistInEvent(eventId, name, date, registrationEndDate, facility, isGeolocate, androidId);
-//                                    }
-//                                });
                             }
                         });
                     } else {
@@ -436,37 +435,50 @@ public class EntrantEnlistActivity extends AppCompatActivity {
         // Add user to waiting list
         HashMap<String, Object> waitlistData = new HashMap<>();
         waitlistData.put("status", "enrolled");
+        waitlistData.put("inviteNotificationSent", false);
+        waitlistData.put("notSelectedNotificationSent", false);
         waitlistData.put("latitude", deviceLatitude);
         waitlistData.put("longitude", deviceLongitude);
 
         waitingListRef.document(androidId).set(waitlistData)
                 .addOnSuccessListener(aVoid -> {
-                    // Add event to user's waitListedEvents with status "enrolled"
+                    // Add event to user's waitListedEvents
                     CollectionReference userWaitListedEventsRef = db.collection("AndroidID")
                             .document(androidId)
                             .collection("waitListedEvents");
 
                     HashMap<String, Object> eventStatusData = new HashMap<>();
                     eventStatusData.put("status", "enrolled");
+                    eventStatusData.put("inviteNotificationSent", false);
+                    eventStatusData.put("notSelectedNotificationSent", false);
 
                     userWaitListedEventsRef.document(eventId).set(eventStatusData)
                             .addOnSuccessListener(aVoid2 -> {
-                                // Navigate to EnlistConfirmationActivity
-                                Intent intent = new Intent(EntrantEnlistActivity.this, EnlistConfirmationActivity.class);
-                                intent.putExtra("waitingList", "Joined");
-                                intent.putExtra("name", name);
-                                intent.putExtra("date", date);
-                                intent.putExtra("registrationEndDate", registrationEndDate);
+                                // Update user's latitude and longitude in their document
+                                db.collection("AndroidID").document(androidId)
+                                        .update("latitude", deviceLatitude, "longitude", deviceLongitude)
+                                        .addOnSuccessListener(aVoid3 -> {
+                                            // Navigate to EnlistConfirmationActivity
+                                            Intent intent = new Intent(EntrantEnlistActivity.this, EnlistConfirmationActivity.class);
+                                            intent.putExtra("waitingList", "Joined");
+                                            intent.putExtra("name", name);
+                                            intent.putExtra("date", date);
+                                            intent.putExtra("registrationEndDate", registrationEndDate);
 
-                                intent.putExtra("geolocate", isGeolocate);
+                                            intent.putExtra("geolocate", isGeolocate);
 
-                                db.collection("facilities").document(facility).get().addOnSuccessListener(documentSnapshot -> {
-                                    String facName = documentSnapshot.getString("name");
-                                    intent.putExtra("facility", facName);
-                                    startActivity(intent);
-                                });
+                                            db.collection("facilities").document(facility).get().addOnSuccessListener(documentSnapshot -> {
+                                                String facName = documentSnapshot.getString("name");
+                                                intent.putExtra("facility", facName);
+                                                startActivity(intent);
+                                            });
+                                            startActivity(intent);
 
-//                                finish();
+
+                                        })
+                                        .addOnFailureListener(e -> {
+                                            Toast.makeText(this, "Failed to update your location.", Toast.LENGTH_SHORT).show();
+                                        });
                             })
                             .addOnFailureListener(e -> Toast.makeText(this, "Failed to add event to your waitlisted events.", Toast.LENGTH_SHORT).show());
                 })
@@ -514,12 +526,11 @@ public class EntrantEnlistActivity extends AppCompatActivity {
     private void getDeviceLocation(Runnable onSuccess) {
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             LocationServices.getFusedLocationProviderClient(this).getCurrentLocation(LocationRequest.PRIORITY_HIGH_ACCURACY, null)
-//                    .getCurrentLocation()
                     .addOnSuccessListener(location -> {
                         if (location != null) {
                             deviceLatitude = location.getLatitude();
                             deviceLongitude = location.getLongitude();
-                            Toast.makeText(this, "Location obtained: Lat = " + deviceLatitude + ", Lon = " + deviceLongitude, Toast.LENGTH_SHORT).show();
+                            Toast.makeText(this, "Gathering location...", Toast.LENGTH_SHORT).show();
                             onSuccess.run();
                         } else {
                             Toast.makeText(this, "Unable to obtain location. Please try again.", Toast.LENGTH_SHORT).show();
