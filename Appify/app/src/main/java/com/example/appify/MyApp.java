@@ -109,29 +109,53 @@ public class MyApp extends Application {
                 QuerySnapshot querySnapshot = task.getResult();
                 if (querySnapshot !=null){
 
+                    // Loop through the waitingList of each event
                     for (QueryDocumentSnapshot queryDocumentSnapshot : querySnapshot){
                         String eventID = queryDocumentSnapshot.getId();
-                        String status = queryDocumentSnapshot.getString("status");
-                        Boolean inviteNotificationSent = queryDocumentSnapshot.getBoolean("inviteNotificationSent");
+                        db.collection("events").document(eventID).get().addOnSuccessListener(documentSnapshot -> {
+                            if (documentSnapshot.exists()){
+                                Boolean lotteryRanFlag = documentSnapshot.getBoolean("lotteryRanFlag"); // NOT FINALIZED NAME
 
-                        // If user gets invited, send them a notification
-                        if (Objects.equals(status, "invited") && Boolean.FALSE.equals(inviteNotificationSent)){
+                                String status = queryDocumentSnapshot.getString("status");
 
-                            NotificationCompat.Builder builder = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
-                                    .setSmallIcon(R.drawable.notification_bell) // Replace with your own icon
-                                    .setContentTitle("Invited")
-                                    .setContentText("You have been invited")
-                                    .setPriority(NotificationCompat.PRIORITY_DEFAULT);
+                                // If user gets invited, send them a notification
+                                Boolean inviteNotificationSent = queryDocumentSnapshot.getBoolean("inviteNotificationSent");
+                                if (Objects.equals(status, "invited") && Boolean.FALSE.equals(inviteNotificationSent)){
 
-                            // Get the NotificationManager
-                            NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-                            int notificationId = (int) System.currentTimeMillis();
-                            notificationManager.notify(notificationId, builder.build());
-                            db.collection("AndroidID").document(android_id2).collection("waitListedEvents").document(eventID).update("inviteNotificationSent", true);
-                        }
+                                    NotificationCompat.Builder builder = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
+                                            .setSmallIcon(R.drawable.notification_bell) // Replace with your own icon
+                                            .setContentTitle("TODO: Event Name Here")
+                                            .setContentText("You have been invited")
+                                            .setPriority(NotificationCompat.PRIORITY_DEFAULT);
 
-                        // If lottery is ran, send notification to users who did not get invited.
+                                    // Get the NotificationManager
+                                    NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+                                    int notificationId = (int) System.currentTimeMillis();
+                                    notificationManager.notify(notificationId, builder.build());
+                                    db.collection("AndroidID").document(android_id2).collection("waitListedEvents").document(eventID).update("inviteNotificationSent", true);
+                                }
 
+                                // If lottery is ran, send notification to users who did not get invited.
+
+                                Boolean notSelectedNotificationSent = queryDocumentSnapshot.getBoolean("notSelectedNotificationSent");
+                                // check lottery ran for the specific event, if its been ran check if not selected notifs have been sent out,
+                                // if not send them out.
+                                if (Objects.equals(status, "enrolled") && Boolean.FALSE.equals(notSelectedNotificationSent) && Boolean.TRUE.equals(lotteryRanFlag)){
+
+                                    NotificationCompat.Builder builder = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
+                                            .setSmallIcon(R.drawable.notification_bell) // Replace with your own icon
+                                            .setContentTitle("TODO: Event Name Here")
+                                            .setContentText("You have been invited")
+                                            .setPriority(NotificationCompat.PRIORITY_DEFAULT);
+
+                                    // Get the NotificationManager
+                                    NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+                                    int notificationId = (int) System.currentTimeMillis();
+                                    notificationManager.notify(notificationId, builder.build());
+                                    db.collection("AndroidID").document(android_id2).collection("waitListedEvents").document(eventID).update("notSelectedNotificationSent", true);
+                                        }
+                            }
+                        });
                     }
 
                 }
