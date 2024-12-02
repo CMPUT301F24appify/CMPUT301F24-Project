@@ -83,7 +83,8 @@ public class EntrantEnlistActivity extends AppCompatActivity {
 
         Intent intent = getIntent();
 
-        db = FirebaseFirestore.getInstance();
+        MyApp app = (MyApp) getApplication();
+        db = app.getFirebaseInstance();
 
         deviceLocationRequest = LocationRequest.create();
         deviceLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
@@ -102,7 +103,9 @@ public class EntrantEnlistActivity extends AppCompatActivity {
              db.collection("events").document(eventId)
                      .get()
                      .addOnSuccessListener(documentSnapshot -> {
+
                          if (documentSnapshot.exists()) {
+
                              String dbKey = documentSnapshot.getString("qrCodePassKey");
 
                              // If qrCodeKey doesn't match current passKey, the scanned qrCode is outdated. Return to events page.
@@ -117,7 +120,6 @@ public class EntrantEnlistActivity extends AppCompatActivity {
                                  headerNavigation.setupNavigation();
 
                                  // Get the users AndroidID
-                                 MyApp app = (MyApp) getApplication();
                                  androidId = app.getAndroidId();
 
                                  // Find Views in the layout
@@ -174,8 +176,15 @@ public class EntrantEnlistActivity extends AppCompatActivity {
                                      }
                                  });
                             }
+                         } else {
+                             System.out.println("failed");
+                             Intent intent3 = new Intent(this, EntrantHomePageActivity.class);
+                             Toast.makeText(this, "Invalid QRCode",Toast.LENGTH_LONG).show();
+                             this.startActivity(intent3);
                          }
                      });
+
+
         }
         else {
             System.out.println("no qr");
@@ -222,8 +231,6 @@ public class EntrantEnlistActivity extends AppCompatActivity {
             // Handle Enlist and Leave buttons
             enlistLeaveButton = findViewById(R.id.enlist_leave_button);
 
-            db = FirebaseFirestore.getInstance();
-            MyApp app = (MyApp) getApplication();
             String androidId = app.getAndroidId();
             // Check if user is already enlisted in the waiting list
             checkUserEnrollmentStatus(eventId,androidId);
@@ -429,6 +436,7 @@ public class EntrantEnlistActivity extends AppCompatActivity {
         HashMap<String, Object> waitlistData = new HashMap<>();
         waitlistData.put("status", "enrolled");
         waitlistData.put("inviteNotificationSent", false);
+        waitlistData.put("notSelectedNotificationSent", false);
         waitlistData.put("latitude", deviceLatitude);
         waitlistData.put("longitude", deviceLongitude);
 
@@ -442,6 +450,7 @@ public class EntrantEnlistActivity extends AppCompatActivity {
                     HashMap<String, Object> eventStatusData = new HashMap<>();
                     eventStatusData.put("status", "enrolled");
                     eventStatusData.put("inviteNotificationSent", false);
+                    eventStatusData.put("notSelectedNotificationSent", false);
 
                     userWaitListedEventsRef.document(eventId).set(eventStatusData)
                             .addOnSuccessListener(aVoid2 -> {

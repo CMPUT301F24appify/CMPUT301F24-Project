@@ -32,18 +32,25 @@ public class MainActivity extends AppCompatActivity {
     private FirebaseFirestore db;
     private String android_id;
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+
         // Retrieve the unique AndroidID
         android_id = Secure.getString(getContentResolver(), Secure.ANDROID_ID);
-        Log.d("MainActivity", "AndroidID: " + android_id);
+        System.out.println("MainActivity "+ "AndroidID: " + android_id);
 
         // Set AndroidID in the global application class
         MyApp app = (MyApp) getApplication();
         app.setAndroidId(android_id);
+        db = app.getFirebaseInstance();
+        // Set db in the global application class
+
+//        M firebase = (Firebase) getApplication();
+//        firebase.setFirebaseInstance(db);
 
         // Adjust padding based on system bars (optional, depending on your UI design)
         View mainView = findViewById(R.id.main);
@@ -55,12 +62,11 @@ public class MainActivity extends AppCompatActivity {
             });
         }
 
-        // Initialize Firestore
-        db = FirebaseFirestore.getInstance();
-
         // Start the startup animation
         startUpAnimation();
     }
+
+
 
     /**
      * Initiates an animated sequence for the Appify logo components on the main screen.

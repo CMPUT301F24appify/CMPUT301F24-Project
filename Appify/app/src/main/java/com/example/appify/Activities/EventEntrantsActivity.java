@@ -12,6 +12,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.appify.Adapters.CustomEntrantAdapter;
 import com.example.appify.Model.Entrant;
+import com.example.appify.MyApp;
 import com.example.appify.R;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -59,7 +60,8 @@ public class EventEntrantsActivity extends AppCompatActivity{
         Intent intent = getIntent();
         String eventID = intent.getStringExtra("eventID");
 
-        db = FirebaseFirestore.getInstance();
+        MyApp app = (MyApp) getApplication();
+        db = app.getFirebaseInstance();
 
         entrantListView = findViewById(R.id.entrant_list);
         waitListedCheckbox = findViewById(R.id.waitListed_checkbox);

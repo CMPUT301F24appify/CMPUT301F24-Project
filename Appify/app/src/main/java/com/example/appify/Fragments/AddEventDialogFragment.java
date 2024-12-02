@@ -133,7 +133,8 @@ public class AddEventDialogFragment extends DialogFragment {
                     } else {
                         Log.w("MyApp", "No facilityID found for this AndroidID");
                     }
-                });
+                })
+                .addOnFailureListener(e -> Log.w("MyApp", "Failed to retrieve facilityID", e));;
 
         // Initialize input fields
         EditText eventName = view.findViewById(R.id.editTextEventName);
@@ -176,8 +177,23 @@ public class AddEventDialogFragment extends DialogFragment {
                     String date = buttonEventDate.getText().toString();
                     String registrationEndDate = buttonRegistrationEndDate.getText().toString();
                     String description = eventDescription.getText().toString();
-                    int waitMax = parseIntegerOptional(maxWaitEntrant.getText().toString());
-                    int sampleMax = Integer.parseInt(maxSampleEntrant.getText().toString());
+                    final int waitMax;
+                    final int sampleMax;
+
+
+                    // Parse maxWaitEntrant
+                    if (!maxWaitEntrant.getText().toString().trim().isEmpty()) {
+                        waitMax = Integer.parseInt(maxWaitEntrant.getText().toString().trim());
+                    } else {
+                        waitMax = Integer.MAX_VALUE; // Default value if not provided
+                    }
+
+                    // Parse maxSampleEntrant
+                    if (!maxSampleEntrant.getText().toString().trim().isEmpty()) {
+                        sampleMax = Integer.parseInt(maxSampleEntrant.getText().toString().trim());
+                    } else {
+                        sampleMax = 0; // Default value
+                    }
 
                     positiveButton.setEnabled(false); // Disable to prevent multiple clicks
 
@@ -249,8 +265,8 @@ public class AddEventDialogFragment extends DialogFragment {
 
     private boolean validateInputs(EditText eventName, EditText eventFacility, EditText eventDescription, EditText maxWaitEntrant, EditText maxSampleEntrant) {
         boolean isValid = true;
-        int waitMax = parseIntegerOptional(maxWaitEntrant.getText().toString());
-        int sampleMax = Integer.parseInt(maxSampleEntrant.getText().toString());
+        int waitMax = Integer.MAX_VALUE;
+        int sampleMax = 0;
         SimpleDateFormat sdf = new SimpleDateFormat("MMM dd, yyyy", Locale.getDefault());
 
         if (eventName.getText().toString().trim().isEmpty()) {
@@ -270,21 +286,44 @@ public class AddEventDialogFragment extends DialogFragment {
         }
         if (buttonEventDate.getText().toString().equals("Event Date")) {
             Toast.makeText(getContext(), "Please select an event date", Toast.LENGTH_SHORT).show();
+            buttonEventDate.setError("Please select an event date");
             isValid = false;
         }
         if (buttonRegistrationEndDate.getText().toString().equals("Registration End Date")) {
             Toast.makeText(getContext(), "Please select a registration end date", Toast.LENGTH_SHORT).show();
+            buttonRegistrationEndDate.setError("Please select a registration end date");
             isValid = false;
         }
-        if (maxSampleEntrant.getText().toString().trim().isEmpty() && sampleMax <= 0) {
-            Toast.makeText(getContext(), "Please select number of max sample entrants", Toast.LENGTH_SHORT).show();
-            maxSampleEntrant.setError("Please select number of max sample entrants");
+        // Validate maxSampleEntrant
+        if (maxSampleEntrant.getText().toString().trim().isEmpty()) {
+            maxSampleEntrant.setError("Please enter max sample entrants");
             isValid = false;
+        } else {
+            try {
+                sampleMax = Integer.parseInt(maxSampleEntrant.getText().toString().trim());
+                if (sampleMax <= 0) {
+                    maxSampleEntrant.setError("Please enter a positive number");
+                    isValid = false;
+                }
+            } catch (NumberFormatException e) {
+                maxSampleEntrant.setError("Invalid number");
+                isValid = false;
+            }
         }
-        if (maxWaitEntrant.getText().toString().trim().isEmpty() && waitMax <= 0) {
-            Toast.makeText(getContext(), "Please select number of max sample entrants", Toast.LENGTH_SHORT).show();
-            maxWaitEntrant.setError("Please select number of max sample entrants");
-            isValid = false;
+        // Validate maxWaitEntrant
+        if (maxWaitEntrant.getText().toString().trim().isEmpty()) {
+            waitMax = Integer.MAX_VALUE; // Optional field
+        } else {
+            try {
+                waitMax = Integer.parseInt(maxWaitEntrant.getText().toString().trim());
+                if (waitMax <= 0) {
+                    maxWaitEntrant.setError("Please enter a positive number");
+                    isValid = false;
+                }
+            } catch (NumberFormatException e) {
+                maxWaitEntrant.setError("Invalid number");
+                isValid = false;
+            }
         }
         if (waitMax != Integer.MAX_VALUE) {
             if (sampleMax > waitMax) {
@@ -293,16 +332,21 @@ public class AddEventDialogFragment extends DialogFragment {
                 isValid = false;
             }
         }
-        try {
-            Date eventDate = sdf.parse(buttonEventDate.getText().toString());
-            Date registrationEndDate = sdf.parse(buttonRegistrationEndDate.getText().toString());
-
-            if (registrationEndDate.after(eventDate)) {
-                Toast.makeText(getContext(), "Registration end date must be before or on the event date", Toast.LENGTH_SHORT).show();
+        // Validate date order
+        if (isValidDate(buttonEventDate.getText().toString()) && isValidDate(buttonRegistrationEndDate.getText().toString())) {
+            try {
+                Date eventDate = sdf.parse(buttonEventDate.getText().toString());
+                Date registrationEndDate = sdf.parse(buttonRegistrationEndDate.getText().toString());
+                if (registrationEndDate.after(eventDate)) {
+                    Toast.makeText(getContext(), "Registration end date must be before or on the event date", Toast.LENGTH_SHORT).show();
+                    buttonEventDate.setError("Event date is before Registration end date");
+                    buttonRegistrationEndDate.setError("Registration end date is after Event Date");
+                    isValid = false;
+                }
+            } catch (ParseException e) {
+                Toast.makeText(getContext(), "Invalid date format", Toast.LENGTH_SHORT).show();
                 isValid = false;
             }
-        } catch (ParseException e) {
-            isValid = false;
         }
         return isValid;
     }
