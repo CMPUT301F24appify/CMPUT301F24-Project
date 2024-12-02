@@ -37,7 +37,7 @@ public class userProfileActivity extends AppCompatActivity {
     private ImageView profileImageView, headerImageView;
     private TextView nameTextView, phoneTextView, emailTextView;
     private ListenerRegistration listenerRegistration;
-    private Button editButton, adminButton;
+    private Button editButton;
     private boolean generatePicture = false;
 
     /**
@@ -64,7 +64,6 @@ public class userProfileActivity extends AppCompatActivity {
         phoneTextView = findViewById(R.id.phoneTextView);
         emailTextView = findViewById(R.id.emailTextView);
         editButton = findViewById(R.id.editButton);
-        adminButton = findViewById(R.id.adminButton);
         headerImageView = findViewById(R.id.profileImageViewHeader);
 
         // Edit button to open edit activity
@@ -73,37 +72,6 @@ public class userProfileActivity extends AppCompatActivity {
             intent.putExtra("AndroidID", android_id);
             intent.putExtra("pictureFlag", generatePicture);
             startActivity(intent);
-        });
-
-        // Handle Admin Button Click
-        adminButton.setOnClickListener(v -> {
-            db.collection("AndroidID").document(android_id)
-                    .get()
-                    .addOnSuccessListener(documentSnapshot -> {
-                        if (documentSnapshot.exists()) {
-                            Boolean isAdmin = documentSnapshot.getBoolean("admin");
-
-                            // Toggle isAdmin state
-                            boolean newAdminState = isAdmin == null || !isAdmin; // Default to false if null
-                            db.collection("AndroidID").document(android_id)
-                                    .update("admin", newAdminState)
-                                    .addOnSuccessListener(aVoid -> {
-                                        // Update button color and show a success message
-                                        if (newAdminState) {
-                                            adminButton.setBackgroundColor(Color.GREEN);
-                                        } else {
-                                            adminButton.setBackgroundColor(Color.RED);
-                                        }
-                                    });
-                        } else {
-                            // If the document doesn't exist, set isAdmin to true
-                            db.collection("AndroidID").document(android_id)
-                                    .set(Collections.singletonMap("admin", true), SetOptions.merge())
-                                    .addOnSuccessListener(aVoid -> {
-                                        adminButton.setBackgroundColor(Color.GREEN);
-                                    });
-                        }
-                    });
         });
 
         //Retrieve and display user data
@@ -128,13 +96,6 @@ public class userProfileActivity extends AppCompatActivity {
                                 phoneTextView.setText(phone);
                             }
                             emailTextView.setText(email);
-
-                            // Set Admin Button based on isAdmin
-                            if (isAdmin != null && isAdmin) {
-                                adminButton.setBackgroundColor(Color.GREEN);
-                            } else {
-                                adminButton.setBackgroundColor(Color.RED);
-                            }
 
                             loadProfilePicture(android_id);
                         }
