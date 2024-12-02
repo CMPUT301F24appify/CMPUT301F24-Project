@@ -25,7 +25,6 @@ import com.google.firebase.storage.StorageReference;
 
 import java.util.Collections;
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Activity to display the user's profile information.
