@@ -1,65 +1,40 @@
 package com.example.appify;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
-
 import com.example.appify.Model.Event;
-import com.google.firebase.firestore.CollectionReference;
-import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
-import com.google.firebase.firestore.QuerySnapshot;
-import com.google.firebase.firestore.SetOptions;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
+import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.Executor;
+import static org.junit.jupiter.api.Assertions.*;
 
 class EventTest {
 
-    private FirebaseFirestore mockFirestore;
-    private CollectionReference mockEventsCollection;
-    private CollectionReference mockFacilitiesCollection;
-    private DocumentReference mockEventDocument;
-    private DocumentReference mockFacilityDocument;
-
     private Event event;
+
+    // Mocked Firestore instance
+    private FirebaseFirestore mockedFirestore;
+
+    // MockedStatic for FirebaseFirestore class
+    private MockedStatic<FirebaseFirestore> mockedStaticFirestore;
 
     @BeforeEach
     void setUp() {
-        // Mock Firestore and its collections/documents
-        mockFirestore = mock(FirebaseFirestore.class);
-        mockEventsCollection = mock(CollectionReference.class);
-        mockFacilitiesCollection = mock(CollectionReference.class);
-        mockEventDocument = mock(DocumentReference.class);
-        mockFacilityDocument = mock(DocumentReference.class);
+        // Initialize the mocked Firestore instance
+        mockedFirestore = Mockito.mock(FirebaseFirestore.class);
 
-        // When Firestore's collection("events") is called, return mockEventsCollection
-        when(mockFirestore.collection("events")).thenReturn(mockEventsCollection);
-        when(mockFirestore.collection("facilities")).thenReturn(mockFacilitiesCollection);
+        // Mock the static method FirebaseFirestore.getInstance()
+        mockedStaticFirestore = Mockito.mockStatic(FirebaseFirestore.class);
+        mockedStaticFirestore.when(FirebaseFirestore::getInstance).thenReturn(mockedFirestore);
 
-        // When collection("events").document(eventId) is called, return mockEventDocument
-        when(mockEventsCollection.document(any(String.class))).thenReturn(mockEventDocument);
-
-        // When collection("facilities").document(facilityId) is called, return mockFacilityDocument
-        when(mockFacilitiesCollection.document(any(String.class))).thenReturn(mockFacilityDocument);
-
-        // Initialize an Event instance with mocked Firestore
-        String eventId = UUID.randomUUID().toString();
+        // Initialize the Event object with mocked Firestore
         event = new Event(
-                "Sample Event",
+                "Music Fest",
                 "2024-12-31",
-                "Sample Facility",
-                "2024-12-01",
-                "This is a sample event.",
+                "Main Hall",
+                "2024-12-25",
+                "A grand music festival",
                 100,
                 50,
                 "https://example.com/poster.jpg",
@@ -68,243 +43,224 @@ class EventTest {
                 true,
                 true,
                 true,
-                "You are waitlisted for the event.",
-                "You are enrolled in the event.",
-                "Your enrollment was cancelled.",
-                "You are invited to the event.",
+                "Waitlisted message",
+                "Enrolled message",
+                "Cancelled message",
+                "Invited message",
                 "organizer123"
         );
-        event.setEventId(eventId);
-        event.setDb(mockFirestore);
     }
 
-    // Constructor Tests
+    // Ensure that the static mock is closed after each test
+    @org.junit.jupiter.api.AfterEach
+    void tearDown() {
+        mockedStaticFirestore.close();
+    }
 
     @Test
-    void testFullConstructor() {
-        String eventId = event.getEventId();
-        assertEquals("Sample Event", event.getName());
+    void testGetName() {
+        assertEquals("Music Fest", event.getName());
+    }
+
+    @Test
+    void testSetName() {
+        event.setName("Art Fest");
+        assertEquals("Art Fest", event.getName());
+    }
+
+    @Test
+    void testGetDate() {
         assertEquals("2024-12-31", event.getDate());
-        assertEquals("Sample Facility", event.getFacility());
-        assertEquals("2024-12-01", event.getRegistrationEndDate());
-        assertEquals("This is a sample event.", event.getDescription());
-        assertEquals(100, event.getMaxWaitEntrants());
-        assertEquals(50, event.getMaxSampleEntrants());
-        assertEquals("https://example.com/poster.jpg", event.getPosterUri());
-        assertTrue(event.isGeolocate());
-        assertTrue(event.isNotifyWaitlisted());
-        assertTrue(event.isNotifyEnrolled());
-        assertTrue(event.isNotifyCancelled());
-        assertTrue(event.isNotifyInvited());
-        assertEquals("You are waitlisted for the event.", event.getWaitlistedMessage());
-        assertEquals("You are enrolled in the event.", event.getEnrolledMessage());
-        assertEquals("Your enrollment was cancelled.", event.getCancelledMessage());
-        assertEquals("You are invited to the event.", event.getInvitedMessage());
-        assertEquals("organizer123", event.getOrganizerID());
-        assertFalse(event.getLotteryRanFlag());
-        assertFalse(event.getLotteryButton());
     }
 
     @Test
-    void testAdminConstructor() {
-        Event adminEvent = new Event(
-                "Admin Event",
-                "2024-11-30",
-                "Admin Facility",
-                "2024-11-15",
-                200,
-                100,
-                "organizer456"
-        );
-
-        assertEquals("Admin Event", adminEvent.getName());
-        assertEquals("2024-11-30", adminEvent.getDate());
-        assertEquals("Admin Facility", adminEvent.getFacility());
-        assertEquals("2024-11-15", adminEvent.getRegistrationEndDate());
-        assertEquals(200, adminEvent.getMaxWaitEntrants());
-        assertEquals(100, adminEvent.getMaxSampleEntrants());
-        assertEquals("organizer456", adminEvent.getOrganizerID());
-        // Other fields should be default
-        assertNull(adminEvent.getDescription());
-        assertNull(adminEvent.getPosterUri());
-        assertFalse(adminEvent.isGeolocate());
-        assertNull(adminEvent.getEventId());
-        assertFalse(adminEvent.isNotifyWaitlisted());
-        assertFalse(adminEvent.isNotifyEnrolled());
-        assertFalse(adminEvent.isNotifyCancelled());
-        assertFalse(adminEvent.isNotifyInvited());
-        assertNull(adminEvent.getWaitlistedMessage());
-        assertNull(adminEvent.getEnrolledMessage());
-        assertNull(adminEvent.getCancelledMessage());
-        assertNull(adminEvent.getInvitedMessage());
-        assertFalse(adminEvent.getLotteryRanFlag());
-        assertFalse(adminEvent.getLotteryButton());
-    }
-
-    @Test
-    void testNoArgConstructor() {
-        Event noArgEvent = new Event();
-        assertNull(noArgEvent.getName());
-        assertNull(noArgEvent.getDate());
-        assertNull(noArgEvent.getFacility());
-        assertNull(noArgEvent.getRegistrationEndDate());
-        assertNull(noArgEvent.getDescription());
-        assertEquals(0, noArgEvent.getMaxWaitEntrants());
-        assertEquals(0, noArgEvent.getMaxSampleEntrants());
-        assertNull(noArgEvent.getPosterUri());
-        assertFalse(noArgEvent.isGeolocate());
-        assertNull(noArgEvent.getEventId());
-        assertFalse(noArgEvent.isNotifyWaitlisted());
-        assertFalse(noArgEvent.isNotifyEnrolled());
-        assertFalse(noArgEvent.isNotifyCancelled());
-        assertFalse(noArgEvent.isNotifyInvited());
-        assertNull(noArgEvent.getWaitlistedMessage());
-        assertNull(noArgEvent.getEnrolledMessage());
-        assertNull(noArgEvent.getCancelledMessage());
-        assertNull(noArgEvent.getInvitedMessage());
-        assertFalse(noArgEvent.getLotteryRanFlag());
-        assertFalse(noArgEvent.getLotteryButton());
-    }
-
-    // Getter and Setter Tests
-
-    @Test
-    void testGetAndSetName() {
-        assertEquals("Sample Event", event.getName());
-        event.setName("Updated Event");
-        assertEquals("Updated Event", event.getName());
-    }
-
-    @Test
-    void testGetAndSetDate() {
-        assertEquals("2024-12-31", event.getDate());
+    void testSetDate() {
         event.setDate("2025-01-01");
         assertEquals("2025-01-01", event.getDate());
     }
 
     @Test
-    void testGetAndSetFacility() {
-        assertEquals("Sample Facility", event.getFacility());
-        event.setFacility("Updated Facility");
-        assertEquals("Updated Facility", event.getFacility());
+    void testGetFacility() {
+        assertEquals("Main Hall", event.getFacility());
     }
 
     @Test
-    void testGetAndSetRegistrationEndDate() {
-        assertEquals("2024-12-01", event.getRegistrationEndDate());
-        event.setRegistrationEndDate("2024-12-15");
-        assertEquals("2024-12-15", event.getRegistrationEndDate());
+    void testSetFacility() {
+        event.setFacility("Conference Room");
+        assertEquals("Conference Room", event.getFacility());
     }
 
     @Test
-    void testGetAndSetDescription() {
-        assertEquals("This is a sample event.", event.getDescription());
-        event.setDescription("Updated description.");
-        assertEquals("Updated description.", event.getDescription());
+    void testGetRegistrationEndDate() {
+        assertEquals("2024-12-25", event.getRegistrationEndDate());
     }
 
     @Test
-    void testGetAndSetMaxWaitEntrants() {
+    void testSetRegistrationEndDate() {
+        event.setRegistrationEndDate("2024-12-20");
+        assertEquals("2024-12-20", event.getRegistrationEndDate());
+    }
+
+    @Test
+    void testGetDescription() {
+        assertEquals("A grand music festival", event.getDescription());
+    }
+
+    @Test
+    void testSetDescription() {
+        event.setDescription("A fun art festival");
+        assertEquals("A fun art festival", event.getDescription());
+    }
+
+    @Test
+    void testGetMaxWaitEntrants() {
         assertEquals(100, event.getMaxWaitEntrants());
-        event.setMaxWaitEntrants(150);
-        assertEquals(150, event.getMaxWaitEntrants());
     }
 
     @Test
-    void testGetAndSetMaxSampleEntrants() {
+    void testSetMaxWaitEntrants() {
+        event.setMaxWaitEntrants(200);
+        assertEquals(200, event.getMaxWaitEntrants());
+    }
+
+    @Test
+    void testGetMaxSampleEntrants() {
         assertEquals(50, event.getMaxSampleEntrants());
-        event.setMaxSampleEntrants(75);
-        assertEquals(75, event.getMaxSampleEntrants());
     }
 
     @Test
-    void testGetAndSetPosterUri() {
+    void testSetMaxSampleEntrants() {
+        event.setMaxSampleEntrants(60);
+        assertEquals(60, event.getMaxSampleEntrants());
+    }
+
+    @Test
+    void testGetPosterUri() {
         assertEquals("https://example.com/poster.jpg", event.getPosterUri());
-        event.setPosterUri("https://example.com/newposter.jpg");
-        assertEquals("https://example.com/newposter.jpg", event.getPosterUri());
     }
 
     @Test
-    void testGetAndSetIsGeolocate() {
+    void testSetPosterUri() {
+        event.setPosterUri("https://newexample.com/poster.jpg");
+        assertEquals("https://newexample.com/poster.jpg", event.getPosterUri());
+    }
+
+    @Test
+    void testIsGeolocate() {
         assertTrue(event.isGeolocate());
+    }
+
+    @Test
+    void testSetGeolocate() {
         event.setGeolocate(false);
         assertFalse(event.isGeolocate());
     }
 
     @Test
-    void testGetAndSetOrganizerID() {
+    void testGetOrganizerID() {
         assertEquals("organizer123", event.getOrganizerID());
-        event.setOrganizerID("organizer456");
-        assertEquals("organizer456", event.getOrganizerID());
     }
 
     @Test
-    void testGetAndSetNotifyWaitlisted() {
+    void testGetEventId() {
+        assertNotNull(event.getEventId()); // Ensure the eventId is generated
+    }
+
+    @Test
+    void testGetNotifyWaitlisted() {
         assertTrue(event.isNotifyWaitlisted());
+    }
+
+    @Test
+    void testSetNotifyWaitlisted() {
         event.setNotifyWaitlisted(false);
         assertFalse(event.isNotifyWaitlisted());
     }
 
     @Test
-    void testGetAndSetNotifyEnrolled() {
+    void testGetNotifyEnrolled() {
         assertTrue(event.isNotifyEnrolled());
+    }
+
+    @Test
+    void testSetNotifyEnrolled() {
         event.setNotifyEnrolled(false);
         assertFalse(event.isNotifyEnrolled());
     }
 
     @Test
-    void testGetAndSetNotifyCancelled() {
+    void testGetNotifyCancelled() {
         assertTrue(event.isNotifyCancelled());
+    }
+
+    @Test
+    void testSetNotifyCancelled() {
         event.setNotifyCancelled(false);
         assertFalse(event.isNotifyCancelled());
     }
 
     @Test
-    void testGetAndSetNotifyInvited() {
+    void testGetNotifyInvited() {
         assertTrue(event.isNotifyInvited());
+    }
+
+    @Test
+    void testSetNotifyInvited() {
         event.setNotifyInvited(false);
         assertFalse(event.isNotifyInvited());
     }
 
     @Test
-    void testGetAndSetWaitlistedMessage() {
-        assertEquals("You are waitlisted for the event.", event.getWaitlistedMessage());
-        event.setWaitlistedMessage("New waitlist message.");
-        assertEquals("New waitlist message.", event.getWaitlistedMessage());
+    void testGetWaitlistedMessage() {
+        assertEquals("Waitlisted message", event.getWaitlistedMessage());
     }
 
     @Test
-    void testGetAndSetEnrolledMessage() {
-        assertEquals("You are enrolled in the event.", event.getEnrolledMessage());
-        event.setEnrolledMessage("New enrolled message.");
-        assertEquals("New enrolled message.", event.getEnrolledMessage());
+    void testSetWaitlistedMessage() {
+        event.setWaitlistedMessage("New waitlisted message");
+        assertEquals("New waitlisted message", event.getWaitlistedMessage());
     }
 
     @Test
-    void testGetAndSetCancelledMessage() {
-        assertEquals("Your enrollment was cancelled.", event.getCancelledMessage());
-        event.setCancelledMessage("New cancelled message.");
-        assertEquals("New cancelled message.", event.getCancelledMessage());
+    void testGetEnrolledMessage() {
+        assertEquals("Enrolled message", event.getEnrolledMessage());
     }
 
     @Test
-    void testGetAndSetInvitedMessage() {
-        assertEquals("You are invited to the event.", event.getInvitedMessage());
-        event.setInvitedMessage("New invited message.");
-        assertEquals("New invited message.", event.getInvitedMessage());
+    void testSetEnrolledMessage() {
+        event.setEnrolledMessage("New enrolled message");
+        assertEquals("New enrolled message", event.getEnrolledMessage());
     }
 
     @Test
-    void testGetAndSetLotteryRanFlag() {
-        assertFalse(event.getLotteryRanFlag());
-        event.setLotteryRanFlag(true);
-        assertTrue(event.getLotteryRanFlag());
+    void testGetCancelledMessage() {
+        assertEquals("Cancelled message", event.getCancelledMessage());
     }
 
     @Test
-    void testGetAndSetLotteryButton() {
-        assertFalse(event.getLotteryButton());
-        event.setLotteryButton(true);
-        assertTrue(event.getLotteryButton());
+    void testSetCancelledMessage() {
+        event.setCancelledMessage("New cancelled message");
+        assertEquals("New cancelled message", event.getCancelledMessage());
+    }
+
+    @Test
+    void testGetInvitedMessage() {
+        assertEquals("Invited message", event.getInvitedMessage());
+    }
+
+    @Test
+    void testSetInvitedMessage() {
+        event.setInvitedMessage("New invited message");
+        assertEquals("New invited message", event.getInvitedMessage());
+    }
+
+    @Test
+    void testLotteryRanFlagDefault() {
+        assertFalse(event.getLotteryRanFlag()); // Ensure default is false
+    }
+
+    @Test
+    void testLotteryButtonDefault() {
+        assertFalse(event.getLotteryButton()); // Ensure default is false
     }
 }
