@@ -378,14 +378,6 @@ public class EntrantEnlistActivity extends AppCompatActivity {
                                         enlistInEvent(eventId, name, date, registrationEndDate, facility, isGeolocate, androidId);
                                     }
                                 });
-
-//                                enlistLeaveButton.setOnClickListener(v -> {
-//                                    if (isGeolocate) {
-//                                        showGeolocationConfirmationDialog(() -> enlistInEvent(eventId, name, date, registrationEndDate, facility, isGeolocate, androidId));
-//                                    } else {
-//                                        enlistInEvent(eventId, name, date, registrationEndDate, facility, isGeolocate, androidId);
-//                                    }
-//                                });
                             }
                         });
                     } else {
@@ -453,22 +445,31 @@ public class EntrantEnlistActivity extends AppCompatActivity {
 
                     userWaitListedEventsRef.document(eventId).set(eventStatusData)
                             .addOnSuccessListener(aVoid2 -> {
-                                // Navigate to EnlistConfirmationActivity
-                                Intent intent = new Intent(EntrantEnlistActivity.this, EnlistConfirmationActivity.class);
-                                intent.putExtra("waitingList", "Joined");
-                                intent.putExtra("name", name);
-                                intent.putExtra("date", date);
-                                intent.putExtra("registrationEndDate", registrationEndDate);
+                                // Update user's latitude and longitude in their document
+                                db.collection("AndroidID").document(androidId)
+                                        .update("latitude", deviceLatitude, "longitude", deviceLongitude)
+                                        .addOnSuccessListener(aVoid3 -> {
+                                            // Navigate to EnlistConfirmationActivity
+                                            Intent intent = new Intent(EntrantEnlistActivity.this, EnlistConfirmationActivity.class);
+                                            intent.putExtra("waitingList", "Joined");
+                                            intent.putExtra("name", name);
+                                            intent.putExtra("date", date);
+                                            intent.putExtra("registrationEndDate", registrationEndDate);
 
-                                intent.putExtra("geolocate", isGeolocate);
+                                            intent.putExtra("geolocate", isGeolocate);
 
-                                db.collection("facilities").document(facility).get().addOnSuccessListener(documentSnapshot -> {
-                                    String facName = documentSnapshot.getString("name");
-                                    intent.putExtra("facility", facName);
-                                    startActivity(intent);
-                                });
+                                            db.collection("facilities").document(facility).get().addOnSuccessListener(documentSnapshot -> {
+                                                String facName = documentSnapshot.getString("name");
+                                                intent.putExtra("facility", facName);
+                                                startActivity(intent);
+                                            });
+                                            startActivity(intent);
 
-//                                finish();
+
+                                        })
+                                        .addOnFailureListener(e -> {
+                                            Toast.makeText(this, "Failed to update your location.", Toast.LENGTH_SHORT).show();
+                                        });
                             })
                             .addOnFailureListener(e -> Toast.makeText(this, "Failed to add event to your waitlisted events.", Toast.LENGTH_SHORT).show());
                 })
@@ -516,12 +517,11 @@ public class EntrantEnlistActivity extends AppCompatActivity {
     private void getDeviceLocation(Runnable onSuccess) {
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             LocationServices.getFusedLocationProviderClient(this).getCurrentLocation(LocationRequest.PRIORITY_HIGH_ACCURACY, null)
-//                    .getCurrentLocation()
                     .addOnSuccessListener(location -> {
                         if (location != null) {
                             deviceLatitude = location.getLatitude();
                             deviceLongitude = location.getLongitude();
-                            Toast.makeText(this, "Location obtained: Lat = " + deviceLatitude + ", Lon = " + deviceLongitude, Toast.LENGTH_SHORT).show();
+                            Toast.makeText(this, "Gathering location...", Toast.LENGTH_SHORT).show();
                             onSuccess.run();
                         } else {
                             Toast.makeText(this, "Unable to obtain location. Please try again.", Toast.LENGTH_SHORT).show();

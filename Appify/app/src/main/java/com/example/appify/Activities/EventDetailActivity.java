@@ -193,7 +193,11 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
         facilityTextView.setText(facility);
         registrationEndDateTextView.setText(registrationEndDate);
         descriptionTextView.setText(description);
-        maxWaitTextView.setText(""+maxWaitEntrants);
+        if (maxWaitEntrants == Integer.MAX_VALUE) {
+            maxWaitTextView.setText(""+"No Limit");
+        } else {
+            maxWaitTextView.setText(""+maxWaitEntrants);
+        }
         maxSampleTextView.setText(""+maxSampleEntrants);
         geolocateTextView.setText(isGeolocate ? "Geo-Location Enabled" : "Geo-Location Disabled");
 
