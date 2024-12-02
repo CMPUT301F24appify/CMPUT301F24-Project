@@ -353,7 +353,6 @@ public class Event {
 
                     // If there are no slots available, exit early
                     if (slotsAvailable <= 0) {
-                        Log.d("Lottery", "No slots available for additional invites.");
                         db.collection("events").document(eventID)
                                 .update("lotteryRanFlag", true, "lotteryButton", true)
                                 .addOnSuccessListener(aVoid -> Log.d("Lottery", "lotteryRanFlag and lotteryButton reset for event " + eventID))
@@ -372,7 +371,6 @@ public class Event {
 
                                 // If there are no slots available, exit early
                                 if (slotsAvaliableFinal <= 0) {
-                                    Log.d("Lottery", "No slots available for additional invites.");
                                     db.collection("events").document(eventID)
                                             .update("lotteryRanFlag", true, "lotteryButton", true)
                                             .addOnSuccessListener(aVoid -> Log.d("Lottery", "lotteryRanFlag and lotteryButton reset for event " + eventID))
