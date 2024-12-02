@@ -41,7 +41,6 @@ public class MainActivity extends AppCompatActivity {
 
         // Retrieve the unique AndroidID
         android_id = Secure.getString(getContentResolver(), Secure.ANDROID_ID);
-        System.out.println("MainActivity "+ "AndroidID: " + android_id);
 
         // Set AndroidID in the global application class
         MyApp app = (MyApp) getApplication();

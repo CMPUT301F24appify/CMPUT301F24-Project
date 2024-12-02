@@ -63,7 +63,6 @@
         <activity android:name=".Activities.EventDetailActivity" />
         <activity android:name=".Activities.EventActivity" />
         <activity android:name=".Activities.EnlistConfirmationActivity" />
-        <activity android:name=".Activities.EventActionsActivity" />
         <activity android:name=".Activities.ManageFacilityActivity" />
         <activity android:name=".Activities.MapActivity" />
         <activity android:name=".Activities.AdminListActivity" />

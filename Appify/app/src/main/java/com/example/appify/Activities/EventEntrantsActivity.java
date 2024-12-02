@@ -172,9 +172,6 @@ public class EventEntrantsActivity extends AppCompatActivity{
                                     });
                                     entrantListAll.add(entrant);
                                 }
-                                else {
-                                    System.out.println("Error getting AndroidID document for " + userID + ": " + task2.getException());
-                                }
                                 tasksCompleted[0]++;
 
                                 if (tasksCompleted[0] == totalTasks){
@@ -184,11 +181,6 @@ public class EventEntrantsActivity extends AppCompatActivity{
                                 }
                             });
                 }
-
-            }
-
-            else {
-                System.out.println("Error getting documents: " + task.getException());
             }
         });
     }
