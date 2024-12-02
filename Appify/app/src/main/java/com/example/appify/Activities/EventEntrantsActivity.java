@@ -1,7 +1,5 @@
 package com.example.appify.Activities;
 
-import static android.content.Intent.getIntent;
-
 import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Button;
@@ -24,25 +22,27 @@ import java.util.Objects;
 
 
 /**
- * This class is an Android activity that displays the list of entrants
- * enrolled in a particular event, as well as their enrollment status.
- * Users can filter entrants based on their status (waiting list, invited, accepted, rejected) using checkboxes.
+ * EventEntrantsActivity displays a list of entrants for a specific event.
+ * Entrants are categorized based on their enrollment status (waiting list, invited, accepted, or rejected).
+ * Users can filter entrants by status using checkboxes.
  */
 public class EventEntrantsActivity extends AppCompatActivity{
-    public FirebaseFirestore db;
-    public ListView entrantListView;
-    CustomEntrantAdapter entrantAdapterAll;
-    CollectionReference waitingListRef;
-    public ArrayList<Entrant> entrantListAll = new ArrayList<>();
-    public ArrayList<Entrant> entrantListWaitinglisted = new ArrayList<>();
-    ArrayList<Entrant> entrantListInvited = new ArrayList<>();
-    ArrayList<Entrant> entrantListAccepted = new ArrayList<>();
-    ArrayList<Entrant> entrantListRejected = new ArrayList<>();
 
-    public CheckBox waitListedCheckbox;
-    public CheckBox invitedCheckBox;
-    public CheckBox acceptedCheckBox;
-    public CheckBox rejectedCheckBox;
+    public FirebaseFirestore db; // Firestore database instance
+    public ListView entrantListView; // ListView to display entrants
+    CustomEntrantAdapter entrantAdapterAll; // Adapter to display all entrants
+    CollectionReference waitingListRef; // Firestore collection reference for the waiting list
+
+    public ArrayList<Entrant> entrantListAll = new ArrayList<>(); // List to store all entrants
+    public ArrayList<Entrant> entrantListWaitinglisted = new ArrayList<>(); // List of waitlisted entrants
+    ArrayList<Entrant> entrantListInvited = new ArrayList<>(); // List of invited entrants
+    ArrayList<Entrant> entrantListAccepted = new ArrayList<>(); // List of accepted entrants
+    ArrayList<Entrant> entrantListRejected = new ArrayList<>(); // List of rejected entrants
+
+    public CheckBox waitListedCheckbox; // Checkbox to filter waitlisted entrants
+    public CheckBox invitedCheckBox; // Checkbox to filter invited entrants
+    public CheckBox acceptedCheckBox; // Checkbox to filter accepted entrants
+    public CheckBox rejectedCheckBox; // Checkbox to filter rejected entrants
 
     /**
      * Called when the activity is first created.
@@ -60,9 +60,11 @@ public class EventEntrantsActivity extends AppCompatActivity{
         Intent intent = getIntent();
         String eventID = intent.getStringExtra("eventID");
 
+        // Initialize Firebase Firestore
         MyApp app = (MyApp) getApplication();
         db = app.getFirebaseInstance();
 
+        // Initialize UI components
         entrantListView = findViewById(R.id.entrant_list);
         waitListedCheckbox = findViewById(R.id.waitListed_checkbox);
         invitedCheckBox = findViewById(R.id.invited_checkbox);
@@ -75,40 +77,41 @@ public class EventEntrantsActivity extends AppCompatActivity{
         // Add listeners to each checkbox, to display the correct data
         waitListedCheckbox.setOnCheckedChangeListener((buttonView, isChecked) -> {
             if (isChecked) {
-                entrantListAll.addAll(entrantListWaitinglisted);
+                entrantListAll.addAll(entrantListWaitinglisted); // Add waitlisted entrants to the list
             } else {
-                entrantListAll.removeAll(entrantListWaitinglisted);
+                entrantListAll.removeAll(entrantListWaitinglisted); // Remove waitlisted entrants from the list
             }
-            entrantAdapterAll.notifyDataSetChanged();
+            entrantAdapterAll.notifyDataSetChanged(); // Notify adapter of data changes
         });
 
         invitedCheckBox.setOnCheckedChangeListener((buttonView, isChecked) -> {
             if (isChecked) {
-                entrantListAll.addAll(entrantListInvited);
+                entrantListAll.addAll(entrantListInvited); // Add invited entrants to the list
             } else {
-                entrantListAll.removeAll(entrantListInvited);
+                entrantListAll.removeAll(entrantListInvited); // Remove invited entrants from the list
             }
             entrantAdapterAll.notifyDataSetChanged();
         });
 
         acceptedCheckBox.setOnCheckedChangeListener((buttonView, isChecked) -> {
             if (isChecked) {
-                entrantListAll.addAll(entrantListAccepted);
+                entrantListAll.addAll(entrantListAccepted); // Add accepted entrants to the list
             } else {
-                entrantListAll.removeAll(entrantListAccepted);
+                entrantListAll.removeAll(entrantListAccepted); // Remove accepted entrants from the list
             }
             entrantAdapterAll.notifyDataSetChanged();
         });
 
         rejectedCheckBox.setOnCheckedChangeListener((buttonView, isChecked) -> {
             if (isChecked) {
-                entrantListAll.addAll(entrantListRejected);
+                entrantListAll.addAll(entrantListRejected); // Add rejected entrants to the list
             } else {
-                entrantListAll.removeAll(entrantListRejected);
+                entrantListAll.removeAll(entrantListRejected); // Remove rejected entrants from the list
             }
             entrantAdapterAll.notifyDataSetChanged();
         });
 
+        // Set up back button to return to the previous activity
         Button backButton = findViewById(R.id.back_button);
         backButton.setOnClickListener(v -> {
             finish();
@@ -150,7 +153,6 @@ public class EventEntrantsActivity extends AppCompatActivity{
                                     String entrantEmail = entrantData.get("email").toString();
                                     String phoneNumber = entrantData.get("phoneNumber").toString();
                                     String email = entrantData.get("email").toString();
-//                                    String entrantProfilePic = entrantData.get("profilePictureUrl").toString();
                                     boolean notifications = entrantData.getBoolean("notifications");
                                     String facilityID = entrantData.getString("facilityID");
                                     double latitude = entrantData.getDouble("latitude");

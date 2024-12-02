@@ -75,11 +75,4 @@ public class Facility {
      * @return The facility's capacity.
      */
     public Integer getCapacity() { return capacity; }
-
-    /**
-     * Returns the unique identifier of the organizer responsible for the facility.
-     *
-     * @return The organizer's ID.
-     */
-    public String getOrganizerID() { return organizerID; }
 }

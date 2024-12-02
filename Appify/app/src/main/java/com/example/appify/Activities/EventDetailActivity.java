@@ -42,26 +42,27 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * The EventDetailActivity class displays and manages the details of a selected event.
- * This class allows users to view, edit, and send notifications to participants.
+ * The EventDetailActivity class provides a detailed view of a selected event.
+ * It allows users to view event details, manage QR codes, send notifications, and perform actions
+ * like editing the event, viewing entrants, or running a lottery.
  */
 public class EventDetailActivity extends AppCompatActivity implements EditEventDialogFragment.EditEventDialogListener {
-    private FirebaseFirestore db;
-    private String eventID;
-    private Button showMap;
 
-    // Variables to store different notification messages for participants
-    private String waitlistedMessage = "";
-    private String enrolledMessage = "";
-    private String cancelledMessage = "";
-    private String invitedMessage = "";
-    private String qrCodeLocationURL;
-    private StorageReference storageRef;
-    private ImageView qrImageView;
+    private FirebaseFirestore db; // Firestore instance for database interactions
+    private String eventID; // ID of the selected event
+    private Button showMap; // Button to display the map of entrants
+    private String waitlistedMessage = ""; // Notification message for waitlisted participants
+    private String enrolledMessage = ""; // Notification message for enrolled participants
+    private String cancelledMessage = ""; // Notification message for cancelled participants
+    private String invitedMessage = ""; // Notification message for invited participants
+    private String qrCodeLocationURL; // URL of the QR code image stored in Firebase Storage
+    private StorageReference storageRef; // Reference to the QR code storage
+    private ImageView qrImageView; // ImageView to display the event's QR code
 
 
     /**
-     * Called when the activity is created. Sets up the UI and initializes data fields.
+     * Called when the activity is created. Initializes the user interface, sets up event details,
+     * and configures buttons for notifications, editing, QR code management, and entrant management.
      *
      * @param savedInstanceState If the activity is re-initialized after being shut down,
      *                           this Bundle contains the most recent data; otherwise, it is null.
@@ -80,21 +81,23 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
         MyApp app = (MyApp) getApplication();
         db = app.getFirebaseInstance();
         FirebaseStorage storage = FirebaseStorage.getInstance();
+
+        // Retrieve event ID from intent extras
         eventID = getIntent().getStringExtra("eventID");
         if (eventID == null || eventID.isEmpty()) {
             Toast.makeText(this, "Invalid event ID", Toast.LENGTH_SHORT).show();
             finish(); // Close the activity gracefully
             return;
         }
+
+        // Initialize storage reference for QR codes
         storageRef = storage.getReference().child("qrcode_images/" + eventID + ".jpg");
 
         // QR code generation for event-specific content
         qrImageView = findViewById(R.id.qr_code);
 
 
-
-
-//         If QR code exists in database use it. Otherwise, generate new one and store in db
+        // If QR code exists in database use it. Otherwise, generate new one and store in db
         db.collection("events").document(eventID).get().addOnSuccessListener(documentSnapshot -> {
             String qrCodeLocationURL = documentSnapshot.getString("qrCodeLocationUrl");
 
@@ -351,6 +354,7 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
                 }
             });
         } else {
+            // Hide button if geolocation is off
             showMap.setVisibility(View.GONE);
         }
 
@@ -360,11 +364,13 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
             Glide.with(this).load(posterUri).into(posterImageView);
         }
 
+        // Set up regenerate QR code button with a confirmation dialog
         Button regenerateQRCodeButton = findViewById(R.id.RegenerateQrCode);
         regenerateQRCodeButton.setOnClickListener(new View.OnClickListener(){
 
             @Override
             public void onClick(View v) {
+                // Show a confirmation dialog for QR code regeneration
                 AlertDialog.Builder builder = new AlertDialog.Builder(EventDetailActivity.this);
                 builder.setTitle("Confirm QR Code Regeneration");
                 builder.setMessage("Are you sure you want to regeneration this events' QR Code? This will deactivate the current QR Code and generate a new one.");
@@ -393,21 +399,30 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
 
     }
 
+    /**
+     * Configures a button to delete the QR code for the event.
+     * Deleting the QR code will deactivate it and remove its reference from Firestore.
+     *
+     * @param oldButton The button to be configured for deleting the QR code.
+     */
     public void setDeleteQRCodeButton(Button oldButton){
         oldButton.setText("Delete QR Code");
         oldButton.setOnClickListener(new View.OnClickListener(){
 
             @Override
             public void onClick(View v) {
+                // Show confirmation dialog before deleting the QR code
                 AlertDialog.Builder builder = new AlertDialog.Builder(EventDetailActivity.this);
                 builder.setTitle("Confirm QR Code Deletion");
                 builder.setMessage("Are you sure you want to delete this events' QR Code? This will deactivate the current QR Code.");
 
+                // Confirm deletion
                 builder.setPositiveButton("Confirm Deletion", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         Toast.makeText(EventDetailActivity.this, "Deleted QR Code.", Toast.LENGTH_SHORT).show();
 
+                        // Remove QR code details from Firestore
                         db.collection("events").document(eventID).get().addOnSuccessListener(documentSnapshot -> {
                             qrCodeLocationURL = documentSnapshot.getString("qrCodeLocationUrl");
                             db.collection("events").document(eventID).update("qrCodeLocationUrl", null);
@@ -417,6 +432,7 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
                         });
                     }
                 });
+                // Cancel deletion
                 builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
@@ -424,16 +440,23 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
                         dialog.dismiss();
                     }
                 });
+                // Show the confirmation dialog
                 AlertDialog dialog = builder.create();
                 dialog.show();
             }
         });
     }
 
+    /**
+     * Regenerates a QR code for the event. Deletes the existing QR code (if any),
+     * creates a new one, and updates the QR code details in Firestore.
+     */
     public void regenerateQRCode(){
-
+        // Retrieve the event's QR code details from Firestore
         db.collection("events").document(eventID).get().addOnSuccessListener(documentSnapshot -> {
             qrCodeLocationURL = documentSnapshot.getString("qrCodeLocationUrl");
+
+            // If a QR code exists, remove it from Firestore and Storage
             if (qrCodeLocationURL != null){
                 db.collection("events").document(eventID).update("qrCodeLocationUrl", null);
                 db.collection("events").document(eventID).update("qrCodePassKey", null);
@@ -441,6 +464,7 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
 
             FirebaseStorage storage = FirebaseStorage.getInstance();
             if (qrCodeLocationURL  != null){
+                // Delete the QR code file from Firebase Storage
                 StorageReference qrCodeRef = storage.getReferenceFromUrl(qrCodeLocationURL);
                 qrCodeRef.delete().addOnSuccessListener(v -> {
                     try {
@@ -515,6 +539,11 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
         });
     }
 
+    /**
+     * Repurposes the back button to navigate back to the admin page.
+     *
+     * @param backButton The button to be repurposed.
+     */
     public void repurposeBackButton(Button backButton){
         backButton.setText("Back to Admin Page");
         backButton.setOnClickListener(v -> {
@@ -525,19 +554,19 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
     /**
      * Updates the event data with edited values from the EditEventDialogFragment.
      *
-     * @param name Event name
-     * @param date Event date
-     * @param facility Event location
-     * @param registrationEndDate Event registration end date
-     * @param description Event description
-     * @param maxWaitEntrants Maximum waitlist entrants
-     * @param maxSampleEntrants Maximum sample entrants
-     * @param posterUri URI of the event poster
-     * @param isGeolocate Geo-location status of the event
-     * @param waitlistedMessage Notification message for waitlisted participants
-     * @param enrolledMessage Notification message for enrolled participants
-     * @param cancelledMessage Notification message for cancelled events
-     * @param invitedMessage Notification message for invited participants
+     * @param name              The updated event name.
+     * @param date              The updated event date.
+     * @param facility          The updated event location.
+     * @param registrationEndDate The updated registration end date for the event.
+     * @param description       The updated event description.
+     * @param maxWaitEntrants   The updated maximum number of waitlist entrants.
+     * @param maxSampleEntrants The updated maximum number of sample entrants.
+     * @param posterUri         The updated URI of the event poster.
+     * @param isGeolocate       Indicates whether geolocation is enabled for the event.
+     * @param waitlistedMessage The updated notification message for waitlisted participants.
+     * @param enrolledMessage   The updated notification message for enrolled participants.
+     * @param cancelledMessage  The updated notification message for cancelled events.
+     * @param invitedMessage    The updated notification message for invited participants.
      */
     @Override
     public void onEventEdited(String name, String date, String facility, String registrationEndDate,
@@ -569,10 +598,12 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
         db.collection("events").document(eventID)
                 .update(updates)
                 .addOnSuccessListener(aVoid -> {
+                    // Refresh the UI with updated event details
                     refreshEventUI(name, date, facility, registrationEndDate, description,
                             maxWaitEntrants, maxSampleEntrants, posterUri, isGeolocate);
                 })
                 .addOnFailureListener(e -> {
+                    // Display an error message if the update fails
                     Toast.makeText(this, "Failed to update event: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                 });
 
@@ -587,22 +618,24 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
     /**
      * Refreshes the UI with updated event details.
      *
-     * @param name Event name
-     * @param date Event date
-     * @param facilityName Event facility
-     * @param registrationEndDate Registration end date
-     * @param description Event description
-     * @param maxWaitEntrants Maximum waitlist entrants
-     * @param maxSampleEntrants Maximum sample entrants
-     * @param posterUri URI of the event poster
-     * @param isGeolocate Geo-location status of the event
+     * @param name              The updated event name.
+     * @param date              The updated event date.
+     * @param facilityId        The ID of the updated event facility.
+     * @param registrationEndDate The updated registration end date.
+     * @param description       The updated event description.
+     * @param maxWaitEntrants   The updated maximum number of waitlist entrants.
+     * @param maxSampleEntrants The updated maximum number of sample entrants.
+     * @param posterUri         The updated URI of the event poster.
+     * @param isGeolocate       Indicates whether geolocation is enabled for the event.
      */
     private void refreshEventUI(String name, String date, String facilityId, String registrationEndDate,
                                 String description, int maxWaitEntrants, int maxSampleEntrants,
                                 String posterUri, boolean isGeolocate) {
 
+        // Fetch the facility name from Firestore using the facility ID
         db.collection("facilities").document(facilityId).get().addOnSuccessListener(documentSnapshot -> {
            String facName = documentSnapshot.getString("name");
+
             // Update UI components with new event details
             TextView nameTextView = findViewById(R.id.textViewName);
             TextView dateTextView = findViewById(R.id.textViewDate);
@@ -650,29 +683,30 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
 
     /**
      * Callback interface for notification message input.
+     * Used to handle the user's message input in a notification dialog.
      */
     private interface NotificationMessageCallback {
         void onMessageSet(String message);
     }
 
     /**
-     * Shows a dialog for the user to enter or edit a notification message.
+     * Displays a dialog for the user to enter, edit, or delete a notification message.
      *
-     * @param title Title of the dialog
-     * @param existingMessage Existing message text to be displayed in the dialog
-     * @param callback Callback function to handle the message once set
+     * @param title           The title of the dialog.
+     * @param existingMessage The existing message to be displayed in the input field.
+     * @param callback        A callback to handle the message after user input.
      */
     private void showNotificationInputDialog(String title, String existingMessage, NotificationMessageCallback callback) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle(title);
 
         final EditText input = new EditText(this);
-        input.setText(existingMessage);
+        input.setText(existingMessage); // Pre-fill the input field with the existing message
         builder.setView(input);
 
         builder.setPositiveButton("Confirm", (dialog, which) -> {
             String message = input.getText().toString();
-            callback.onMessageSet(message);
+            callback.onMessageSet(message); // Pass the entered message to the callback
         });
         builder.setNegativeButton("Cancel", (dialog, which) -> dialog.cancel());
         builder.setNeutralButton("Delete", (dialog, which) -> {
@@ -684,18 +718,19 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
     }
 
     /**
-     * Updates notification messages in Firestore for a specific event.
+     * Updates notification messages for a specific event in Firestore.
+     * Sets a notification field to true if a message is provided, otherwise sets it to false.
      *
-     * @param messageField Firestore field to store the message
-     * @param message The notification message
-     * @param notifyField Field indicating whether to send the notification
+     * @param messageField The Firestore field to store the notification message.
+     * @param message      The notification message content.
+     * @param notifyField  The Firestore field indicating whether to send the notification.
      */
     private void updateNotificationMessage(String messageField, String message, String notifyField) {
         boolean shouldNotify = !message.isEmpty();
 
         Map<String, Object> updates = new HashMap<>();
-        updates.put(messageField, message);
-        updates.put(notifyField, shouldNotify);
+        updates.put(messageField, message); // Update the message field
+        updates.put(notifyField, shouldNotify); // Update the notify field
 
         db.collection("events").document(eventID)
                 .update(updates)

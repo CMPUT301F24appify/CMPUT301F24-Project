@@ -33,17 +33,17 @@ import com.journeyapps.barcodescanner.ScanOptions;
 import java.util.ArrayList;
 
 /**
- * The EntrantHomePageActivity class displays a list of events available to entrants.
- * It fetches event data from Firestore, populates a ListView using a custom adapter,
- * and handles user interactions such as clicking on an event to view details.
+ * The EntrantHomePageActivity class provides a user interface for displaying a list of events
+ * available to entrants. It retrieves event data from Firestore, displays them using a custom
+ * adapter, and enables interactions such as viewing event details or scanning event QR codes.
  */
 public class EntrantHomePageActivity extends AppCompatActivity {
-    // Variables
-    private FirebaseFirestore db;
-    ListView eventListView;
-    CustomEventAdapter eventAdapter;
-    ArrayList<Event> eventList;
-    LinearLayout noEventsText;
+
+    private FirebaseFirestore db; // Firestore database instance
+    ListView eventListView; // ListView to display events
+    CustomEventAdapter eventAdapter; // Adapter for populating the ListView
+    ArrayList<Event> eventList; // List to store Event objects
+    LinearLayout noEventsText; // Layout to show when no events are available
 
     /**
      * Called when the activity is starting. Initializes UI components and loads event data.
@@ -55,15 +55,15 @@ public class EntrantHomePageActivity extends AppCompatActivity {
     @Override
     protected void  onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
-
-
         setContentView(R.layout.entrant_home_page);
 
         MyApp app = (MyApp) getApplication();
         db = app.getFirebaseInstance();
 
+        // Initialize the "no events" text layout and set it to invisible
         noEventsText = findViewById(R.id.noEventsLayout);
         noEventsText.setVisibility(View.GONE);
+
         // Initialize the ListView and the Adapter
         eventList = new ArrayList<>();
         eventAdapter = new CustomEventAdapter(this, eventList, false, false);
@@ -98,6 +98,7 @@ public class EntrantHomePageActivity extends AppCompatActivity {
             intent.putExtra("posterUri", selectedEvent.getPosterUri());
             intent.putExtra("geolocate", selectedEvent.isGeolocate());
 
+            // Fetch the facility name and pass it to the intent
             db.collection("facilities").document(selectedEvent.getFacility()).get().addOnSuccessListener(documentSnapshot -> {
                 String facName = documentSnapshot.getString("name");
                 intent.putExtra("facility", facName);
@@ -113,6 +114,9 @@ public class EntrantHomePageActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Initiates a QR code scanner to scan event QR codes.
+     */
     private void scanCode(){
         ScanOptions options = new ScanOptions();
         options.setPrompt("Scan an Event QR Code");
@@ -122,6 +126,7 @@ public class EntrantHomePageActivity extends AppCompatActivity {
         barLauncher.launch(options);
     }
 
+    // Handles the result of the QR code scan
     ActivityResultLauncher<ScanOptions> barLauncher = registerForActivityResult(new ScanContract(), result -> {
 
         if (result.getContents() != null) {
@@ -169,6 +174,7 @@ public class EntrantHomePageActivity extends AppCompatActivity {
                     db.collection("events").document(event.getId()).get().addOnCompleteListener(task1 -> {
                         DocumentSnapshot eventData = task1.getResult();
 
+                        // Extract event details
                         String eventID = eventData.getId();
                         String name = eventData.getString("name");
                         String date = eventData.getString("date");
@@ -191,6 +197,7 @@ public class EntrantHomePageActivity extends AppCompatActivity {
                         String cancelledMessage = eventData.getString("cancelledMessage");
                         String invitedMessage = eventData.getString("invitedMessage");
 
+                        // Create an Event object and add it to the list
                         Event event1 = new Event(name,date,facility,registrationEndDate,description,maxWaitEntrants,maxSampleEntrants,posterUri,isGeolocate,notifyWaitlisted,notifyEnrolled,notifyCancelled,notifyInvited,waitlistedMessage,enrolledMessage,cancelledMessage,invitedMessage,organizerID);
                         event1.setEventId(eventID);
                         eventList.add(event1);
@@ -201,6 +208,7 @@ public class EntrantHomePageActivity extends AppCompatActivity {
                     });
 
                 }
+                // Show "no events" text if the list is empty
                 if (eventList.isEmpty()){
                     noEventsText.setVisibility(View.VISIBLE);
                 }

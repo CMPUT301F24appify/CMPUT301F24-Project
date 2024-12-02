@@ -29,14 +29,15 @@ import java.util.Objects;
  * changes through a Firebase Firestore database.
  */
 public class CustomEntrantAdapter extends ArrayAdapter<Entrant> {
-    private Context context;
-    private List<Entrant> entrantList;
-    private String eventID;
-    private FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+    private Context context; // Context in which the adapter is used
+    private List<Entrant> entrantList; // List of entrants to display
+    private String eventID; // ID of the event associated with the entrants
+    private FirebaseFirestore db = FirebaseFirestore.getInstance(); // Firestore database instance
 
 
     /**
-     * Constructs a new {@code CustomEntrantAdapter} instance.
+     * Constructs a new {@code CustomEntrantAdapter}.
      *
      * @param context     the context in which the adapter is used.
      * @param entrantList the list of entrants to display.
@@ -51,13 +52,13 @@ public class CustomEntrantAdapter extends ArrayAdapter<Entrant> {
     }
 
     /**
-     * Returns a view for each entrant in the list, setting the entrant's name and status and configuring
-     * an 'X' icon that allows the user to reject the entrant when clicked, if their status is invited.
+     * Provides a view for each entrant in the list, including their name, status, and actions.
+     * Dynamically adjusts the appearance of each entrant based on their status.
      *
-     * @param position    the position of the item within the adapter's data set.
+     * @param position    the position of the item in the list.
      * @param convertView the old view to reuse.
      * @param parent      the parent view that this view will be attached to.
-     * @return the view for the specific position in the list.
+     * @return the view for the specified position in the list.
      */
     @NonNull
     @Override
@@ -66,13 +67,16 @@ public class CustomEntrantAdapter extends ArrayAdapter<Entrant> {
             convertView = LayoutInflater.from(context).inflate(R.layout.entrant_list_content, parent, false);
         }
 
+        // Get the entrant for this position
         Entrant entrant = entrantList.get(position);
         String entrantID = entrant.getId();
 
+        // Views to update
         View finalConvertView = convertView;
         ImageView xIcon = finalConvertView.findViewById(R.id.x_icon);
         LinearLayout entrantCard = finalConvertView.findViewById(R.id.entrant_card);
 
+        // Fetch entrant status from Firestore and update the UI dynamically
         db.collection("AndroidID").document(entrantID).collection("waitListedEvents").document(eventID).get().addOnSuccessListener(DocumentSnapshot -> {
             String status = DocumentSnapshot.getString("status");
             TextView entrantStatusView = finalConvertView.findViewById(R.id.entrant_status_text);
@@ -103,13 +107,15 @@ public class CustomEntrantAdapter extends ArrayAdapter<Entrant> {
             }
         });
 
+        // Update entrant name in the view
         TextView entrantNameView = convertView.findViewById(R.id.entrant_name_text);
+        entrantNameView.setText(entrant.getName());
 
+        // Set up click listener for the 'X' icon to handle rejection
         xIcon.setOnClickListener(v -> {
             showCancelUserDialog(entrant);
         });
 
-        entrantNameView.setText(entrant.getName());
         return convertView;
     }
 
@@ -126,11 +132,13 @@ public class CustomEntrantAdapter extends ArrayAdapter<Entrant> {
                 .setTitle("Reject User: " + entrant.getName())
                 .setMessage("Confirmation of Entrant Rejection: " + entrant.getName())
                 .setPositiveButton("Confirm", ((dialog, which) -> {
+                    // Update entrant status to "rejected" in Firestore
                     HashMap<String, Object> newStatusData = new HashMap<>();
                     newStatusData.put("status", "rejected");
                     db.collection("events").document(eventID).collection("waitingList").document(entrant.getId()).set(newStatusData);
                     db.collection("AndroidID").document(entrant.getId()).collection("waitListedEvents").document(eventID).set(newStatusData);
 
+                    // Reload data in the EventEntrantsActivity
                     if (context instanceof EventEntrantsActivity){
                         EventEntrantsActivity activity = (EventEntrantsActivity) context;
                         activity.reloadData(eventID);

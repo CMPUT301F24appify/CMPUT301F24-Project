@@ -70,6 +70,10 @@ public class MyApp extends Application {
     private ScheduledExecutorService scheduler;
 
 
+    /**
+     * Initializes the application upon startup.
+     * This method is called when the application is first created.
+     */
     @Override
     public void onCreate() {
         super.onCreate();
@@ -101,6 +105,18 @@ public class MyApp extends Application {
         // **Start listening for waitingList subcollection changes**
         listenForWaitingListAdditions();
     }
+
+    /**
+     * Periodically checks Firestore for updates to the user's `waitListedEvents` collection.
+     * This method retrieves all the events the user is waitlisted for and determines if notifications
+     * need to be sent based on the user's status (e.g., "invited", "enrolled").
+     *
+     * Notifications are sent for the following cases:
+     * - The user is invited to an event, and the invite notification has not been sent yet.
+     * - The lottery has been run, and the user was not selected for an invitation.
+     *
+     * Updates notification flags in Firestore after sending the notifications.
+     */
     private void checkFirestore() {
         String android_id2 = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
 
@@ -183,15 +199,6 @@ public class MyApp extends Application {
         }
     }
 
-
-    public FirebaseFirestore getFirebaseInstance() {
-        return db;
-    }
-
-    public void setFirebaseInstance(FirebaseFirestore db){
-        this.db = db;
-    }
-
     /**
      * Sets the device's Android ID in SharedPreferences.
      *
@@ -203,6 +210,25 @@ public class MyApp extends Application {
         editor.putString(PREF_ANDROID_ID, id);
         editor.apply();
         Log.d(TAG, "Android ID set to: " + id);
+    }
+
+
+    /**
+     * Retrieves the Firestore database instance.
+     *
+     * @return The Firestore database instance.
+     */
+    public FirebaseFirestore getFirebaseInstance() {
+        return db;
+    }
+
+    /**
+     * Sets the Firestore database instance.
+     *
+     * @param db The Firestore database instance to set.
+     */
+    public void setFirebaseInstance(FirebaseFirestore db){
+        this.db = db;
     }
 
 
@@ -621,7 +647,11 @@ public class MyApp extends Application {
         return str.substring(0, 1).toUpperCase() + str.substring(1);
     }
 
-
+    /**
+     * Called when the application is terminating.
+     * This method is primarily used in debugging and development environments
+     * as it is not guaranteed to be called in a production environment.
+     */
     @Override
     public void onTerminate() {
         super.onTerminate();

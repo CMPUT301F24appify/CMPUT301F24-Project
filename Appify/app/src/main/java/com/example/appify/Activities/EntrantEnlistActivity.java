@@ -7,7 +7,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -24,7 +23,6 @@ import android.content.Context;
 import android.content.IntentSender;
 import android.content.pm.PackageManager;
 import android.location.LocationManager;
-import android.os.Looper;
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import com.google.android.gms.common.api.ApiException;
@@ -43,29 +41,28 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * The EntrantEnlistActivity class provides the UI and functionality for users
- * to enlist in or leave an event’s waiting list. It displays event details and
- * includes enlist and leave buttons.
+ * The EntrantEnlistActivity class handles the user interface and logic for enlisting in or
+ * leaving an event's waiting list. It also manages event details display and geolocation
+ * requirements if applicable.
  */
 public class EntrantEnlistActivity extends AppCompatActivity {
 
-
-    private FirebaseFirestore db;
-    private Button enlistLeaveButton;
-    private Button acceptInviteButton;
-    private Button declineInviteButton;
-    private String eventId;
-    private String name;
-    private String date;
-    private String registrationEndDate;
-    private String facility;
-    private boolean isGeolocate;
-    private String androidId;
-    private String description;
-    private double deviceLatitude;
-    private double deviceLongitude;
-    private LocationRequest deviceLocationRequest;
-    private boolean isEnrolled;
+    private FirebaseFirestore db; // Firestore instance for database interactions
+    private Button enlistLeaveButton; // Button to enlist or leave the event
+    private Button acceptInviteButton; // Button to accept event invitation
+    private Button declineInviteButton; // Button to decline event invitation
+    private String eventId; // Unique identifier for the event
+    private String name; // Name of the event
+    private String date; // Date of the event
+    private String registrationEndDate; // Registration deadline of the event
+    private String facility; // Facility name for the event
+    private boolean isGeolocate; // Indicates if geolocation is required for the event
+    private String androidId; // Device identifier for the current user
+    private String description; // Description of the event
+    private double deviceLatitude; // Device's latitude for geolocation
+    private double deviceLongitude; // Device's longitude for geolocation
+    private LocationRequest deviceLocationRequest; // Location request configuration
+    private boolean isEnrolled; // Indicates if the user is enrolled in the event
 
     /**
      * Initializes the activity, sets up the navigation header, retrieves event details from
@@ -86,6 +83,7 @@ public class EntrantEnlistActivity extends AppCompatActivity {
         MyApp app = (MyApp) getApplication();
         db = app.getFirebaseInstance();
 
+        // Set up device location request for high-accuracy updates
         deviceLocationRequest = LocationRequest.create();
         deviceLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
         deviceLocationRequest.setInterval(5000);
@@ -236,8 +234,10 @@ public class EntrantEnlistActivity extends AppCompatActivity {
     }
 
     /**
-     * Checks if the user is already enlisted in the event's waiting list and updates
-     * the enlistLeaveButton text and action accordingly.
+     * Checks the user's enrollment status and updates the UI accordingly.
+     *
+     * @param eventId   The event ID to check the status for.
+     * @param androidId The unique Android ID of the device.
      */
     public void checkUserEnrollmentStatus(String eventId, String androidId) {
 
@@ -423,7 +423,13 @@ public class EntrantEnlistActivity extends AppCompatActivity {
      * Enlists the current user in the specified event’s waiting list.
      * It checks if the user is already enlisted and verifies if the waiting list has capacity.
      *
-     * @param eventId The unique ID of the event the user wishes to join.
+     * @param eventId            The unique ID of the event the user wishes to join.
+     * @param name               The name of the event.
+     * @param date               The date of the event.
+     * @param registrationEndDate The registration end date for the event.
+     * @param facility           The facility associated with the event.
+     * @param isGeolocate        A boolean indicating if the event requires geolocation.
+     * @param androidId          The unique Android ID of the device.
      */
     private void enlistInEvent(String eventId, String name, String date, String registrationEndDate, String facility, boolean isGeolocate, String androidId) {
         DocumentReference eventRef = db.collection("events").document(eventId);
@@ -520,6 +526,13 @@ public class EntrantEnlistActivity extends AppCompatActivity {
                 .addOnFailureListener(e -> Toast.makeText(this, "Failed to leave the event's waiting list. Try again.", Toast.LENGTH_SHORT).show());
     }
 
+    /**
+     * Retrieves the device's current location using the Fused Location Provider API.
+     * If the location is successfully obtained, the provided callback is executed.
+     * If the location is unavailable or the operation fails, a toast message is displayed.
+     *
+     * @param onSuccess A {@link Runnable} to be executed after the location is successfully retrieved.
+     */
     private void getDeviceLocation(Runnable onSuccess) {
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             LocationServices.getFusedLocationProviderClient(this).getCurrentLocation(LocationRequest.PRIORITY_HIGH_ACCURACY, null)
@@ -541,15 +554,24 @@ public class EntrantEnlistActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Checks if the device's GPS location services are enabled.
+     *
+     * @return {@code true} if GPS is enabled; {@code false} otherwise.
+     */
     private boolean isDeviceLocationEnabled() {
         LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
     }
 
+    /**
+     * Prompts the user to enable device location if it is disabled.
+     * Uses the LocationSettings API to check and request location settings.
+     */
     private void requestDeviceLocation() {
         LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder()
                 .addLocationRequest(deviceLocationRequest);
-        builder.setAlwaysShow(true);
+        builder.setAlwaysShow(true); // Always show the dialog to enable GPS
 
         Task<LocationSettingsResponse> result = LocationServices.getSettingsClient(getApplicationContext())
                 .checkLocationSettings(builder.build());
@@ -558,13 +580,14 @@ public class EntrantEnlistActivity extends AppCompatActivity {
             try {
                 LocationSettingsResponse response = task.getResult(ApiException.class);
                 Toast.makeText(this, "GPS is already turned on", Toast.LENGTH_SHORT).show();
-                // Proceed to get location
+                // Proceed to get location after ensuring GPS is enabled
                 getDeviceLocation(() -> {
                     enlistInEvent(eventId, name, date, registrationEndDate, facility, isGeolocate, androidId);
                 });
             } catch (ApiException e) {
                 if (e.getStatusCode() == LocationSettingsStatusCodes.RESOLUTION_REQUIRED) {
                     try {
+                        // Show a dialog to request enabling GPS
                         ResolvableApiException resolvableApiException = (ResolvableApiException) e;
                         resolvableApiException.startResolutionForResult(this, 2);
                     } catch (IntentSender.SendIntentException ex) {
@@ -575,11 +598,19 @@ public class EntrantEnlistActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Handles the result of a permission request, such as ACCESS_FINE_LOCATION.
+     *
+     * @param requestCode  The request code passed during the permission request.
+     * @param permissions  The requested permissions.
+     * @param grantResults The grant results for the corresponding permissions.
+     */
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == 1) {
+        if (requestCode == 1) { // Check if the request code matches the location permission request
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                // Permission granted, check if GPS is enabled
                 if (isDeviceLocationEnabled()) {
                     getDeviceLocation(() -> {
                         enlistInEvent(eventId, name, date, registrationEndDate, facility, isGeolocate, androidId);
@@ -588,15 +619,22 @@ public class EntrantEnlistActivity extends AppCompatActivity {
                     requestDeviceLocation();
                 }
             } else {
-                Toast.makeText(this, "Location permission is required to enlist in this event.", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Location permission is required, please head to android app settings and turn on", Toast.LENGTH_SHORT).show();
             }
         }
     }
 
+    /**
+     * Handles the result of an activity request, such as enabling GPS settings.
+     *
+     * @param requestCode The request code passed during the activity request.
+     * @param resultCode  The result code indicating the outcome of the activity.
+     * @param data        The intent data returned from the activity.
+     */
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == 2) {
+        if (requestCode == 2) { // Check if the request code matches the GPS enable request
             if (resultCode == RESULT_OK) {
                 Toast.makeText(this, "GPS is turned on", Toast.LENGTH_SHORT).show();
                 getDeviceLocation(() -> {

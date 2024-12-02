@@ -2,7 +2,6 @@ package com.example.appify.Adapters;
 
 import android.app.AlertDialog;
 import android.content.Context;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,20 +21,36 @@ import com.google.firebase.storage.StorageReference;
 import java.util.List;
 
 /**
- * Custom adapter to display facilities in a ListView.
+ * CustomFacilityAdapter is a custom ArrayAdapter for displaying and interacting with facilities in a ListView.
+ * It binds facility data to views and provides deletion functionality for facility and its associated events.
  */
 public class CustomFacilityAdapter extends ArrayAdapter<Facility> {
-    private Context context;
-    private List<Facility> facilityList;
 
-    private FirebaseFirestore db = FirebaseFirestore.getInstance();
+    private Context context; // Context in which the adapter is used
+    private List<Facility> facilityList; // List of facilities to display
+    private FirebaseFirestore db = FirebaseFirestore.getInstance(); // Firestore database instance
 
+    /**
+     * Constructor for initializing the adapter with facility data.
+     *
+     * @param context      The current context.
+     * @param facilityList List of facilities to display.
+     */
     public CustomFacilityAdapter(Context context, List<Facility> facilityList) {
         super(context, 0, facilityList);
         this.context = context;
         this.facilityList = facilityList;
     }
 
+
+    /**
+     * Provides a view for each facility in the ListView.
+     *
+     * @param position    Position of the facility in the list.
+     * @param convertView Recycled view (if available).
+     * @param parent      Parent view group.
+     * @return Updated View for the facility at the specified position.
+     */
     @NonNull
     @Override
     public View getView(int position, View convertView, @NonNull ViewGroup parent) {
@@ -43,24 +58,33 @@ public class CustomFacilityAdapter extends ArrayAdapter<Facility> {
             convertView = LayoutInflater.from(context).inflate(R.layout.facility_list_content, parent, false);
         }
 
+        // Retrieve the facility at the current position
         Facility facility = facilityList.get(position);
 
+        // Bind views to layout components
         TextView facilityName = convertView.findViewById(R.id.facility_name);
         TextView facilityLocation = convertView.findViewById(R.id.facility_location);
         TextView facilityCapacity = convertView.findViewById(R.id.facility_capacity);
         ImageView xIcon = convertView.findViewById(R.id.x_icon);
 
+        // Set facility details
         facilityName.setText(facility.getName());
         facilityLocation.setText(facility.getLocation());
         facilityCapacity.setText(String.format("Capacity: %s", facility.getCapacity()));
 
+        // Attach click listener to the delete icon
         xIcon.setOnClickListener(v -> {
-            showCancelFacilityDialog(facility);
+            showCancelFacilityDialog(facility); // Show confirmation dialog for deleting the facility
         });
 
         return convertView;
     }
 
+    /**
+     * Shows a confirmation dialog for deleting a facility and its associated events.
+     *
+     * @param facility The facility to delete.
+     */
     private void showCancelFacilityDialog(Facility facility) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this.getContext());
         builder

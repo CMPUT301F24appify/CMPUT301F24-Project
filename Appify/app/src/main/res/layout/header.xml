@@ -80,7 +80,8 @@
             android:layout_marginTop="5dp"
             android:gravity="center_horizontal"
             android:text="|"
-            android:textColor="@color/white" />
+            android:textColor="@color/white"
+            android:visibility="gone"/>
 
         <TextView
             android:id="@+id/adminText_navBar"

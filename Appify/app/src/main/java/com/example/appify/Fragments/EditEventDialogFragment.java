@@ -32,8 +32,9 @@ import java.util.Locale;
 import java.util.UUID;
 
 /**
- * Fragment dialog for editing an event, allowing users to modify event details.
- * This fragment performs input validation and uploads images to Firebase Storage.
+ * EditEventDialogFragment is a dialog fragment for editing events.
+ * It allows organizers to input event details, perform input validation,
+ * upload images to Firebase Storage, and interact with Firestore.
  */
 public class EditEventDialogFragment extends DialogFragment {
     private static final int PICK_IMAGE_REQUEST = 1;
@@ -45,9 +46,11 @@ public class EditEventDialogFragment extends DialogFragment {
     private String facilityName;  // Facility name for the event
     private EditText eventFacility, eventDescription, maxWaitEntrant, maxSampleEntrant;  // EditTexts for other fields
     private Uri selectedImageUri; // Store the selected image URI
-
     private Calendar calendar;  // Calendar instance for date pickers
 
+    /**
+     * Interface for communicating with the parent activity to pass event details.
+     */
     public interface EditEventDialogListener {
         /**
          * Callback for editing an event with the provided details.
@@ -91,7 +94,8 @@ public class EditEventDialogFragment extends DialogFragment {
     }
 
     /**
-     * Creates the dialog, initializes UI components, retrieves the facility name, and sets up button listeners.
+     * Creates the dialog, initializes UI components, retrieves existing event details,
+     * and sets up button listeners for handling updates.
      *
      * @param savedInstanceState The saved state of the fragment.
      * @return The created dialog instance.
@@ -102,7 +106,6 @@ public class EditEventDialogFragment extends DialogFragment {
         AlertDialog.Builder builder = new AlertDialog.Builder(requireActivity());
         LayoutInflater inflater = requireActivity().getLayoutInflater();
         View view = inflater.inflate(R.layout.add_event_dialog, null);
-
 
 
         // Retrieve and set facility name from MyApp
@@ -152,6 +155,7 @@ public class EditEventDialogFragment extends DialogFragment {
         uploadPosterButton = view.findViewById(R.id.buttonUploadPoster);
         Button reminderGeolocation = view.findViewById(R.id.checkGeolocation);
 
+        // Removes geolocation checkbox
         if (isGeolocate || !isGeolocate) {
             reminderGeolocation.setVisibility(View.GONE);
         }
@@ -251,6 +255,7 @@ public class EditEventDialogFragment extends DialogFragment {
                             }
                         });
                     } else {
+                        // Keeps current poster image
                         listener.onEventEdited(name, date, facilityID, registrationEndDate, description,
                                 waitMax, sampleMax, posterUri, isGeolocate, "", "", "", "");
                         dialog.dismiss();
@@ -266,6 +271,11 @@ public class EditEventDialogFragment extends DialogFragment {
 
 
 
+    /**
+     * Opens a date picker dialog for selecting dates.
+     *
+     * @param button The button to display the selected date.
+     */
     private void openDatePicker(Button button) {
         DatePickerDialog datePickerDialog = new DatePickerDialog(requireContext(),
                 (view, year, month, dayOfMonth) -> {
@@ -280,6 +290,16 @@ public class EditEventDialogFragment extends DialogFragment {
         datePickerDialog.show();
     }
 
+    /**
+     * Validates input fields for completeness and correctness.
+     *
+     * @param eventName        The event name input field.
+     * @param eventFacility    The facility input field.
+     * @param eventDescription The description input field.
+     * @param maxWaitEntrant   The maximum waitlist entrants input field.
+     * @param maxSampleEntrant The maximum sample entrants input field.
+     * @return True if all inputs are valid, otherwise false.
+     */
     private boolean validateInputs(EditText eventName, EditText eventFacility, EditText eventDescription, EditText maxWaitEntrant, EditText maxSampleEntrant) {
         boolean isValid = true;
         int waitMax = Integer.MAX_VALUE;
@@ -386,14 +406,10 @@ public class EditEventDialogFragment extends DialogFragment {
         }
     }
 
-    private int parseInteger(String text) {
-        try {
-            return Integer.parseInt(text);
-        } catch (NumberFormatException e) {
-            return 0;
-        }
-    }
-
+    /**
+     * Opens a file chooser to select an image for the event poster.
+     * Launches an intent to allow the user to choose an image from their device's storage.
+     */
     private void openFileChooser() {
         Intent intent = new Intent();
         intent.setType("image/*");
@@ -416,11 +432,12 @@ public class EditEventDialogFragment extends DialogFragment {
     }
 
     /**
-     * Handles the result of the file chooser intent, uploading the selected image to Firebase.
+     * Handles the result of the file chooser intent, capturing the selected image.
+     * Updates the UI to indicate that an image has been selected for upload.
      *
      * @param requestCode The request code originally supplied to startActivityForResult.
-     * @param resultCode  The result code returned by the child activity.
-     * @param data        The intent containing the result data.
+     * @param resultCode  The result code returned by the file chooser activity.
+     * @param data        The intent containing the selected image data.
      */
     @Override
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
@@ -432,16 +449,31 @@ public class EditEventDialogFragment extends DialogFragment {
         }
     }
 
-    // Define the callback interface
+    /**
+     * Interface for handling image upload callbacks.
+     * Provides methods to handle success or failure when uploading an image to Firebase Storage.
+     */
     public interface ImageUploadCallback {
+        /**
+         * Called when the image upload is successful.
+         *
+         * @param posterUri The URI of the uploaded image.
+         */
         void onSuccess(String posterUri);
+        /**
+         * Called when the image upload fails.
+         *
+         * @param e The exception representing the failure.
+         */
         void onFailure(Exception e);
     }
 
     /**
-     * Uploads the selected image to Firebase storage and sets the poster URI.
+     * Uploads the selected image to Firebase Storage and generates a downloadable URI.
+     * Handles success and failure through the provided callback interface.
      *
      * @param imageUri The URI of the image to upload.
+     * @param callback The callback to handle success or failure of the upload.
      */
     private void uploadImageToFirebase(Uri imageUri, ImageUploadCallback callback) {
         StorageReference storageRef = FirebaseStorage.getInstance().getReference();

@@ -13,55 +13,57 @@ import java.util.UUID;
 
 /**
  * Represents an event with various attributes such as name, date, facility, and more.
- * Allows retrieval of event data from Firestore and provides methods to access event details.
+ * Provides methods to manage event details, interact with Firestore, and conduct a lottery
+ * to invite participants.
  */
 public class Event {
-    private String name;
-    private String date;
-    private String facility;
-    private String registrationEndDate;
-    private String description;
-    private int maxWaitEntrants;
-    private int maxSampleEntrants;
-    private String posterUri;  // Store URI as String
-    private boolean isGeolocate;
-    private String eventId;
-    private boolean notifyWaitlisted;
-    private boolean notifyEnrolled;
-    private boolean notifyCancelled;
-    private boolean notifyInvited;
-    private FirebaseFirestore db = FirebaseFirestore.getInstance();
-    private String organizerID;
+
+    private String name; // Name of the event
+    private String date; // Event date
+    private String facility; // Facility where the event takes place
+    private String registrationEndDate; // Registration end date
+    private String description; // Event description
+    private int maxWaitEntrants; // Maximum number of wait-listed entrants
+    private int maxSampleEntrants; // Maximum number of sample-selected entrants
+    private String posterUri; // URI of the event's poster
+    private boolean isGeolocate; // Indicates if geolocation is required
+    private String eventId; // Unique event ID
+    private boolean notifyWaitlisted; // Flag for notifying waitlisted entrants
+    private boolean notifyEnrolled; // Flag for notifying enrolled entrants
+    private boolean notifyCancelled; // Flag for notifying cancelled entrants
+    private boolean notifyInvited; // Flag for notifying invited entrants
+    private FirebaseFirestore db = FirebaseFirestore.getInstance(); // Firestore database instance
+    private String organizerID; // Organizer ID
 
     // Notification message fields
     private String waitlistedMessage;  // For "enrolled" status
     private String enrolledMessage;    // For "accepted" status
     private String cancelledMessage;   // For "rejected" status
     private String invitedMessage;     // For "invited" status
-    private Boolean lotteryRanFlag;
-    private Boolean lotteryButton;
+    private Boolean lotteryRanFlag; // Flag indicating if the lottery has been run
+    private Boolean lotteryButton; // Button state for lottery functionality
 
     /**
      * Constructs an Event object with the specified attributes.
      *
-     * @param name                the name of the event
-     * @param date                the date of the event
-     * @param facility            the facility where the event takes place
-     * @param registrationEndDate the registration end date for the event
-     * @param description         a description of the event
-     * @param maxWaitEntrants     the maximum number of wait-listed entrants
-     * @param maxSampleEntrants   the maximum number of sample-selected entrants
-     * @param posterUri           the URI of the event's poster image
-     * @param isGeolocate         whether geolocation is required for this event
-     * @param notifyWaitlisted    whether to notify waitlisted entrants
-     * @param notifyEnrolled      whether to notify enrolled entrants
-     * @param notifyCancelled     whether to notify cancelled entrants
-     * @param notifyInvited       whether to notify invited entrants
-     * @param waitlistedMessage   the notification message for waitlisted entrants
-     * @param enrolledMessage     the notification message for enrolled entrants
-     * @param cancelledMessage    the notification message for cancelled entrants
-     * @param invitedMessage      the notification message for invited entrants
-     * @param organizerID         the ID of the organizer
+     * @param name                Name of the event.
+     * @param date                Date of the event.
+     * @param facility            Facility where the event takes place.
+     * @param registrationEndDate Registration end date for the event.
+     * @param description         Description of the event.
+     * @param maxWaitEntrants     Maximum number of wait-listed entrants.
+     * @param maxSampleEntrants   Maximum number of sample-selected entrants.
+     * @param posterUri           URI of the event's poster.
+     * @param isGeolocate         Whether geolocation is required for this event.
+     * @param notifyWaitlisted    Whether to notify waitlisted entrants.
+     * @param notifyEnrolled      Whether to notify enrolled entrants.
+     * @param notifyCancelled     Whether to notify cancelled entrants.
+     * @param notifyInvited       Whether to notify invited entrants.
+     * @param waitlistedMessage   Notification message for waitlisted entrants.
+     * @param enrolledMessage     Notification message for enrolled entrants.
+     * @param cancelledMessage    Notification message for cancelled entrants.
+     * @param invitedMessage      Notification message for invited entrants.
+     * @param organizerID         Organizer ID.
      */
     public Event(String name, String date, String facility, String registrationEndDate,
                  String description, int maxWaitEntrants, int maxSampleEntrants,
@@ -92,16 +94,17 @@ public class Event {
         this.lotteryRanFlag = false;
         this.lotteryButton = false;
     }
+
     /**
-     * Constructor used for Admin View, only taking required fields.
+     * Constructs an Event object with minimal required attributes, typically for admin views.
      *
-     * @param name              the name of the event
-     * @param date              the date of the event
-     * @param facility          the facility where the event takes place
-     * @param registrationEndDate the registration end date for the event
-     * @param maxWaitEntrants   the maximum number of wait-listed entrants
-     * @param maxSampleEntrants the maximum number of sample-selected entrants
-     * @param organizerID       the ID of the organizer
+     * @param name                Name of the event.
+     * @param date                Date of the event.
+     * @param facility            Facility where the event takes place.
+     * @param registrationEndDate Registration end date for the event.
+     * @param maxWaitEntrants     Maximum number of wait-listed entrants.
+     * @param maxSampleEntrants   Maximum number of sample-selected entrants.
+     * @param organizerID         Organizer ID.
      */
     public Event(String name, String date, String facility, String registrationEndDate,
                   int maxWaitEntrants, int maxSampleEntrants, String organizerID){
@@ -122,178 +125,267 @@ public class Event {
 
     // Getters
 
+    /**
+     * Gets the name of the event.
+     *
+     * @return The event's name.
+     */
     public String getName() {
         return name;
     }
 
+    /**
+     * Gets the date of the event.
+     *
+     * @return The event's date.
+     */
     public String getDate() {
         return date;
     }
 
+    /**
+     * Gets the registration end date of the event.
+     *
+     * @return The registration end date.
+     */
     public String getRegistrationEndDate() {
         return registrationEndDate;
     }
 
+    /**
+     * Gets the facility where the event is held.
+     *
+     * @return The facility's identifier.
+     */
     public String getFacility() {
         return facility;
     }
 
+    /**
+     * Gets the description of the event.
+     *
+     * @return The event's description.
+     */
     public String getDescription() {
         return description;
     }
 
+    /**
+     * Gets the maximum number of wait-listed entrants for the event.
+     *
+     * @return The maximum number of wait-listed entrants.
+     */
     public int getMaxWaitEntrants() {
         return maxWaitEntrants;
     }
 
+    /**
+     * Gets the maximum number of sample-selected entrants for the event.
+     *
+     * @return The maximum number of sample-selected entrants.
+     */
     public int getMaxSampleEntrants() {
         return maxSampleEntrants;
     }
 
+    /**
+     * Gets the URI of the event's poster.
+     *
+     * @return The poster URI as a string.
+     */
     public String getPosterUri() {
         return posterUri;
     }
 
+    /**
+     * Gets the ID of the organizer for the event.
+     *
+     * @return The organizer's ID.
+     */
     public String getOrganizerID() {
         return organizerID;
     }
 
+    /**
+     * Gets the unique identifier for the event.
+     *
+     * @return The event ID.
+     */
     public String getEventId() {
         return eventId;
     }
 
+    /**
+     * Checks whether geolocation is required for the event.
+     *
+     * @return True if geolocation is required, otherwise false.
+     */
     public boolean isGeolocate() {
         return isGeolocate;
     }
 
+    /**
+     * Checks whether waitlisted entrants will be notified.
+     *
+     * @return True if waitlisted entrants are notified, otherwise false.
+     */
     public boolean isNotifyWaitlisted() {
         return notifyWaitlisted;
     }
 
+    /**
+     * Checks whether enrolled entrants will be notified.
+     *
+     * @return True if enrolled entrants are notified, otherwise false.
+     */
     public boolean isNotifyEnrolled() {
         return notifyEnrolled;
     }
 
+    /**
+     * Checks whether cancelled entrants will be notified.
+     *
+     * @return True if cancelled entrants are notified, otherwise false.
+     */
     public boolean isNotifyCancelled() {
         return notifyCancelled;
     }
 
+    /**
+     * Checks whether invited entrants will be notified.
+     *
+     * @return True if invited entrants are notified, otherwise false.
+     */
     public boolean isNotifyInvited() {
         return notifyInvited;
     }
 
+    /**
+     * Gets the notification message for waitlisted entrants.
+     *
+     * @return The waitlisted notification message.
+     */
     public String getWaitlistedMessage() {
         return waitlistedMessage;
     }
 
+    /**
+     * Gets the notification message for enrolled entrants.
+     *
+     * @return The enrolled notification message.
+     */
     public String getEnrolledMessage() {
         return enrolledMessage;
     }
 
+    /**
+     * Gets the notification message for cancelled entrants.
+     *
+     * @return The cancelled notification message.
+     */
     public String getCancelledMessage() {
         return cancelledMessage;
     }
 
+    /**
+     * Gets the notification message for invited entrants.
+     *
+     * @return The invited notification message.
+     */
     public String getInvitedMessage() {
         return invitedMessage;
     }
 
-    public Boolean getLotteryRanFlag() {
-        return lotteryRanFlag;
-    }
-
-    public Boolean getLotteryButton() {
-        return lotteryRanFlag;
-    }
-
     // Setters
 
-    public void setGeolocate(boolean geolocate) {
-        this.isGeolocate = geolocate;
-    }
-
+    /**
+     * Sets the name of the event.
+     *
+     * @param name The name of the event.
+     */
     public void setName(String name) {
         this.name = name;
     }
 
+    /**
+     * Sets the date of the event.
+     *
+     * @param date The date of the event.
+     */
     public void setDate(String date) {
         this.date = date;
     }
 
+    /**
+     * Sets the facility where the event will take place.
+     *
+     * @param facility The facility's identifier.
+     */
     public void setFacility(String facility) {
         this.facility = facility;
     }
 
+    /**
+     * Sets the registration end date for the event.
+     *
+     * @param registrationEndDate The registration end date.
+     */
     public void setRegistrationEndDate(String registrationEndDate) {
         this.registrationEndDate = registrationEndDate;
     }
 
+    /**
+     * Sets the description of the event.
+     *
+     * @param description The event's description.
+     */
     public void setDescription(String description) {
         this.description = description;
     }
 
+    /**
+     * Sets the maximum number of wait-listed entrants for the event.
+     *
+     * @param maxWaitEntrants The maximum number of wait-listed entrants.
+     */
     public void setMaxWaitEntrants(int maxWaitEntrants) {
         this.maxWaitEntrants = maxWaitEntrants;
     }
 
+    /**
+     * Sets the maximum number of sample-selected entrants for the event.
+     *
+     * @param maxSampleEntrants The maximum number of sample-selected entrants.
+     */
     public void setMaxSampleEntrants(int maxSampleEntrants) {
         this.maxSampleEntrants = maxSampleEntrants;
     }
 
+    /**
+     * Sets the URI of the event's poster.
+     *
+     * @param posterUri The poster URI as a string.
+     */
     public void setPosterUri(String posterUri) {
         this.posterUri = posterUri;
     }
 
-    public void setNotifyWaitlisted(boolean notifyWaitlisted) {
-        this.notifyWaitlisted = notifyWaitlisted;
-    }
-
-    public void setNotifyEnrolled(boolean notifyEnrolled) {
-        this.notifyEnrolled = notifyEnrolled;
-    }
-
-    public void setNotifyCancelled(boolean notifyCancelled) {
-        this.notifyCancelled = notifyCancelled;
-    }
-
-    public void setNotifyInvited(boolean notifyInvited) {
-        this.notifyInvited = notifyInvited;
-    }
-
-    public void setWaitlistedMessage(String waitlistedMessage) {
-        this.waitlistedMessage = waitlistedMessage;
-    }
-
-    public void setEnrolledMessage(String enrolledMessage) {
-        this.enrolledMessage = enrolledMessage;
-    }
-
-    public void setCancelledMessage(String cancelledMessage) {
-        this.cancelledMessage = cancelledMessage;
-    }
-
-    public void setInvitedMessage(String invitedMessage) {
-        this.invitedMessage = invitedMessage;
-    }
-
+    /**
+     * Sets the Firestore database instance for the event.
+     *
+     * @param db The Firestore database instance.
+     */
     public void setDb(FirebaseFirestore db) {
         this.db = db;
     }
 
-    public void setOrganizerID(String organizerID) {
-        this.organizerID = organizerID;
-    }
-
+    /**
+     * Sets the unique identifier for the event.
+     *
+     * @param eventId The event ID.
+     */
     public void setEventId(String eventId) {
         this.eventId = eventId;
-    }
-
-    public void setLotteryRanFlag(boolean lotteryRanFlagStatus) {
-        this.lotteryRanFlag = lotteryRanFlagStatus;
-    }
-
-    public void setLotteryButton(boolean lotteryButtonStatus) {
-        this.lotteryRanFlag = lotteryButtonStatus;
     }
 
     /**

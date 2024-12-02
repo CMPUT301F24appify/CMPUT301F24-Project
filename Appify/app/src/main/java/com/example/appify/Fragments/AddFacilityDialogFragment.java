@@ -1,6 +1,5 @@
 package com.example.appify.Fragments;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -15,8 +14,6 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
 
 import com.example.appify.HeaderNavigation;
-import com.example.appify.Activities.EntrantHomePageActivity;
-import com.example.appify.Activities.EventActivity;
 import com.example.appify.Model.Facility;
 import com.example.appify.MyApp;
 import com.example.appify.R;
@@ -25,25 +22,25 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import java.util.UUID;
 
 /**
- * A dialog fragment that allows the user to add a new facility or edit an existing one.
- * This dialog contains fields for the facility's name, location, capacity, email, and description.
- * If in edit mode, the dialog is pre-populated with existing facility details and will update the facility in the database.
+ * AddFacilityDialogFragment is a dialog fragment that allows users to add a new facility
+ * or edit an existing one. It supports fields for the facility's name, location, capacity,
+ * email, and description. If in edit mode, it pre-populates the fields with existing data.
  */
 public class AddFacilityDialogFragment extends DialogFragment {
 
-    private FirebaseFirestore db;
-    private EditText facilityName;
-    private EditText facilityLocation;
-    private EditText facilityCapacity;
-    private EditText facilityEmail;
-    private EditText facilityDescription;
+    private FirebaseFirestore db; // Firestore database instance
+    private EditText facilityName; // EditText for the facility name
+    private EditText facilityLocation; // EditText for the facility location
+    private EditText facilityCapacity; // EditText for the facility capacity
+    private EditText facilityEmail; // EditText for the facility email
+    private EditText facilityDescription; // EditText for the facility description
 
-    private boolean isEditMode = false;
-    private String facilityID;
-    private FacilityUpdateListener updateListener;
+    private boolean isEditMode = false; // Flag to check if in edit mode
+    private String facilityID; // Facility ID for the facility being edited
+    private FacilityUpdateListener updateListener; // Listener for facility updates
 
     /**
-     * Creates a new instance of AddFacilityDialogFragment with the specified facility details.
+     * Creates a new instance of AddFacilityDialogFragment pre-filled with facility details.
      *
      * @param facilityID  The ID of the facility.
      * @param name        The name of the facility.
@@ -51,7 +48,7 @@ public class AddFacilityDialogFragment extends DialogFragment {
      * @param email       The contact email of the facility.
      * @param description The description of the facility.
      * @param capacity    The maximum capacity of the facility.
-     * @return A new instance of AddFacilityDialogFragment.
+     * @return A new instance of AddFacilityDialogFragment with the provided details.
      */
     public static AddFacilityDialogFragment newInstance(String facilityID, String name, String location,
                                                         String email, String description, int capacity) {
@@ -68,12 +65,13 @@ public class AddFacilityDialogFragment extends DialogFragment {
     }
 
     /**
-     * Called to create the dialog's view, initializing UI elements and populating them if in edit mode.
+     * Called to create the dialog's view and initialize UI components.
+     * If in edit mode, pre-populates the fields with existing facility details.
      *
-     * @param inflater           The LayoutInflater object that can be used to inflate views in the fragment.
-     * @param container          If non-null, this is the parent view that the fragment's UI should be attached to.
-     * @param savedInstanceState If non-null, this fragment is being re-constructed from a previous saved state.
-     * @return The constructed view of the dialog.
+     * @param inflater           The LayoutInflater object for inflating views in the fragment.
+     * @param container          The parent view that this fragment's UI should be attached to.
+     * @param savedInstanceState If non-null, this fragment is being re-created from a previous state.
+     * @return The constructed view for the dialog.
      */
     @Nullable
     @Override
@@ -136,6 +134,7 @@ public class AddFacilityDialogFragment extends DialogFragment {
         String description = facilityDescription.getText().toString().trim();
         String capacityStr = facilityCapacity.getText().toString().trim();
 
+        // Validate input fields
         if (TextUtils.isEmpty(name) || TextUtils.isEmpty(location) || TextUtils.isEmpty(email) || TextUtils.isEmpty(description) || TextUtils.isEmpty(capacityStr)) {
             Toast.makeText(getContext(), "All fields are required.", Toast.LENGTH_SHORT).show();
             return;

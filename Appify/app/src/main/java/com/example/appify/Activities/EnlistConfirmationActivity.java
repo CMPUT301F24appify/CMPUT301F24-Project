@@ -19,14 +19,14 @@ import java.util.Objects;
  * to return to the main events page.
  */
 public class EnlistConfirmationActivity extends AppCompatActivity {
-    // Attributes
-    private String confirmation;
-    private String name;
-    private String date;
-    private String registrationEndDate;
-    private String facility;
-    private boolean isGeolocate;
-    private Button homeButton;
+
+    private String confirmation; // The enlistment status of the user (e.g., "Joined" or removed status)
+    private String name; // The name of the event
+    private String date; // The date of the event
+    private String registrationEndDate; // The registration deadline for the event
+    private String facility; // The facility where the event is held
+    private boolean isGeolocate; // Whether geolocation is enabled for this event
+    private Button homeButton; // Button to navigate back to the home page
 
     /**
      * Initializes the EnlistConfirmationActivity and sets up the UI elements.
@@ -60,6 +60,7 @@ public class EnlistConfirmationActivity extends AppCompatActivity {
         TextView eventDescription = findViewById(R.id.confirmation_message);
         TextView eventRegistrationEnd = findViewById(R.id.registration_date);
 
+        // Populate TextViews with data from the intent
         eventName.setText(name);
         eventDate.setText(date);
         eventRegistrationEnd.setText(registrationEndDate);
@@ -75,6 +76,7 @@ public class EnlistConfirmationActivity extends AppCompatActivity {
         // Set up home button to navigate back to the events page
         homeButton = findViewById(R.id.home_button);
         homeButton.setOnClickListener(v -> {
+            // Navigate to the EntrantHomePageActivity and close this activity
             Intent intent2 = new Intent(EnlistConfirmationActivity.this, EntrantHomePageActivity.class);
             startActivity(intent2);
             finish();

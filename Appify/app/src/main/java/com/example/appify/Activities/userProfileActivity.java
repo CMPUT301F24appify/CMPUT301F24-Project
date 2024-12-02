@@ -1,9 +1,7 @@
 package com.example.appify.Activities;
 
-import android.app.Activity;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Color;
 import android.os.Bundle;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -12,50 +10,50 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.example.appify.HeaderNavigation;
 import com.example.appify.MyApp;
 import com.example.appify.R;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.ListenerRegistration;
-import com.google.firebase.firestore.SetOptions;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
-import java.util.Collections;
 import java.util.Objects;
 
 /**
  * Activity to display the user's profile information.
- * Fetches data and photo from Database and displays it.
+ * Fetches and displays user data and profile picture from Firebase Firestore and Firebase Storage.
  */
 public class userProfileActivity extends AppCompatActivity {
 
-    private FirebaseFirestore db;
-    private ImageView profileImageView, headerImageView;
-    private TextView nameTextView, phoneTextView, emailTextView;
-    private ListenerRegistration listenerRegistration;
-    private Button editButton;
-    private boolean generatePicture = false;
+    private FirebaseFirestore db; // Firestore instance for database operations
+    private ImageView profileImageView, headerImageView; // Image views for profile picture and header
+    private TextView nameTextView, phoneTextView, emailTextView; // Text views for user information
+    private ListenerRegistration listenerRegistration; // Listener for real-time updates (not used in this code)
+    private Button editButton; // Button to navigate to the edit user activity
+    private boolean generatePicture = false; // Flag indicating if the profile picture is system-generated
 
     /**
-     * Called when the activity is first created.
-     * Sets up the layout, initializes views, retrieves user data, and displays the profile picture.
+     * Called when the activity is created. Initializes the UI, sets up navigation,
+     * and retrieves user data from Firestore to display on the profile page.
      *
-     * @param savedInstanceState most recent Data sent.
+     * @param savedInstanceState The saved instance state of the activity, if any.
      */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.user_profile);
+
+        // Initialize Firestore instance and get Android ID from the application
         MyApp app = (MyApp) getApplication();
         db = app.getFirebaseInstance();
+        String android_id = app.getAndroidId();
 
+        // Set up header navigation for consistent UI navigation
         HeaderNavigation headerNavigation = new HeaderNavigation(this);
         headerNavigation.setupNavigation();
 
-        String android_id = app.getAndroidId();
 
         // Initialize Views
         profileImageView = findViewById(R.id.profileImageView);
@@ -81,11 +79,8 @@ public class userProfileActivity extends AppCompatActivity {
                             String name = documentSnapshot.getString("name");
                             String phone = documentSnapshot.getString("phoneNumber");
                             String email = documentSnapshot.getString("email");
-                            Boolean notificationsCheck = documentSnapshot.getBoolean("notifications");
-                            Boolean isAdmin = documentSnapshot.getBoolean("admin");
                             TextView phoneText = findViewById(R.id.phoneText);
                             generatePicture = documentSnapshot.getBoolean("generatedPicture");
-                            //String profileImageUrl = documentSnapshot.getString("profilePictureUrl");
                             nameTextView.setText(name);
                             if(Objects.equals(phone, "")){
                                 phoneTextView.setVisibility(View.GONE);
@@ -102,12 +97,14 @@ public class userProfileActivity extends AppCompatActivity {
         }
     }
     /**
-     * Loads the user's profile picture from Firebase Storage based on the AndroidID.
+     * Loads the user's profile picture from Firebase Storage based on the Android ID.
      *
-     * @param android_id Unique identifier for the user's device.
+     * @param android_id The unique identifier for the user's device.
      */
     private void loadProfilePicture(String android_id) {
         FirebaseStorage storage = FirebaseStorage.getInstance();
+
+        // Retrieve profile picture path based on the "generatedPicture" flag
         db.collection("AndroidID").document(android_id).get()
                 .addOnSuccessListener(documentSnapshot -> {
                     if (documentSnapshot.exists()) {
@@ -115,6 +112,7 @@ public class userProfileActivity extends AppCompatActivity {
                         String path = generated ? "generated_pictures/" : "profile_images/";
                         StorageReference storageRef = storage.getReference().child(path + android_id + ".jpg");
 
+                        // Load the profile picture as a byte array
                         long size = 1024 * 1024;
                         storageRef.getBytes(size)
                                 .addOnSuccessListener(bytes -> {

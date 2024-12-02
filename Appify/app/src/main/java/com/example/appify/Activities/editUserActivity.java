@@ -41,29 +41,30 @@ import com.google.firebase.storage.StorageReference;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Random;
-import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Activity to edit the user's profile information.
  * Allows users to set their profile picture, name, phone number, email, and notification preferences.
  */
 public class editUserActivity extends AppCompatActivity {
-    private FirebaseFirestore db;
-    private ImageView profileImageView;
-    private Uri imageUri = null;
-    private String android_id;
-    private byte[] profilePictureByte;
-    private EditText nameEditText, phoneEditText, emailEditText;
-    private String facilityID = null;
-    private double deviceLatitude;
-    private double deviceLongitude;
-    private LocationRequest deviceLocationRequest;
-    private Bitmap bitmapImage = null;
-    private boolean defaultFlag = true;
-    private boolean cameraFlag,generatedPicture = false;
-    private Bitmap uriBitmap = null;
 
-    private static final int REQUEST_CODE_POST_NOTIFICATIONS = 10010001;
+    private FirebaseFirestore db; // Firestore database instance
+    private ImageView profileImageView; // ImageView to display the profile picture
+    private Uri imageUri = null; // URI for the selected profile picture
+    private String android_id; // Unique device ID of the user
+    private byte[] profilePictureByte; // Byte array for storing profile picture data
+    private EditText nameEditText, phoneEditText, emailEditText; // EditText fields for user name, phone, and email
+    private String facilityID = null; // Facility ID associated with the user
+    private double deviceLatitude; // Latitude of the device's current location
+    private double deviceLongitude; // Longitude of the device's current location
+    private LocationRequest deviceLocationRequest; // LocationRequest for high-accuracy location updates
+    private Bitmap bitmapImage = null; // Bitmap to hold the current profile picture
+    private boolean defaultFlag = true; // Flag to indicate if the default profile picture is being used
+    private boolean cameraFlag, generatedPicture = false; // Flags for camera usage and profile picture generation
+    private Bitmap uriBitmap = null; // Bitmap for storing the image selected from URI
+
+    private static final int REQUEST_CODE_POST_NOTIFICATIONS = 10010001; // Request code for notification permissions
+
 
 
     /**
@@ -77,10 +78,14 @@ public class editUserActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.edit_user);
+
+        // Retrieve data passed to the activity
         bitmapImage = (Bitmap) getIntent().getExtras().get("Image Bitmap");
         android_id = getIntent().getStringExtra("AndroidID");
         boolean firstEntry = getIntent().getBooleanExtra("firstEntry", false);
         boolean pictureFlag = getIntent().getBooleanExtra("pictureFlag", false);
+
+        // Set up navigation header
         HeaderNavigation headerNavigation = new HeaderNavigation(this);
         headerNavigation.setupNavigation();
 
@@ -89,11 +94,14 @@ public class editUserActivity extends AppCompatActivity {
         phoneEditText = findViewById(R.id.phoneEditText);
         emailEditText = findViewById(R.id.emailEditText);
         profileImageView = findViewById(R.id.profileImageView);
+
+        // Initialize buttons
         Button uploadButton = findViewById(R.id.uploadButton);
         Button removeButton = findViewById(R.id.removeButton);
         Button submitButton = findViewById(R.id.submitButton);
         Button cancelButton = findViewById(R.id.cancelButton);
 
+        // Configure location request for high accuracy
         deviceLocationRequest = LocationRequest.create();
         deviceLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
         deviceLocationRequest.setInterval(5000);
@@ -109,28 +117,38 @@ public class editUserActivity extends AppCompatActivity {
             }
         }
 
+        // Hide cancel button if first-time entry
         if (firstEntry) {
             cancelButton.setVisibility(View.GONE);
         }
+
+        // Handle cancel button click
         cancelButton.setOnClickListener(v -> {
             Intent intent = new Intent(editUserActivity.this, userProfileActivity.class);
             intent.putExtra("AndroidID", android_id);
             startActivity(intent);
         });
+
+        // Initialize Firestore instance
         MyApp app = (MyApp) getApplication();
         db = app.getFirebaseInstance();
+
+        // Populate fields if Android ID is provided
         if (android_id != null) {
             populateFields(android_id);
         }
+
+        // Handle upload button click to open image picker
         uploadButton.setOnClickListener(v -> openImagePicker());
 
+        // Handle remove button click to reset profile picture to default
         removeButton.setOnClickListener(v -> {
             profileImageView.setImageResource(R.drawable.default_profile);  // Reset to default image
             imageUri = null;
             defaultFlag = true;
         });
 
-
+        // Handle submit button click to save user data
         submitButton.setOnClickListener(v -> {
             String name = nameEditText.getText().toString();
             String phoneNumber = phoneEditText.getText().toString();
@@ -171,6 +189,15 @@ public class editUserActivity extends AppCompatActivity {
         });
     }
 
+
+
+    /**
+     * Handles the result of a permission request for notifications.
+     *
+     * @param requestCode  The request code passed to requestPermissions.
+     * @param permissions  The requested permissions.
+     * @param grantResults The grant results for the corresponding permissions.
+     */
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
@@ -187,15 +214,22 @@ public class editUserActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Opens the image picker for the user to select or capture an image.
+     */
     private void openImagePicker() {
         ImagePicker.with(this)
-                .crop()
-                .maxResultSize(1080, 1080)
-                .start();
+                .crop() // Enable cropping
+                .maxResultSize(1080, 1080) // Set maximum image size
+                .start(); // Start image picker
     }
 
     /**
-     * Handle the result from ImagePicker.
+     * Handles the result from the ImagePicker after selecting or capturing an image.
+     *
+     * @param requestCode The request code passed when starting the ImagePicker.
+     * @param resultCode  The result code returned by the ImagePicker.
+     * @param data        Intent data returned by the ImagePicker.
      */
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -209,9 +243,11 @@ public class editUserActivity extends AppCompatActivity {
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
-            profileImageView.setImageURI(imageUri);
+            profileImageView.setImageURI(imageUri); // Display the selected image in the ImageView
         }
     }
+
+
 
     /**
      * Generates a profile picture with the user's first name initial and a random background color.
@@ -261,10 +297,12 @@ public class editUserActivity extends AppCompatActivity {
     /**
      * Saves the user's data and profile picture to Firestore and Firebase Storage.
      *
-     * @param id The user's unique device ID.
-     * @param name The user's name.
-     * @param phone The user's phone number.
-     * @param email The user's email address.
+     * @param id        The user's unique device ID.
+     * @param name      The user's name.
+     * @param phone     The user's phone number.
+     * @param email     The user's email address.
+     * @param latitude  The latitude of the user's location.
+     * @param longitude The longitude of the user's location.
      */
     private void sendEntrantData(String id,String name, String phone, String email, double latitude, double longitude){
         Bitmap profilePicture = getBitmapFromImageView(profileImageView);
@@ -326,7 +364,6 @@ public class editUserActivity extends AppCompatActivity {
                         String phone = documentSnapshot.getString("phoneNumber");
                         String email = documentSnapshot.getString("email");
                         facilityID = documentSnapshot.getString("facilityID");
-                        //String profileImageUrl = documentSnapshot.getString("profilePictureUrl");
 
                         // Populate the EditText fields with the retrieved data
                         nameEditText.setText(name);

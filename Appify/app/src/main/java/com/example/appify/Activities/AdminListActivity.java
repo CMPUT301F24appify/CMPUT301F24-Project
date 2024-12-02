@@ -1,21 +1,17 @@
 package com.example.appify.Activities;
 
-import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.ListView;
-import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.example.appify.Adapters.CustomEntrantAdapter;
 import com.example.appify.Adapters.CustomEntrantAdminAdapter;
 import com.example.appify.Adapters.CustomEventAdapter;
 import com.example.appify.Adapters.CustomFacilityAdapter;
@@ -35,27 +31,30 @@ import com.google.firebase.storage.StorageReference;
 import java.util.ArrayList;
 
 /**
- * Displays a list of facilities, events, profiles, or images based on user selection.
+ * AdminListActivity handles the display of various lists (facilities, events, profiles, or images)
+ * based on user selection. It interacts with Firestore to fetch data dynamically.
  */
 public class AdminListActivity extends AppCompatActivity {
-    private FirebaseFirestore db;
-    private ListView listView;
-    private CustomFacilityAdapter  facilityAdapter; // Update to use appropriate adapters for other types
-    private ArrayList<Facility> facilityList; // Update to handle other types (events, profiles, images)
-    private ArrayList<Event> eventList;
-    private CustomEventAdapter eventAdapter;
-    private ArrayList<Entrant> entrantList;
-    private CustomEntrantAdminAdapter entrantAdapter;
-    private ArrayList<StorageReference> folderList;
-    private CustomFolderAdapter folderAdapter;
-    private LinearLayout noFacilityView;
-    private LinearLayout noEventsView;
+
+    private FirebaseFirestore db; // Firestore database instance
+    private ListView listView; // ListView to display data
+    private CustomFacilityAdapter facilityAdapter; // Adapter for facilities
+    private ArrayList<Facility> facilityList; // List of facilities
+    private ArrayList<Event> eventList; // List of events
+    private CustomEventAdapter eventAdapter; // Adapter for events
+    private ArrayList<Entrant> entrantList; // List of entrants (profiles)
+    private CustomEntrantAdminAdapter entrantAdapter; // Adapter for entrants
+    private ArrayList<StorageReference> folderList; // List of image folders
+    private CustomFolderAdapter folderAdapter; // Adapter for folders
+    private LinearLayout noFacilityView; // View displayed when no facilities are available
+    private LinearLayout noEventsView; // View displayed when no events are available
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.admin_page);
 
+        // Initialize Firestore instance
         MyApp app = (MyApp) getApplication();
         db = app.getFirebaseInstance();
 
@@ -68,11 +67,12 @@ public class AdminListActivity extends AppCompatActivity {
         entrantAdapter = new CustomEntrantAdminAdapter(this, entrantList);
         folderList = new ArrayList<>();
         folderAdapter = new CustomFolderAdapter(this, folderList);
-        listView = findViewById(R.id.admin_list);
-        noFacilityView = findViewById(R.id.noFacilityView);
-        noEventsView = findViewById(R.id.noEventsView);
 
-        // HeaderNavigation
+        listView = findViewById(R.id.admin_list); // ListView reference
+        noFacilityView = findViewById(R.id.noFacilityView); // No facilities view
+        noEventsView = findViewById(R.id.noEventsView); // No events view
+
+        // Set up navigation header
         HeaderNavigation headerNavigation = new HeaderNavigation(this);
         headerNavigation.setupNavigation();
         TextView facilitiesText = findViewById(R.id.adminText_navBar);
@@ -83,19 +83,23 @@ public class AdminListActivity extends AppCompatActivity {
         RadioGroup toggleGroup = findViewById(R.id.toggle_group);
         toggleGroup.setOnCheckedChangeListener((group, checkedId) -> {
             if (checkedId == R.id.toggle_facilities) {
+                // Load and display facilities
                 listView.setAdapter(facilityAdapter);
                 noEventsView.setVisibility(View.GONE);
                 loadFacilitiesFromFirestore();
             } else if (checkedId == R.id.toggle_events) {
+                // Load and display events
                 listView.setAdapter(eventAdapter);
                 noFacilityView.setVisibility(View.GONE);
                 loadEventsFromFirestore();
             } else if (checkedId == R.id.toggle_profiles) {
+                // Load and display profiles
                 listView.setAdapter(entrantAdapter);
                 noFacilityView.setVisibility(View.GONE);
                 noEventsView.setVisibility(View.GONE);
                 loadProfilesFromFirestore();
             } else if (checkedId == R.id.toggle_images) {
+                // Load and display images
                 listView.setAdapter(folderAdapter);
                 noFacilityView.setVisibility(View.GONE);
                 noEventsView.setVisibility(View.GONE);
@@ -105,10 +109,13 @@ public class AdminListActivity extends AppCompatActivity {
             }
         });
 
-        // Load default selection (e.g., facilities)
-        toggleGroup.check(R.id.toggle_facilities); // Default selection
+        // Set default selection to facilities
+        toggleGroup.check(R.id.toggle_facilities);
     }
 
+    /**
+     * Fetches facilities from Firestore and updates the adapter.
+     */
     private void loadFacilitiesFromFirestore() {
         CollectionReference facilitiesRef = db.collection("facilities");
 
@@ -124,12 +131,14 @@ public class AdminListActivity extends AppCompatActivity {
                     int capacity = doc.getLong("capacity").intValue();
                     String organizerID = doc.getString("organizerID");
 
+                    // Create and add a Facility object to the list
                     Facility facility = new Facility(id, name, location, email, description, capacity, organizerID);
                     facilityList.add(facility);
                     noFacilityView.setVisibility(View.GONE);
                 }
                 facilityAdapter.notifyDataSetChanged();
 
+                // Show the no facilities view if the list is empty
                 if (facilityList.isEmpty()){
                     noFacilityView.setVisibility(View.VISIBLE);
                 }
@@ -137,12 +146,15 @@ public class AdminListActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Fetches events from Firestore and updates the adapter.
+     */
     private void loadEventsFromFirestore() {
         CollectionReference eventsRef = db.collection("events");
 
         eventsRef.get().addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
-                eventList.clear();
+                eventList.clear(); // Clear the list to avoid duplicates
                 for (QueryDocumentSnapshot doc : task.getResult()) {
                     String id = doc.getId();
                     String name = doc.getString("name");
@@ -154,7 +166,7 @@ public class AdminListActivity extends AppCompatActivity {
                     String organizerID = doc.getString("organizerID");
                     String posterURI = doc.getString("posterUri");
 
-
+                    // Create and add an Event object to the list
                     Event event = new Event(name,date,facility,registrationEndDate,
                             maxWaitEntrants,maxSampleEntrants,organizerID);
                     event.setEventId(id);
@@ -166,6 +178,7 @@ public class AdminListActivity extends AppCompatActivity {
                 }
                 eventAdapter.notifyDataSetChanged();
 
+                // Show the no events view if the list is empty
                 if (eventList.isEmpty()){
                     noEventsView.setVisibility(View.VISIBLE);
                 }
@@ -173,12 +186,15 @@ public class AdminListActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Fetches profiles from Firestore and updates the adapter.
+     */
     private void loadProfilesFromFirestore() {
         CollectionReference entrantRef = db.collection("AndroidID");
 
         entrantRef.get().addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
-                entrantList.clear();
+                entrantList.clear(); // Clear the list to avoid duplicates
                 for (QueryDocumentSnapshot doc : task.getResult()) {
 
                     String id = doc.getId();
@@ -191,6 +207,7 @@ public class AdminListActivity extends AppCompatActivity {
                     Double latitude = doc.getDouble("latitude");
                     Double longitude = doc.getDouble("longitude");
 
+                    // Create and add an Entrant object to the list
                     Entrant entrant = new Entrant(id,name,phoneNumber,email,profilePictureURL,notifications, facilityID);
 
                     if(latitude != null && longitude != null){
@@ -203,13 +220,18 @@ public class AdminListActivity extends AppCompatActivity {
             }
         });
     }
+
+    /**
+     * Fetches image folder references from Firebase Storage and updates the adapter.
+     */
     private void loadImagesFromFirestore() {
         FirebaseStorage storage = FirebaseStorage.getInstance();
         StorageReference ref = storage.getReference();
         ref.listAll()
                 .addOnSuccessListener(result -> {
-                    folderList.clear();
+                    folderList.clear(); // Clear the list to avoid duplicates
                     for (StorageReference folder : result.getPrefixes()) {
+                        // Skip specific folders
                         if(folder.getName().contains("qrcode") || folder.getName().contains("generated")) {
                             continue;
                         }

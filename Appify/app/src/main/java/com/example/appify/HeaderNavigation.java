@@ -50,6 +50,7 @@ public class HeaderNavigation {
 
         // Admin
         TextView adminText = activity.findViewById(R.id.adminText_navBar);
+        TextView navBar2 = activity.findViewById(R.id.navBarDivider2);
 
         // Check if user is admin or not
 
@@ -61,6 +62,7 @@ public class HeaderNavigation {
                 boolean isAdmin = documentSnapshot.getBoolean("admin");
                 if (adminText != null && isAdmin) {
                     adminText.setVisibility(View.VISIBLE);
+                    navBar2.setVisibility(View.VISIBLE);
                     adminText.setOnClickListener(v -> checkAdminStatus());
                 }
             }
@@ -182,6 +184,10 @@ public class HeaderNavigation {
         }
     }
 
+    /**
+     * Checks if the user has admin privileges.
+     * Navigates to the facilities page if the user is an admin; otherwise, shows a toast message.
+     */
     private void checkAdminStatus() {
         MyApp app = (MyApp) activity.getApplication();
         String androidId = app.getAndroidId();

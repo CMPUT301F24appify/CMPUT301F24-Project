@@ -4,53 +4,46 @@ package com.example.appify.Adapters;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.Context;
-import android.content.Intent;
-import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.constraintlayout.widget.ConstraintLayout;
 
-import com.example.appify.Model.Event;
 import com.example.appify.Model.Entrant;
 import com.example.appify.MyApp;
 import com.example.appify.R;
-import com.google.android.gms.tasks.Task;
-import com.google.android.gms.tasks.Tasks;
-import com.google.firebase.Firebase;
-import com.google.firebase.firestore.DocumentReference;
-import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
-import com.google.firebase.firestore.QuerySnapshot;
-import com.google.firebase.firestore.WriteBatch;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
-import org.w3c.dom.Document;
-
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Objects;
 
 
+/**
+ * CustomEntrantAdminAdapter is a custom ArrayAdapter designed to manage and display
+ * a list of entrants with administrative options such as viewing, modifying, or deleting an entrant's details.
+ */
 public class CustomEntrantAdminAdapter extends ArrayAdapter<Entrant> {
-    private Context context;
-    private List<Entrant> entrantList;
 
-    private FirebaseFirestore db = FirebaseFirestore.getInstance();
+    private Context context; // Context in which the adapter is used
+    private List<Entrant> entrantList; // List of entrants to display
+    private FirebaseFirestore db = FirebaseFirestore.getInstance(); // Firestore instance for database operations
 
+    /**
+     * Constructor to initialize the adapter with a context and list of entrants.
+     *
+     * @param context     The context in which the adapter is used.
+     * @param entrantList The list of entrants to display.
+     */
     public CustomEntrantAdminAdapter(Context context, List<Entrant> entrantList) {
         super(context, 0, entrantList);
         this.context = context;
@@ -71,14 +64,16 @@ public class CustomEntrantAdminAdapter extends ArrayAdapter<Entrant> {
     @NonNull
     @Override
     public View getView(int position, View convertView, @NonNull ViewGroup parent) {
+        // Inflate the layout for each list item if not already done
         if (convertView == null) {
             convertView = LayoutInflater.from(context).inflate(R.layout.entrant_admin_list, parent, false);
         }
 
         MyApp app = (MyApp) context.getApplicationContext();
-
         Entrant entrant = entrantList.get(position);
         String entrantID = entrant.getId();
+
+        // Initialize UI components
         TextView email = convertView.findViewById(R.id.email);
         TextView phoneNumber = convertView.findViewById(R.id.phone);
         TextView name = convertView.findViewById(R.id.entrant_name_admin);
@@ -91,6 +86,7 @@ public class CustomEntrantAdminAdapter extends ArrayAdapter<Entrant> {
         FirebaseStorage storage = FirebaseStorage.getInstance();
         long size = 1024 * 1024;
 
+        // Attempt to fetch and display the profile image
         StorageReference profileImageRef = storage.getReference().child("profile_images/" + entrantID + ".jpg");
         StorageReference generatedImageRef = storage.getReference().child("generated_pictures/" + entrantID + ".jpg");
 
@@ -105,6 +101,8 @@ public class CustomEntrantAdminAdapter extends ArrayAdapter<Entrant> {
                 statusIcon.setImageBitmap(bitmap);
             });
         });
+
+        // Display entrant details
         email.setText("Email: " + entrant.getEmail());
         name.setText(entrant.getName());
         if (entrant.getPhoneNumber() != "") {
@@ -122,6 +120,13 @@ public class CustomEntrantAdminAdapter extends ArrayAdapter<Entrant> {
         return convertView;
     }
 
+
+    /**
+     * Displays a confirmation dialog to delete an entrant's profile. If confirmed,
+     * removes the entrant from Firestore and cascades deletions where necessary.
+     *
+     * @param entrant The entrant to be deleted.
+     */
     private void showCancelProfileDialog(Entrant entrant) {
         // Check if the user is an admin before proceeding
         db.collection("AndroidID").document(entrant.getId())

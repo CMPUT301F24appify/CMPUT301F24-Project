@@ -46,10 +46,6 @@ public class MainActivity extends AppCompatActivity {
         MyApp app = (MyApp) getApplication();
         app.setAndroidId(android_id);
         db = app.getFirebaseInstance();
-        // Set db in the global application class
-
-//        M firebase = (Firebase) getApplication();
-//        firebase.setFirebaseInstance(db);
 
         // Adjust padding based on system bars (optional, depending on your UI design)
         View mainView = findViewById(R.id.main);
