@@ -177,7 +177,6 @@ public class EntrantEnlistActivity extends AppCompatActivity {
                                  });
                             }
                          } else {
-                             System.out.println("failed");
                              Intent intent3 = new Intent(this, EntrantHomePageActivity.class);
                              Toast.makeText(this, "Invalid QRCode",Toast.LENGTH_LONG).show();
                              this.startActivity(intent3);
@@ -187,7 +186,6 @@ public class EntrantEnlistActivity extends AppCompatActivity {
 
         }
         else {
-            System.out.println("no qr");
              HeaderNavigation headerNavigation = new HeaderNavigation(this);
              headerNavigation.setupNavigation();
 
@@ -266,7 +264,6 @@ public class EntrantEnlistActivity extends AppCompatActivity {
                             isEnrolled = false;
                         }
 
-                    System.out.println(""+isEnrolled);
                     if (currentEntrants < maxWaitEntrants || isEnrolled ) {
 
                         waitingListRef.document(androidId).get().addOnSuccessListener(DocumentSnapshot1 ->{

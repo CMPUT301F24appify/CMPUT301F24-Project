@@ -107,7 +107,6 @@ public class CustomEntrantAdapter extends ArrayAdapter<Entrant> {
 
         xIcon.setOnClickListener(v -> {
             showCancelUserDialog(entrant);
-            System.out.println("press button");
         });
 
         entrantNameView.setText(entrant.getName());

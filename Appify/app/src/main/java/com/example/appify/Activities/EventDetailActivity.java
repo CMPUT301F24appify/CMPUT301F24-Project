@@ -100,7 +100,6 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
 
             if (qrCodeLocationURL != null){
                 // Qr code exists
-                System.out.println(qrCodeLocationURL);
                 storageRef.getBytes(1024 * 1024)
                         .addOnSuccessListener(bytes -> {
                             // Convert the byte array to a Bitmap
@@ -123,7 +122,6 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
         boolean isGeolocate = intent.getBooleanExtra("isGeolocate", false);
         Uri posterUri = posterUriString != null && !posterUriString.isEmpty() ? Uri.parse(posterUriString) : null;
         boolean isAdminPage = intent.getBooleanExtra("isAdminPage", false);
-        System.out.println("Viewed from admin page: "+isAdminPage);
 
         // Bind event data to UI elements
         TextView nameTextView = findViewById(R.id.textViewName);
@@ -412,7 +410,6 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
 
                         db.collection("events").document(eventID).get().addOnSuccessListener(documentSnapshot -> {
                             qrCodeLocationURL = documentSnapshot.getString("qrCodeLocationUrl");
-                            System.out.println(qrCodeLocationURL);
                             db.collection("events").document(eventID).update("qrCodeLocationUrl", null);
                             db.collection("events").document(eventID).update("qrCodePassKey", null);
                             dialog.dismiss();
@@ -437,7 +434,6 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
 
         db.collection("events").document(eventID).get().addOnSuccessListener(documentSnapshot -> {
             qrCodeLocationURL = documentSnapshot.getString("qrCodeLocationUrl");
-            System.out.println("abc"+qrCodeLocationURL);
             if (qrCodeLocationURL != null){
                 db.collection("events").document(eventID).update("qrCodeLocationUrl", null);
                 db.collection("events").document(eventID).update("qrCodePassKey", null);
@@ -474,7 +470,6 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
                                     String qrCodeLocationUrl = uri.toString();
                                     db.collection("events").document(eventID).update("qrCodeLocationUrl", qrCodeLocationUrl);
                                 }));
-                        System.out.println(storageRef.getBytes(1024 * 1024));
 
                         // Set the QR code bitmap to the ImageView
                         qrImageView.setImageBitmap(qrBitmap);
@@ -510,7 +505,6 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
                                 String qrCodeLocationUrl = uri.toString();
                                 db.collection("events").document(eventID).update("qrCodeLocationUrl", qrCodeLocationUrl);
                             }));
-                    System.out.println(storageRef.getBytes(1024 * 1024));
 
                     // Set the QR code bitmap to the ImageView
                     qrImageView.setImageBitmap(qrBitmap);
