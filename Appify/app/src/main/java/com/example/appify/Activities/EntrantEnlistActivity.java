@@ -102,7 +102,9 @@ public class EntrantEnlistActivity extends AppCompatActivity {
              db.collection("events").document(eventId)
                      .get()
                      .addOnSuccessListener(documentSnapshot -> {
+
                          if (documentSnapshot.exists()) {
+
                              String dbKey = documentSnapshot.getString("qrCodePassKey");
 
                              // If qrCodeKey doesn't match current passKey, the scanned qrCode is outdated. Return to events page.
@@ -174,8 +176,15 @@ public class EntrantEnlistActivity extends AppCompatActivity {
                                      }
                                  });
                             }
+                         } else {
+                             System.out.println("failed");
+                             Intent intent3 = new Intent(this, EntrantHomePageActivity.class);
+                             Toast.makeText(this, "Invalid QRCode",Toast.LENGTH_LONG).show();
+                             this.startActivity(intent3);
                          }
                      });
+
+
         }
         else {
             System.out.println("no qr");
