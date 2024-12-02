@@ -145,7 +145,7 @@ public class MyApp extends Application {
                                     NotificationCompat.Builder builder = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
                                             .setSmallIcon(R.drawable.notification_bell) // Replace with your own icon
                                             .setContentTitle("TODO: Event Name Here")
-                                            .setContentText("You have been invited")
+                                            .setContentText("You have not been invited")
                                             .setPriority(NotificationCompat.PRIORITY_DEFAULT);
 
                                     // Get the NotificationManager
