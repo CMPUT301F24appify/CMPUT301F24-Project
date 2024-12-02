@@ -34,7 +34,7 @@ public class ManageFacilityActivity extends AppCompatActivity implements AddFaci
     private Integer capacity;
     private String description;
 
-    private FirebaseFirestore db = FirebaseFirestore.getInstance();
+    private FirebaseFirestore db;
     private String facilityID;
 
     private TextView facilityName, facilityLocation, facilityEmail, facilityCapacity, facilityDescription;
@@ -56,6 +56,7 @@ public class ManageFacilityActivity extends AppCompatActivity implements AddFaci
 
         // Obtain the Current AndroidID
         MyApp app = (MyApp) getApplication();
+        db = app.getFirebaseInstance();
         String androidId = app.getAndroidId();
 
         // The Values in the UI

@@ -12,6 +12,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.FragmentActivity;
 
 import com.example.appify.Adapters.CustomEntrantAdapter;
+import com.example.appify.MyApp;
 import com.example.appify.R;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -46,7 +47,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_map);
 
-        db = FirebaseFirestore.getInstance();
+        MyApp app = (MyApp) getApplication();
+        db = app.getFirebaseInstance();
         Intent intent = getIntent();
 
         String eventID = intent.getStringExtra("eventID");

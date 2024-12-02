@@ -76,6 +76,7 @@ public class MyApp extends Application {
 
         // Initialize Firestore
         db = FirebaseFirestore.getInstance();
+        setFirebaseInstance(db);
 
         // Retrieve Android ID
         androidId = getAndroidId();
@@ -182,6 +183,14 @@ public class MyApp extends Application {
         }
     }
 
+
+    public FirebaseFirestore getFirebaseInstance() {
+        return db;
+    }
+
+    public void setFirebaseInstance(FirebaseFirestore db){
+        this.db = db;
+    }
 
     /**
      * Sets the device's Android ID in SharedPreferences.
@@ -463,10 +472,8 @@ public class MyApp extends Application {
             pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_ONE_SHOT | PendingIntent.FLAG_IMMUTABLE);
         }
 
-
         // Build the notification
         String notificationTitle = eventName + " - " + capitalize(status) + " Notification";
-
 
         NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
                 .setSmallIcon(R.drawable.notification_bell) // Ensure this icon exists in res/drawable

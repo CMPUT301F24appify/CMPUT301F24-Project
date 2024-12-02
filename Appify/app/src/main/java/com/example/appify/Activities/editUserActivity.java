@@ -24,6 +24,7 @@ import android.widget.Toast;
 
 import com.example.appify.HeaderNavigation;
 import com.example.appify.Model.Entrant;
+import com.example.appify.MyApp;
 import com.example.appify.R;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -116,7 +117,8 @@ public class editUserActivity extends AppCompatActivity {
             intent.putExtra("AndroidID", android_id);
             startActivity(intent);
         });
-        db = FirebaseFirestore.getInstance();
+        MyApp app = (MyApp) getApplication();
+        db = app.getFirebaseInstance();
         if (android_id != null) {
             populateFields(android_id);
         }
