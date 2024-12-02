@@ -77,7 +77,8 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
         headerNavigation.setupNavigation();
 
         // Initialize Firebase Firestore instance
-        db = FirebaseFirestore.getInstance();
+        MyApp app = (MyApp) getApplication();
+        db = app.getFirebaseInstance();
         FirebaseStorage storage = FirebaseStorage.getInstance();
         eventID = getIntent().getStringExtra("eventID");
         if (eventID == null || eventID.isEmpty()) {

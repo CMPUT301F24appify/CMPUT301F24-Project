@@ -24,6 +24,7 @@ import com.example.appify.HeaderNavigation;
 import com.example.appify.Model.Entrant;
 import com.example.appify.Model.Event;
 import com.example.appify.Model.Facility;
+import com.example.appify.MyApp;
 import com.example.appify.R;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -55,7 +56,8 @@ public class AdminListActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.admin_page);
 
-        db = FirebaseFirestore.getInstance();
+        MyApp app = (MyApp) getApplication();
+        db = app.getFirebaseInstance();
 
         // Initialize the ListView
         facilityList = new ArrayList<>();

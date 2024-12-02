@@ -22,10 +22,6 @@ import com.example.appify.Activities.editUserActivity;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-
 /**
  * Main activity that initiates the application and directs users based on their profile status.
  * Displays an animated logo on startup, retrieves the device's unique AndroidID,
@@ -50,6 +46,11 @@ public class MainActivity extends AppCompatActivity {
         // Set AndroidID in the global application class
         MyApp app = (MyApp) getApplication();
         app.setAndroidId(android_id);
+        db = app.getFirebaseInstance();
+        // Set db in the global application class
+
+//        M firebase = (Firebase) getApplication();
+//        firebase.setFirebaseInstance(db);
 
         // Adjust padding based on system bars (optional, depending on your UI design)
         View mainView = findViewById(R.id.main);
@@ -60,9 +61,6 @@ public class MainActivity extends AppCompatActivity {
                 return insets;
             });
         }
-
-        // Initialize Firestore
-        db = FirebaseFirestore.getInstance();
 
         // Start the startup animation
         startUpAnimation();
