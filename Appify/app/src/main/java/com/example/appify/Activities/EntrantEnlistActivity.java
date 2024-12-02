@@ -83,7 +83,8 @@ public class EntrantEnlistActivity extends AppCompatActivity {
 
         Intent intent = getIntent();
 
-        db = FirebaseFirestore.getInstance();
+        MyApp app = (MyApp) getApplication();
+        db = app.getFirebaseInstance();
 
         deviceLocationRequest = LocationRequest.create();
         deviceLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
@@ -119,7 +120,6 @@ public class EntrantEnlistActivity extends AppCompatActivity {
                                  headerNavigation.setupNavigation();
 
                                  // Get the users AndroidID
-                                 MyApp app = (MyApp) getApplication();
                                  androidId = app.getAndroidId();
 
                                  // Find Views in the layout
@@ -231,8 +231,6 @@ public class EntrantEnlistActivity extends AppCompatActivity {
             // Handle Enlist and Leave buttons
             enlistLeaveButton = findViewById(R.id.enlist_leave_button);
 
-            db = FirebaseFirestore.getInstance();
-            MyApp app = (MyApp) getApplication();
             String androidId = app.getAndroidId();
             // Check if user is already enlisted in the waiting list
             checkUserEnrollmentStatus(eventId,androidId);

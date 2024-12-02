@@ -11,6 +11,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.appify.Model.Entrant;
 import com.example.appify.Model.Event;
+import com.example.appify.MyApp;
 import com.example.appify.R;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
@@ -37,7 +38,8 @@ public class EventActionsActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_event_actions);
 
-        db = FirebaseFirestore.getInstance();
+        MyApp app = (MyApp) getApplication();
+        db = app.getFirebaseInstance();
         Intent intent = getIntent();
 
         eventID = intent.getStringExtra("eventID");

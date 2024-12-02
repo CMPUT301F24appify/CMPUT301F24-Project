@@ -53,7 +53,8 @@ public class EventActivity extends AppCompatActivity implements AddEventDialogFr
         organizeText.setTextColor(Color.parseColor("#000000"));
         organizeText.setTypeface(organizeText.getTypeface(), Typeface.BOLD);
 
-        db = FirebaseFirestore.getInstance();  // Initialize Firestore instance
+        MyApp app = (MyApp) getApplication();
+        db = app.getFirebaseInstance();
 
         eventListView = findViewById(R.id.event_list);
         eventAdapter = new CustomEventAdapter(this, eventList, true, false);
@@ -75,7 +76,6 @@ public class EventActivity extends AppCompatActivity implements AddEventDialogFr
             startActivity(intent);
         });
 
-        MyApp app = (MyApp) getApplication();
         String androidId = app.getAndroidId();
         db.collection("AndroidID").document(androidId).get()
                         .addOnSuccessListener(documentSnapshot -> {

@@ -50,11 +50,12 @@ public class userProfileActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.user_profile);
-        db = FirebaseFirestore.getInstance();
+        MyApp app = (MyApp) getApplication();
+        db = app.getFirebaseInstance();
 
         HeaderNavigation headerNavigation = new HeaderNavigation(this);
         headerNavigation.setupNavigation();
-        MyApp app = (MyApp) getApplication();
+
         String android_id = app.getAndroidId();
 
         // Initialize Views
