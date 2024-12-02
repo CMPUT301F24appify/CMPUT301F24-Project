@@ -296,7 +296,144 @@ public class Event {
         return invitedMessage;
     }
 
+    /**
+     * Gets the Firestore database instance associated with the event.
+     *
+     * @return The Firestore database instance.
+     */
+    public FirebaseFirestore getDb() {
+        return db;
+    }
+
+    /**
+     * Checks if the lottery has been run for the event.
+     *
+     * @return True if the lottery has been run, otherwise false.
+     */
+    public Boolean getLotteryRanFlag() {
+        return lotteryRanFlag;
+    }
+
+    /**
+     * Gets the current state of the lottery button.
+     *
+     * @return True if the lottery button is enabled, otherwise false.
+     */
+    public Boolean getLotteryButton() {
+        return lotteryButton;
+    }
+
+
     // Setters
+
+
+    /**
+     * Sets whether geolocation is required for the event.
+     *
+     * @param geolocate True if geolocation is required, otherwise false.
+     */
+    public void setGeolocate(boolean geolocate) {
+        isGeolocate = geolocate;
+    }
+
+    /**
+     * Sets whether waitlisted entrants should be notified.
+     *
+     * @param notifyWaitlisted True if waitlisted entrants should be notified, otherwise false.
+     */
+    public void setNotifyWaitlisted(boolean notifyWaitlisted) {
+        this.notifyWaitlisted = notifyWaitlisted;
+    }
+
+    /**
+     * Sets whether enrolled entrants should be notified.
+     *
+     * @param notifyEnrolled True if enrolled entrants should be notified, otherwise false.
+     */
+    public void setNotifyEnrolled(boolean notifyEnrolled) {
+        this.notifyEnrolled = notifyEnrolled;
+    }
+
+    /**
+     * Sets whether cancelled entrants should be notified.
+     *
+     * @param notifyCancelled True if cancelled entrants should be notified, otherwise false.
+     */
+    public void setNotifyCancelled(boolean notifyCancelled) {
+        this.notifyCancelled = notifyCancelled;
+    }
+
+    /**
+     * Sets whether invited entrants should be notified.
+     *
+     * @param notifyInvited True if invited entrants should be notified, otherwise false.
+     */
+    public void setNotifyInvited(boolean notifyInvited) {
+        this.notifyInvited = notifyInvited;
+    }
+
+    /**
+     * Sets the ID of the organizer for the event.
+     *
+     * @param organizerID The organizer's unique ID.
+     */
+    public void setOrganizerID(String organizerID) {
+        this.organizerID = organizerID;
+    }
+
+    /**
+     * Sets the notification message for waitlisted entrants.
+     *
+     * @param waitlistedMessage The notification message for waitlisted entrants.
+     */
+    public void setWaitlistedMessage(String waitlistedMessage) {
+        this.waitlistedMessage = waitlistedMessage;
+    }
+
+    /**
+     * Sets the notification message for enrolled entrants.
+     *
+     * @param enrolledMessage The notification message for enrolled entrants.
+     */
+    public void setEnrolledMessage(String enrolledMessage) {
+        this.enrolledMessage = enrolledMessage;
+    }
+
+    /**
+     * Sets the notification message for cancelled entrants.
+     *
+     * @param cancelledMessage The notification message for cancelled entrants.
+     */
+    public void setCancelledMessage(String cancelledMessage) {
+        this.cancelledMessage = cancelledMessage;
+    }
+
+    /**
+     * Sets the notification message for invited entrants.
+     *
+     * @param invitedMessage The notification message for invited entrants.
+     */
+    public void setInvitedMessage(String invitedMessage) {
+        this.invitedMessage = invitedMessage;
+    }
+
+    /**
+     * Sets the flag indicating if the lottery has been run for the event.
+     *
+     * @param lotteryRanFlag True if the lottery has been run, otherwise false.
+     */
+    public void setLotteryRanFlag(Boolean lotteryRanFlag) {
+        this.lotteryRanFlag = lotteryRanFlag;
+    }
+
+    /**
+     * Sets the state of the lottery button.
+     *
+     * @param lotteryButton True to enable the lottery button, otherwise false.
+     */
+    public void setLotteryButton(Boolean lotteryButton) {
+        this.lotteryButton = lotteryButton;
+    }
 
     /**
      * Sets the name of the event.

@@ -32,7 +32,7 @@ import java.util.List;
 public class MapActivity extends AppCompatActivity implements OnMapReadyCallback {
 
     private FirebaseFirestore db; // Firestore instance for database interactions
-    private GoogleMap gglMap; // GoogleMap object for displaying the map
+    public GoogleMap gglMap; // GoogleMap object for displaying the map
     private FrameLayout map; // Layout containing the map fragment
     private Button backButton; // Button to navigate back to the EventDetailActivity
     private CollectionReference waitingListRef; // Reference to the waiting list collection for an event

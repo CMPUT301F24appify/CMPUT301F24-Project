@@ -138,6 +138,22 @@ public class Entrant {
         return facilityID;
     }
 
+    public double getLatitude() {
+        return latitude;
+    }
+
+    public double getLongitude() {
+        return longitude;
+    }
+
+    public boolean isAdmin() {
+        return isAdmin;
+    }
+
+    public boolean isGeneratedPicture() {
+        return generatedPicture;
+    }
+
     // Setters
 
     /**
