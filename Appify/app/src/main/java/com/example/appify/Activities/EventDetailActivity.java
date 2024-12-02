@@ -54,9 +54,9 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
     private String enrolledMessage = "";
     private String cancelledMessage = "";
     private String invitedMessage = "";
-    String qrCodeLocationURL;
-    StorageReference storageRef;
-    ImageView qrImageView;
+    private String qrCodeLocationURL;
+    private StorageReference storageRef;
+    private ImageView qrImageView;
 
 
     /**
