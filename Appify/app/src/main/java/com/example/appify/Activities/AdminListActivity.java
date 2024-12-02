@@ -35,7 +35,8 @@ import com.google.firebase.storage.StorageReference;
 import java.util.ArrayList;
 
 /**
- * Displays a list of facilities, events, profiles, or images based on user selection.
+ * AdminListActivity handles the display of various lists (facilities, events, profiles, or images)
+ * based on user selection. It interacts with Firestore to fetch data dynamically.
  */
 public class AdminListActivity extends AppCompatActivity {
     private FirebaseFirestore db;
@@ -109,6 +110,9 @@ public class AdminListActivity extends AppCompatActivity {
         toggleGroup.check(R.id.toggle_facilities); // Default selection
     }
 
+    /**
+     * Fetches facilities from Firestore and updates the adapter.
+     */
     private void loadFacilitiesFromFirestore() {
         CollectionReference facilitiesRef = db.collection("facilities");
 
@@ -137,6 +141,9 @@ public class AdminListActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Fetches events from Firestore and updates the adapter.
+     */
     private void loadEventsFromFirestore() {
         CollectionReference eventsRef = db.collection("events");
 
@@ -173,6 +180,9 @@ public class AdminListActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Fetches profiles from Firestore and updates the adapter.
+     */
     private void loadProfilesFromFirestore() {
         CollectionReference entrantRef = db.collection("AndroidID");
 
@@ -203,6 +213,10 @@ public class AdminListActivity extends AppCompatActivity {
             }
         });
     }
+
+    /**
+     * Fetches profiles from Firestore and updates the adapter.
+     */
     private void loadImagesFromFirestore() {
         FirebaseStorage storage = FirebaseStorage.getInstance();
         StorageReference ref = storage.getReference();

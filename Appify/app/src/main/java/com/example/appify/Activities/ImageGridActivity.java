@@ -20,6 +20,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+/**
+ * ImageGridActivity displays a grid of images retrieved from Firebase Storage.
+ * The images are sorted by their creation timestamp in ascending order.
+ */
 public class ImageGridActivity extends AppCompatActivity {
 
     private List<String> imageUrls;
@@ -27,6 +31,12 @@ public class ImageGridActivity extends AppCompatActivity {
     private GridView gridView;
     private ImageGridAdapter adapter;
 
+    /**
+     * Called when the activity is created. Initializes the UI components, fetches images
+     * and metadata from Firebase Storage, and populates the GridView.
+     *
+     * @param savedInstanceState Saved instance state bundle.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

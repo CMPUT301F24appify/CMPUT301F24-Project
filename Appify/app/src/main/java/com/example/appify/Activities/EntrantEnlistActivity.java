@@ -43,9 +43,9 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * The EntrantEnlistActivity class provides the UI and functionality for users
- * to enlist in or leave an event’s waiting list. It displays event details and
- * includes enlist and leave buttons.
+ * The EntrantEnlistActivity class handles the user interface and logic for enlisting in or
+ * leaving an event's waiting list. It also manages event details display and geolocation
+ * requirements if applicable.
  */
 public class EntrantEnlistActivity extends AppCompatActivity {
 
@@ -236,8 +236,10 @@ public class EntrantEnlistActivity extends AppCompatActivity {
     }
 
     /**
-     * Checks if the user is already enlisted in the event's waiting list and updates
-     * the enlistLeaveButton text and action accordingly.
+     * Checks the user's enrollment status and updates the UI accordingly.
+     *
+     * @param eventId   The event ID to check the status for.
+     * @param androidId The unique Android ID of the device.
      */
     public void checkUserEnrollmentStatus(String eventId, String androidId) {
 
@@ -423,7 +425,13 @@ public class EntrantEnlistActivity extends AppCompatActivity {
      * Enlists the current user in the specified event’s waiting list.
      * It checks if the user is already enlisted and verifies if the waiting list has capacity.
      *
-     * @param eventId The unique ID of the event the user wishes to join.
+     * @param eventId            The unique ID of the event the user wishes to join.
+     * @param name               The name of the event.
+     * @param date               The date of the event.
+     * @param registrationEndDate The registration end date for the event.
+     * @param facility           The facility associated with the event.
+     * @param isGeolocate        A boolean indicating if the event requires geolocation.
+     * @param androidId          The unique Android ID of the device.
      */
     private void enlistInEvent(String eventId, String name, String date, String registrationEndDate, String facility, boolean isGeolocate, String androidId) {
         DocumentReference eventRef = db.collection("events").document(eventId);
@@ -520,6 +528,13 @@ public class EntrantEnlistActivity extends AppCompatActivity {
                 .addOnFailureListener(e -> Toast.makeText(this, "Failed to leave the event's waiting list. Try again.", Toast.LENGTH_SHORT).show());
     }
 
+    /**
+     * Retrieves the device's current location using the Fused Location Provider API.
+     * If the location is successfully obtained, the provided callback is executed.
+     * If the location is unavailable or the operation fails, a toast message is displayed.
+     *
+     * @param onSuccess A {@link Runnable} to be executed after the location is successfully retrieved.
+     */
     private void getDeviceLocation(Runnable onSuccess) {
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             LocationServices.getFusedLocationProviderClient(this).getCurrentLocation(LocationRequest.PRIORITY_HIGH_ACCURACY, null)
@@ -541,11 +556,20 @@ public class EntrantEnlistActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Checks if the device's GPS location services are enabled.
+     *
+     * @return {@code true} if GPS is enabled; {@code false} otherwise.
+     */
     private boolean isDeviceLocationEnabled() {
         LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
     }
 
+    /**
+     * Prompts the user to enable device location if it is disabled.
+     * Uses the LocationSettings API to check and request location settings.
+     */
     private void requestDeviceLocation() {
         LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder()
                 .addLocationRequest(deviceLocationRequest);
@@ -575,6 +599,13 @@ public class EntrantEnlistActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Handles the result of a permission request, such as ACCESS_FINE_LOCATION.
+     *
+     * @param requestCode  The request code passed during the permission request.
+     * @param permissions  The requested permissions.
+     * @param grantResults The grant results for the corresponding permissions.
+     */
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
@@ -593,6 +624,13 @@ public class EntrantEnlistActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Handles the result of an activity request, such as enabling GPS settings.
+     *
+     * @param requestCode The request code passed during the activity request.
+     * @param resultCode  The result code indicating the outcome of the activity.
+     * @param data        The intent data returned from the activity.
+     */
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);

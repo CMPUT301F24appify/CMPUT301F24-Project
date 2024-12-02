@@ -28,7 +28,7 @@ import java.util.Objects;
 
 /**
  * Activity to display the user's profile information.
- * Fetches data and photo from Database and displays it.
+ * Fetches and displays user data and profile picture from Firebase Firestore and Firebase Storage.
  */
 public class userProfileActivity extends AppCompatActivity {
 
@@ -40,10 +40,10 @@ public class userProfileActivity extends AppCompatActivity {
     private boolean generatePicture = false;
 
     /**
-     * Called when the activity is first created.
-     * Sets up the layout, initializes views, retrieves user data, and displays the profile picture.
+     * Called when the activity is created. Initializes the UI, sets up navigation,
+     * and retrieves user data from Firestore to display on the profile page.
      *
-     * @param savedInstanceState most recent Data sent.
+     * @param savedInstanceState The saved instance state of the activity, if any.
      */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -102,9 +102,9 @@ public class userProfileActivity extends AppCompatActivity {
         }
     }
     /**
-     * Loads the user's profile picture from Firebase Storage based on the AndroidID.
+     * Loads the user's profile picture from Firebase Storage based on the Android ID.
      *
-     * @param android_id Unique identifier for the user's device.
+     * @param android_id The unique identifier for the user's device.
      */
     private void loadProfilePicture(String android_id) {
         FirebaseStorage storage = FirebaseStorage.getInstance();

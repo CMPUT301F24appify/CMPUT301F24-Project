@@ -263,27 +263,6 @@ public class EditEventDialogFragment extends DialogFragment {
         });
 
         return dialog;
-
-//        builder.setView(view)
-//                .setTitle("Edit Event")
-//                .setPositiveButton("SAVE", (dialog, id) -> {
-//                    if (validateInputs(eventName, eventFacility, eventDescription)) {
-//                        String name = eventName.getText().toString();
-//                        String date = buttonEventDate.getText().toString();
-//                        String registrationEndDate = buttonRegistrationEndDate.getText().toString();
-//                        String description = eventDescription.getText().toString();
-//                        int waitMax = parseInteger(maxWaitEntrant.getText().toString());
-//                        int sampleMax = parseInteger(maxSampleEntrant.getText().toString());
-//
-//                        listener.onEventEdited(name, date, facilityName, registrationEndDate, description,
-//                                waitMax, sampleMax, posterUri, isGeolocate, "", "", "", "");
-//                    } else {
-//                        Toast.makeText(getContext(), "Please correct the highlighted fields", Toast.LENGTH_SHORT).show();
-//                    }
-//                })
-//                .setNegativeButton("CANCEL", (dialog, id) -> dialog.dismiss());
-//
-//        return builder.create();
     }
 
 
@@ -408,14 +387,10 @@ public class EditEventDialogFragment extends DialogFragment {
         }
     }
 
-    private int parseInteger(String text) {
-        try {
-            return Integer.parseInt(text);
-        } catch (NumberFormatException e) {
-            return 0;
-        }
-    }
-
+    /**
+     * Opens a file chooser to select an image for the event poster.
+     * Launches an intent to allow the user to choose an image from their device's storage.
+     */
     private void openFileChooser() {
         Intent intent = new Intent();
         intent.setType("image/*");
@@ -454,9 +429,24 @@ public class EditEventDialogFragment extends DialogFragment {
         }
     }
 
-    // Define the callback interface
+    /**
+     * Interface for handling image upload callbacks.
+     * Provides methods to handle success or failure when uploading an image to Firebase Storage.
+     */
     public interface ImageUploadCallback {
+
+        /**
+         * Called when the image upload is successful.
+         *
+         * @param posterUri The URI of the uploaded image.
+         */
         void onSuccess(String posterUri);
+
+        /**
+         * Called when the image upload fails.
+         *
+         * @param e The exception representing the failure.
+         */
         void onFailure(Exception e);
     }
 

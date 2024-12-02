@@ -171,6 +171,13 @@ public class editUserActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Handles the result of a permission request for notifications.
+     *
+     * @param requestCode  The request code passed to requestPermissions.
+     * @param permissions  The requested permissions.
+     * @param grantResults The grant results for the corresponding permissions.
+     */
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
@@ -187,6 +194,9 @@ public class editUserActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Opens the image picker for the user to select or capture an image.
+     */
     private void openImagePicker() {
         ImagePicker.with(this)
                 .crop()
@@ -195,7 +205,11 @@ public class editUserActivity extends AppCompatActivity {
     }
 
     /**
-     * Handle the result from ImagePicker.
+     * Handles the result from the ImagePicker after selecting or capturing an image.
+     *
+     * @param requestCode The request code passed when starting the ImagePicker.
+     * @param resultCode  The result code returned by the ImagePicker.
+     * @param data        Intent data returned by the ImagePicker.
      */
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -261,10 +275,12 @@ public class editUserActivity extends AppCompatActivity {
     /**
      * Saves the user's data and profile picture to Firestore and Firebase Storage.
      *
-     * @param id The user's unique device ID.
-     * @param name The user's name.
-     * @param phone The user's phone number.
-     * @param email The user's email address.
+     * @param id        The user's unique device ID.
+     * @param name      The user's name.
+     * @param phone     The user's phone number.
+     * @param email     The user's email address.
+     * @param latitude  The latitude of the user's location.
+     * @param longitude The longitude of the user's location.
      */
     private void sendEntrantData(String id,String name, String phone, String email, double latitude, double longitude){
         Bitmap profilePicture = getBitmapFromImageView(profileImageView);

@@ -1,16 +1,3 @@
-/**
- * CustomEventAdapter.java
- *
- * This adapter is used to populate the event list view with event data.
- * It changes the display icon of each event based on its status and visibility requirements.
- * It uses Firebase to retrieve the user's status in relation to each event (e.g., enrolled, invited).
- *
- * Outstanding Issues:
- * 1. Performance: Repeated Firebase calls in `getView()` may lead to performance issues in large lists.
- *    Consider caching status data or using a listener to improve efficiency.
- * 2. Null Safety: Ensure null handling for event details, especially in Firebase responses, to avoid crashes.
- */
-
 package com.example.appify.Adapters;
 
 import android.app.AlertDialog;
@@ -43,8 +30,9 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * CustomEventAdapter extends ArrayAdapter to handle the display of events in a ListView.
- * It binds event data to a custom layout and retrieves status information for each event.
+ * CustomEventAdapter is a custom ArrayAdapter for displaying and interacting with events in a ListView.
+ * It binds event data to views, dynamically updates UI elements, and provides specific actions
+ * based on the context (Organizer, Admin, or Participant views).
  */
 public class CustomEventAdapter extends ArrayAdapter<Event> {
     private Context context;
@@ -56,9 +44,10 @@ public class CustomEventAdapter extends ArrayAdapter<Event> {
     /**
      * Constructor for CustomEventAdapter.
      *
-     * @param context       The current context.
-     * @param eventList     The list of events to be displayed.
-     * @param isOrganizePage Boolean indicating if the adapter is used on the organizer's page.
+     * @param context        The current context.
+     * @param eventList      The list of events to display.
+     * @param isOrganizePage Boolean indicating if the adapter is for the organizer's page.
+     * @param isAdminPage    Boolean indicating if the adapter is for the admin page.
      */
     public CustomEventAdapter(Context context, List<Event> eventList, boolean isOrganizePage, boolean isAdminPage){
         super(context, 0, eventList);
@@ -172,6 +161,12 @@ public class CustomEventAdapter extends ArrayAdapter<Event> {
         return convertView;
     }
 
+    /**
+     * Displays a confirmation dialog for deleting an event.
+     * Removes the event and its associated data from Firestore upon confirmation.
+     *
+     * @param event The event to delete.
+     */
     private void showCancelEventDialog(Event event) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this.getContext());
         builder

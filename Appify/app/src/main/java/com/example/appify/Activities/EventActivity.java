@@ -40,7 +40,8 @@ public class EventActivity extends AppCompatActivity implements AddEventDialogFr
     String facilityID;
     LinearLayout noCreatedEventsLayout;
     /**
-     * Initializes the EventActivity, setting up the user interface and loading events from Firestore.
+     * Initializes the EventActivity, setting up the user interface, loading events from Firestore,
+     * and setting up navigation and click listeners.
      *
      * @param savedInstanceState The previously saved state of the activity, if available.
      */
@@ -126,17 +127,18 @@ public class EventActivity extends AppCompatActivity implements AddEventDialogFr
     }
 
     /**
-     * Callback method for adding a new event from the AddEventDialogFragment.
+     * Callback method for adding a new event through the AddEventDialogFragment.
+     * Adds the new event to Firestore and updates the event list on success.
      *
-     * @param name              The name of the event.
-     * @param date              The date of the event.
-     * @param facility          The facility where the event takes place.
-     * @param registrationEndDate The registration end date for the event.
-     * @param description       A description of the event.
+     * @param name              Name of the event.
+     * @param date              Date of the event.
+     * @param facility          Facility where the event takes place.
+     * @param registrationEndDate Registration end date for the event.
+     * @param description       Description of the event.
      * @param maxWaitEntrants   Maximum number of waitlist entrants allowed.
      * @param maxSampleEntrants Maximum number of sample entrants allowed.
-     * @param posterUri         URI of the event poster.
-     * @param isGeolocate       Whether geolocation is enabled for the event.
+     * @param posterUri         URI of the event's poster.
+     * @param isGeolocate       Indicates if geolocation is enabled for the event.
      * @param waitlistedMessage Notification message for waitlisted entrants.
      * @param enrolledMessage   Notification message for enrolled entrants.
      * @param cancelledMessage  Notification message for cancelled entrants.

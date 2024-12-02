@@ -22,7 +22,8 @@ import com.google.firebase.storage.StorageReference;
 import java.util.List;
 
 /**
- * Custom adapter to display facilities in a ListView.
+ * CustomFacilityAdapter is a custom ArrayAdapter for displaying and interacting with facilities in a ListView.
+ * It binds facility data to views and provides deletion functionality for facility and its associated events.
  */
 public class CustomFacilityAdapter extends ArrayAdapter<Facility> {
     private Context context;
@@ -30,12 +31,26 @@ public class CustomFacilityAdapter extends ArrayAdapter<Facility> {
 
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
 
+    /**
+     * Constructor for initializing the adapter with facility data.
+     *
+     * @param context      The current context.
+     * @param facilityList List of facilities to display.
+     */
     public CustomFacilityAdapter(Context context, List<Facility> facilityList) {
         super(context, 0, facilityList);
         this.context = context;
         this.facilityList = facilityList;
     }
 
+    /**
+     * Provides a view for each facility in the ListView.
+     *
+     * @param position    Position of the facility in the list.
+     * @param convertView Recycled view (if available).
+     * @param parent      Parent view group.
+     * @return Updated View for the facility at the specified position.
+     */
     @NonNull
     @Override
     public View getView(int position, View convertView, @NonNull ViewGroup parent) {
@@ -61,6 +76,11 @@ public class CustomFacilityAdapter extends ArrayAdapter<Facility> {
         return convertView;
     }
 
+    /**
+     * Shows a confirmation dialog for deleting a facility and its associated events.
+     *
+     * @param facility The facility to delete.
+     */
     private void showCancelFacilityDialog(Facility facility) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this.getContext());
         builder

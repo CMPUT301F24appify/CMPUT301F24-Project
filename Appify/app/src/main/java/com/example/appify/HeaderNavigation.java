@@ -182,6 +182,10 @@ public class HeaderNavigation {
         }
     }
 
+    /**
+     * Checks if the user has admin privileges.
+     * Navigates to the facilities page if the user is an admin; otherwise, shows a toast message.
+     */
     private void checkAdminStatus() {
         MyApp app = (MyApp) activity.getApplication();
         String androidId = app.getAndroidId();

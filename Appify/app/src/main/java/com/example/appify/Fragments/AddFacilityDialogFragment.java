@@ -25,9 +25,9 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import java.util.UUID;
 
 /**
- * A dialog fragment that allows the user to add a new facility or edit an existing one.
- * This dialog contains fields for the facility's name, location, capacity, email, and description.
- * If in edit mode, the dialog is pre-populated with existing facility details and will update the facility in the database.
+ * AddFacilityDialogFragment is a dialog fragment that allows users to add a new facility
+ * or edit an existing one. It supports fields for the facility's name, location, capacity,
+ * email, and description. If in edit mode, it pre-populates the fields with existing data.
  */
 public class AddFacilityDialogFragment extends DialogFragment {
 

@@ -33,9 +33,9 @@ import com.journeyapps.barcodescanner.ScanOptions;
 import java.util.ArrayList;
 
 /**
- * The EntrantHomePageActivity class displays a list of events available to entrants.
- * It fetches event data from Firestore, populates a ListView using a custom adapter,
- * and handles user interactions such as clicking on an event to view details.
+ * The EntrantHomePageActivity class provides a user interface for displaying a list of events
+ * available to entrants. It retrieves event data from Firestore, displays them using a custom
+ * adapter, and enables interactions such as viewing event details or scanning event QR codes.
  */
 public class EntrantHomePageActivity extends AppCompatActivity {
     // Variables
@@ -113,6 +113,9 @@ public class EntrantHomePageActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Initiates a QR code scanner to scan event QR codes.
+     */
     private void scanCode(){
         ScanOptions options = new ScanOptions();
         options.setPrompt("Scan an Event QR Code");

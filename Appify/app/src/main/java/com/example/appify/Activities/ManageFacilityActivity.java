@@ -21,10 +21,9 @@ import com.google.firebase.storage.StorageReference;
 
 
 /**
- * The ManageFacilityActivity class provides the functionality for organizers
- * to view, edit, and delete their facility details. This class interfaces with
- * Firestore to load facility data, enables editing through a dialog, and allows
- * deletion of the facility from the database.
+ * The ManageFacilityActivity class allows organizers to manage their facility details.
+ * Organizers can view, edit, and delete facility information. This activity interacts with Firestore
+ * to retrieve and update facility data and Firebase Storage for deleting associated resources.
  */
 public class ManageFacilityActivity extends AppCompatActivity implements AddFacilityDialogFragment.FacilityUpdateListener {
 
@@ -113,14 +112,14 @@ public class ManageFacilityActivity extends AppCompatActivity implements AddFaci
 
 
     /**
-     * Loads facility data from Firestore and populates the UI elements with the facility details.
+     * Loads facility data from Firestore and updates the UI components with the facility details.
      *
-     * @param facilityID       The ID of the facility.
-     * @param facilityName     The TextView to display the facility's name.
-     * @param facilityLocation The TextView to display the facility's location.
-     * @param facilityEmail    The TextView to display the facility's contact email.
-     * @param facilityCapacity The TextView to display the facility's capacity.
-     * @param facilityDescription The TextView to display the facility's description.
+     * @param facilityID          The unique ID of the facility.
+     * @param facilityName        TextView to display the facility name.
+     * @param facilityLocation    TextView to display the facility location.
+     * @param facilityEmail       TextView to display the facility contact email.
+     * @param facilityCapacity    TextView to display the facility capacity.
+     * @param facilityDescription TextView to display the facility description.
      */
     private void loadFacilityData(String facilityID, TextView facilityName, TextView facilityLocation,
                                   TextView facilityEmail, TextView facilityCapacity, TextView facilityDescription) {

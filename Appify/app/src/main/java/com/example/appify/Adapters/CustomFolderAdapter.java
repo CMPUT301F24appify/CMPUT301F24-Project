@@ -29,6 +29,12 @@ public class CustomFolderAdapter extends ArrayAdapter {
     private String folderName;
 
 
+    /**
+     * Constructor for initializing the adapter with folder data and context.
+     *
+     * @param context    The current context.
+     * @param folderList List of folder references to display.
+     */
     public CustomFolderAdapter(Context context, List<StorageReference> folderList){
         super(context, 0, folderList);
         this.context = context;
@@ -37,13 +43,13 @@ public class CustomFolderAdapter extends ArrayAdapter {
 
 
     /**
-     * Provides a view for an AdapterView (ListView) for each event.
-     * Sets event details in the view and fetches status data from Firebase for display.
+     * Provides a view for each folder in the ListView.
+     * Sets folder name based on its Firebase Storage reference and attaches click listeners for navigation.
      *
-     * @param position     Position of the item within the adapter's data set.
-     * @param convertView  The old view to reuse, if possible.
-     * @param parent       The parent that this view will eventually be attached to.
-     * @return The View corresponding to the data at the specified position.
+     * @param position    Position of the folder in the list.
+     * @param convertView Recycled view (if available).
+     * @param parent      Parent view group.
+     * @return Updated View for the folder at the specified position.
      */
     @SuppressLint("SetTextI18n")
     @NonNull

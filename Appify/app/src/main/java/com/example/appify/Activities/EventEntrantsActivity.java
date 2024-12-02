@@ -24,9 +24,9 @@ import java.util.Objects;
 
 
 /**
- * This class is an Android activity that displays the list of entrants
- * enrolled in a particular event, as well as their enrollment status.
- * Users can filter entrants based on their status (waiting list, invited, accepted, rejected) using checkboxes.
+ * EventEntrantsActivity displays a list of entrants for a specific event.
+ * Entrants are categorized based on their enrollment status (waiting list, invited, accepted, or rejected).
+ * Users can filter entrants by status using checkboxes.
  */
 public class EventEntrantsActivity extends AppCompatActivity{
     public FirebaseFirestore db;

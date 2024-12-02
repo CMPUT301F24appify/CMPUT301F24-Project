@@ -31,6 +31,10 @@ import com.google.firebase.storage.FirebaseStorage;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * MapActivity displays a map with markers representing the locations of entrants for a specific event.
+ * The map uses Google Maps API and retrieves location data from Firestore.
+ */
 public class MapActivity extends AppCompatActivity implements OnMapReadyCallback {
 
     private FirebaseFirestore db;
@@ -42,6 +46,12 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
     private final List<Marker> markerList = new ArrayList<>();
 
+    /**
+     * Called when the activity is created. Initializes the UI components, sets up the map fragment,
+     * and retrieves event details to display entrant locations.
+     *
+     * @param savedInstanceState The saved state of the activity, if any.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -90,6 +100,12 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     }
 
 
+    /**
+     * Called when the Google Map is ready to use. Sets the default camera position and
+     * loads entrant data for the specified event.
+     *
+     * @param googleMap The GoogleMap instance.
+     */
     @Override
     public void onMapReady(@NonNull GoogleMap googleMap) {
         this.gglMap = googleMap;
@@ -109,6 +125,12 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
     }
 
+    /**
+     * Retrieves entrant data for the specified event and places markers on the map
+     * for each entrant with valid location coordinates.
+     *
+     * @param eventID The ID of the event for which to display entrant locations.
+     */
     public void reloadData(String eventID) {
         gglMap.clear();
         markerList.clear();

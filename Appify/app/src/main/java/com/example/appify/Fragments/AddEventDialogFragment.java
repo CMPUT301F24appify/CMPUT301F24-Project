@@ -50,6 +50,9 @@ public class AddEventDialogFragment extends DialogFragment {
 
     private Calendar calendar;  // Calendar instance for date pickers
 
+    /**
+     * Interface for communicating with the parent activity to pass event details.
+     */
     public interface AddEventDialogListener {
         /**
          * Callback for adding a new event with the provided details.
@@ -228,27 +231,13 @@ public class AddEventDialogFragment extends DialogFragment {
         });
 
         return dialog;
-
-
-//                .setPositiveButton("CONFIRM", (dialog, id) -> {
-//                    if (validateInputs(eventName, eventFacility, eventDescription, maxWaitEntrant, maxSampleEntrant)) {
-//                        String name = eventName.getText().toString();
-//                        String date = buttonEventDate.getText().toString();
-//                        String registrationEndDate = buttonRegistrationEndDate.getText().toString();
-//                        String description = eventDescription.getText().toString();
-//                        int waitMax = parseInteger(maxWaitEntrant.getText().toString());
-//                        int sampleMax = parseInteger(maxSampleEntrant.getText().toString());
-//                        listener.onEventAdded(name, date, facilityID, registrationEndDate, description,
-//                                waitMax, sampleMax, posterUri, isGeolocate, "", "", "", "");
-//                    } else {
-//                        //Toast.makeText(getContext(), "Please correct the highlighted fields", Toast.LENGTH_SHORT).show();
-//                    }
-//                })
-//                .setNegativeButton("CANCEL", (dialog, id) -> dialog.dismiss());
-//
-//        return builder.create();
     }
 
+    /**
+     * Opens a date picker dialog for selecting dates.
+     *
+     * @param button The button to display the selected date.
+     */
     private void openDatePicker(Button button) {
         DatePickerDialog datePickerDialog = new DatePickerDialog(requireContext(),
                 (view, year, month, dayOfMonth) -> {
@@ -263,6 +252,16 @@ public class AddEventDialogFragment extends DialogFragment {
         datePickerDialog.show();
     }
 
+    /**
+     * Validates input fields for completeness and correctness.
+     *
+     * @param eventName        The event name input field.
+     * @param eventFacility    The facility input field.
+     * @param eventDescription The description input field.
+     * @param maxWaitEntrant   The maximum waitlist entrants input field.
+     * @param maxSampleEntrant The maximum sample entrants input field.
+     * @return True if all inputs are valid, otherwise false.
+     */
     private boolean validateInputs(EditText eventName, EditText eventFacility, EditText eventDescription, EditText maxWaitEntrant, EditText maxSampleEntrant) {
         boolean isValid = true;
         int waitMax = Integer.MAX_VALUE;
@@ -459,17 +458,34 @@ public class AddEventDialogFragment extends DialogFragment {
         }
     }
 
-    // Define the callback interface
+    /**
+     * Interface for handling image upload callbacks.
+     * Provides methods to handle success or failure when uploading an image to Firebase Storage.
+     */
     public interface ImageUploadCallback {
+
+        /**
+         * Called when the image upload is successful.
+         *
+         * @param posterUri The URI of the uploaded image.
+         */
         void onSuccess(String posterUri);
+
+        /**
+         * Called when the image upload fails.
+         *
+         * @param e The exception representing the failure.
+         */
         void onFailure(Exception e);
     }
 
 
     /**
-     * Uploads the selected image to Firebase storage and sets the poster URI.
+     * Uploads the selected image to Firebase Storage and generates a downloadable URI.
+     * Handles success and failure through the provided callback interface.
      *
      * @param imageUri The URI of the image to upload.
+     * @param callback The callback to handle success or failure of the upload.
      */
     private void uploadImageToFirebase(Uri imageUri, ImageUploadCallback callback) {
         StorageReference storageRef = FirebaseStorage.getInstance().getReference();

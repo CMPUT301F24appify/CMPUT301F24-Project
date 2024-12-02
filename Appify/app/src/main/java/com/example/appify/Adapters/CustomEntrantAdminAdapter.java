@@ -44,13 +44,22 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 
-
+/**
+ * CustomEntrantAdminAdapter is a custom ArrayAdapter designed to manage and display
+ * a list of entrants with administrative options such as viewing, modifying, or deleting an entrant's details.
+ */
 public class CustomEntrantAdminAdapter extends ArrayAdapter<Entrant> {
     private Context context;
     private List<Entrant> entrantList;
 
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
 
+    /**
+     * Constructor to initialize the adapter with a context and list of entrants.
+     *
+     * @param context     The context in which the adapter is used.
+     * @param entrantList The list of entrants to display.
+     */
     public CustomEntrantAdminAdapter(Context context, List<Entrant> entrantList) {
         super(context, 0, entrantList);
         this.context = context;
@@ -122,6 +131,12 @@ public class CustomEntrantAdminAdapter extends ArrayAdapter<Entrant> {
         return convertView;
     }
 
+    /**
+     * Displays a confirmation dialog to delete an entrant's profile. If confirmed,
+     * removes the entrant from Firestore and cascades deletions where necessary.
+     *
+     * @param entrant The entrant to be deleted.
+     */
     private void showCancelProfileDialog(Entrant entrant) {
         // Check if the user is an admin before proceeding
         db.collection("AndroidID").document(entrant.getId())
