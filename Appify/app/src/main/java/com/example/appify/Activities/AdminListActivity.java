@@ -50,6 +50,7 @@ public class AdminListActivity extends AppCompatActivity {
     private CustomFolderAdapter folderAdapter;
     private LinearLayout noFacilityView;
     private LinearLayout noEventsView;
+    private LinearLayout noImagesView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,6 +72,7 @@ public class AdminListActivity extends AppCompatActivity {
         listView = findViewById(R.id.admin_list);
         noFacilityView = findViewById(R.id.noFacilityView);
         noEventsView = findViewById(R.id.noEventsView);
+        noImagesView = findViewById(R.id.noImagesLayout);
 
         // HeaderNavigation
         HeaderNavigation headerNavigation = new HeaderNavigation(this);
@@ -85,15 +87,18 @@ public class AdminListActivity extends AppCompatActivity {
             if (checkedId == R.id.toggle_facilities) {
                 listView.setAdapter(facilityAdapter);
                 noEventsView.setVisibility(View.GONE);
+                noImagesView.setVisibility(View.GONE);
                 loadFacilitiesFromFirestore();
             } else if (checkedId == R.id.toggle_events) {
                 listView.setAdapter(eventAdapter);
                 noFacilityView.setVisibility(View.GONE);
+                noImagesView.setVisibility(View.GONE);
                 loadEventsFromFirestore();
             } else if (checkedId == R.id.toggle_profiles) {
                 listView.setAdapter(entrantAdapter);
                 noFacilityView.setVisibility(View.GONE);
                 noEventsView.setVisibility(View.GONE);
+                noImagesView.setVisibility(View.GONE);
                 loadProfilesFromFirestore();
             } else if (checkedId == R.id.toggle_images) {
                 listView.setAdapter(folderAdapter);
@@ -214,8 +219,14 @@ public class AdminListActivity extends AppCompatActivity {
                             continue;
                         }
                         folderList.add(folder);
+                        noImagesView.setVisibility(View.GONE);
                     }
                     folderAdapter.notifyDataSetChanged();
+
+                    if (folderList.isEmpty()){
+                        noImagesView.setVisibility(View.VISIBLE);
+                    }
+
                 });
     }
 }

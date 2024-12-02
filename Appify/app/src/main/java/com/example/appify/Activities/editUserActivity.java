@@ -290,8 +290,11 @@ public class editUserActivity extends AppCompatActivity {
                         String oldURL = findURL.getString("profilePictureUrl");
                         FirebaseStorage storage2 = FirebaseStorage.getInstance();
 
+                        Boolean isAdmin = findURL.getBoolean("admin");
+
                         // Create Entrant object with the download URL
                         Entrant user = new Entrant(id, name, phone, email, downloadUrl, false, facilityID, latitude, longitude);
+                        user.setAdmin(isAdmin);
                         StorageReference imageRefNew = storage2.getReferenceFromUrl(downloadUrl);
                         if(oldURL!= null) {
                             StorageReference imageRefOld = storage2.getReferenceFromUrl(oldURL);
