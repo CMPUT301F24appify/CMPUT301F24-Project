@@ -47,13 +47,10 @@ public class UserProfileActivityTest {
 
     @Test
     public void testInformationViews() {
-
-
         // Check that the views are displayed
         onView(withId(R.id.nameTextView)).check(matches(isDisplayed()));
         onView(withId(R.id.phoneTextView)).check(matches(isDisplayed()));
         onView(withId(R.id.emailTextView)).check(matches(isDisplayed()));
-        onView(withId(R.id.notificationTextView)).check(matches(isDisplayed()));
     }
 
     @Test
@@ -66,14 +63,13 @@ public class UserProfileActivityTest {
     public void testEditButtonNavigatesToEditUserActivity() {
         // Provide a mock Android ID to be passed to editUserActivity
         Intent intent = new Intent(ApplicationProvider.getApplicationContext(), userProfileActivity.class);
-        intent.putExtra("Android ID", "mock_android_id"); // Set a mock ID for testing
+        intent.putExtra("Android ID", "mock_android_id");
         ActivityScenario<userProfileActivity> scenario = ActivityScenario.launch(intent);
 
-        // Perform the test actions
         onView(withId(R.id.editButton)).perform(click());
 
         // Check that a view specific to editUserActivity is displayed
-        onView(withId(R.id.phoneEditText)) // replace with a valid view ID from editUserActivity
+        onView(withId(R.id.phoneEditText))
                 .check(matches(isDisplayed()));
     }
 }

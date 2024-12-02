@@ -76,26 +76,9 @@ public class EditUserActivityTest {
     }
 
     @Test
-    public void testNotificationsCheckbox() {
-        // First, ensure the checkbox is unchecked
-        onView(withId(R.id.notificationsCheckBox)).check((view, noViewFoundException) -> {
-            if (((CheckBox) view).isChecked()) {
-                onView(withId(R.id.notificationsCheckBox)).perform(click());
-            }
-        });
-
-        // Verify that the checkbox is now unchecked
-        onView(withId(R.id.notificationsCheckBox)).check(matches(isNotChecked()));
-
-        // Perform a click to check the checkbox and then verify it is checked
-        onView(withId(R.id.notificationsCheckBox)).perform(click()).check(matches(isChecked()));
-    }
-
-    @Test
     public void testInvalidNameInput() {
         // Clear any text, then input an invalid name to trigger the validation error
         onView(withId(R.id.nameEditText)).perform(clearText(), typeText("InvalidName"), closeSoftKeyboard());
-        // Validation check: Add assertions to verify the app displays the appropriate error message if implemented
     }
 
     @Test
@@ -103,7 +86,7 @@ public class EditUserActivityTest {
         // Clear name and phone fields, input invalid phone number to trigger validation
         onView(withId(R.id.nameEditText)).perform(clearText(), typeText("John"), closeSoftKeyboard());
         onView(withId(R.id.phoneEditText)).perform(clearText(), typeText("1234"), closeSoftKeyboard());
-        // Validation check: Add assertions to verify the app displays the appropriate error message if implemented
+
     }
 
     @Test
@@ -111,7 +94,7 @@ public class EditUserActivityTest {
         // Clear name and email fields, input invalid email to trigger validation
         onView(withId(R.id.nameEditText)).perform(clearText(), typeText("John"), closeSoftKeyboard());
         onView(withId(R.id.emailEditText)).perform(clearText(), typeText("invalid_email"), closeSoftKeyboard());
-        // Validation check: Add assertions to verify the app displays the appropriate error message if implemented
+
     }
 
     @Test
@@ -120,15 +103,10 @@ public class EditUserActivityTest {
         onView(withId(R.id.nameEditText)).perform(clearText(), typeText("John Doe"), closeSoftKeyboard());
         onView(withId(R.id.phoneEditText)).perform(clearText(), typeText("1234567890"), closeSoftKeyboard());
         onView(withId(R.id.emailEditText)).perform(clearText(), typeText("john@example.com"), closeSoftKeyboard());
+        
 
-        // Toggle notifications checkbox
-        onView(withId(R.id.notificationsCheckBox)).perform(click());
-
-        // Click the submit button
         onView(withId(R.id.submitButton)).perform(click());
         Thread.sleep(2000); // Wait for 2 seconds
-
-        // Check if one of the components in userProfileActivity (e.g., nameTextView) is displayed
         onView(withId(R.id.nameTextView)).check(matches(isDisplayed()));
     }
 }

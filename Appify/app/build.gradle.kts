@@ -96,6 +96,7 @@ dependencies {
     implementation ("com.journeyapps:zxing-android-embedded:4.3.0")
     implementation ("com.github.Dhaval2404:ImagePicker:2.1")
     implementation ("com.journeyapps:zxing-android-embedded:4.3.0")
+    androidTestImplementation ("com.google.protobuf:protobuf-javalite:3.21.12")
 
 
 
