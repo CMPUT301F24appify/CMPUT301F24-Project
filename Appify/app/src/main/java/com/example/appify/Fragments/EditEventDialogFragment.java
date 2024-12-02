@@ -262,27 +262,6 @@ public class EditEventDialogFragment extends DialogFragment {
         });
 
         return dialog;
-
-//        builder.setView(view)
-//                .setTitle("Edit Event")
-//                .setPositiveButton("SAVE", (dialog, id) -> {
-//                    if (validateInputs(eventName, eventFacility, eventDescription)) {
-//                        String name = eventName.getText().toString();
-//                        String date = buttonEventDate.getText().toString();
-//                        String registrationEndDate = buttonRegistrationEndDate.getText().toString();
-//                        String description = eventDescription.getText().toString();
-//                        int waitMax = parseInteger(maxWaitEntrant.getText().toString());
-//                        int sampleMax = parseInteger(maxSampleEntrant.getText().toString());
-//
-//                        listener.onEventEdited(name, date, facilityName, registrationEndDate, description,
-//                                waitMax, sampleMax, posterUri, isGeolocate, "", "", "", "");
-//                    } else {
-//                        Toast.makeText(getContext(), "Please correct the highlighted fields", Toast.LENGTH_SHORT).show();
-//                    }
-//                })
-//                .setNegativeButton("CANCEL", (dialog, id) -> dialog.dismiss());
-//
-//        return builder.create();
     }
 
 
