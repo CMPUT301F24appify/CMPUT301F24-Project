@@ -59,7 +59,7 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
     private String enrolledMessage = "";
     private String cancelledMessage = "";
     private String invitedMessage = "";
-    String qrCodeLocationURL;
+    private String qrCodeLocationURL;
 
 
     /**
@@ -223,7 +223,7 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
                 updateButtonAppearance(notifyWaitlisted, !message.isEmpty());
             }));
 
-            notifyEnrolled.setOnClickListener(v -> showNotificationInputDialog("Enrolled Notification", enrolledMessage, message -> {
+            notifyEnrolled.setOnClickListener(v -> showNotificationInputDialog("Accepted Notification", enrolledMessage, message -> {
                 enrolledMessage = message;
                 updateNotificationMessage("enrolledMessage", message, "notifyEnrolled");
                 updateButtonAppearance(notifyEnrolled, !message.isEmpty());
@@ -308,27 +308,27 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
         showMap = findViewById(R.id.map_button);
         if (isGeolocate) {
             showMap.setVisibility(View.VISIBLE);
+            showMap.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent intent = new Intent(EventDetailActivity.this, MapActivity.class);
+                    intent.putExtra("name", name );
+                    intent.putExtra("date", date);
+                    intent.putExtra("facility", facility);
+                    intent.putExtra("registrationEndDate", registrationEndDate);
+                    intent.putExtra("description",description );
+                    intent.putExtra("maxWaitEntrants", maxWaitEntrants);
+                    intent.putExtra("maxSampleEntrants", maxSampleEntrants);
+                    intent.putExtra("eventID", eventID);
+                    intent.putExtra("posterUri", posterUriString);
+                    intent.putExtra("isGeolocate", isGeolocate);
+                    startActivity(intent);
+                }
+            });
         } else {
             showMap.setVisibility(View.GONE);
-
         }
-        showMap.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(EventDetailActivity.this, MapActivity.class);
-                intent.putExtra("name", name );
-                intent.putExtra("date", date);
-                intent.putExtra("facility", facility);
-                intent.putExtra("registrationEndDate", registrationEndDate);
-                intent.putExtra("description",description );
-                intent.putExtra("maxWaitEntrants", maxWaitEntrants);
-                intent.putExtra("maxSampleEntrants", maxSampleEntrants);
-                intent.putExtra("eventID", eventID);
-                intent.putExtra("posterUri", posterUriString);
-                intent.putExtra("isGeolocate", isGeolocate);
-                startActivity(intent);
-            }
-        });
+
 
         // Display poster image if URI is valid, using Glide library
         if (posterUri != null) {

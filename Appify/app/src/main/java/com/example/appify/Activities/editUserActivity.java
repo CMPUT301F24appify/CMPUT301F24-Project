@@ -1,10 +1,8 @@
 package com.example.appify.Activities;
 
 
-import android.content.Context;
 import android.Manifest;
 import android.content.Intent;
-import android.content.IntentSender;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -13,45 +11,28 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
 
-import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Looper;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
-import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.example.appify.HeaderNavigation;
-import android.Manifest;
 import com.example.appify.Model.Entrant;
 import com.example.appify.R;
 
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import com.github.dhaval2404.imagepicker.ImagePicker;
-import com.google.android.gms.common.api.ApiException;
-import com.google.android.gms.common.api.ResolvableApiException;
-import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
-import com.google.android.gms.location.LocationResult;
-import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.location.LocationSettingsRequest;
-import com.google.android.gms.location.LocationSettingsResponse;
-import com.google.android.gms.location.LocationSettingsStatusCodes;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
@@ -59,6 +40,7 @@ import com.google.firebase.storage.StorageReference;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Random;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Activity to edit the user's profile information.
@@ -77,7 +59,8 @@ public class editUserActivity extends AppCompatActivity {
     private LocationRequest deviceLocationRequest;
     private Bitmap bitmapImage = null;
     private boolean defaultFlag = true;
-    private boolean cameraFlag = false;
+    private boolean cameraFlag,generatedPicture = false;
+    private Bitmap uriBitmap = null;
 
     private static final int REQUEST_CODE_POST_NOTIFICATIONS = 10010001;
 
@@ -96,6 +79,7 @@ public class editUserActivity extends AppCompatActivity {
         bitmapImage = (Bitmap) getIntent().getExtras().get("Image Bitmap");
         android_id = getIntent().getStringExtra("AndroidID");
         boolean firstEntry = getIntent().getBooleanExtra("firstEntry", false);
+        boolean pictureFlag = getIntent().getBooleanExtra("pictureFlag", false);
         HeaderNavigation headerNavigation = new HeaderNavigation(this);
         headerNavigation.setupNavigation();
 
@@ -167,8 +151,13 @@ public class editUserActivity extends AppCompatActivity {
                     String firstLetter = String.valueOf(name.charAt(0)).toUpperCase();
                     if (defaultFlag) {
                         Bitmap profilePicture = generateProfilePicture(firstLetter);
+                        uriBitmap = profilePicture;
                         profileImageView.setImageBitmap(profilePicture);
                     } else {
+                        if(pictureFlag){
+                            generatedPicture = true;
+                        }
+                        uriBitmap = bitmapImage;
                         profileImageView.setImageBitmap(bitmapImage);
                     }
                 }
@@ -213,6 +202,11 @@ public class editUserActivity extends AppCompatActivity {
         if (resultCode == RESULT_OK && data != null) {
             // Retrieve the URI of the selected image
             imageUri = data.getData();
+            try {
+                uriBitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), imageUri);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
             profileImageView.setImageURI(imageUri);
         }
     }
@@ -225,7 +219,7 @@ public class editUserActivity extends AppCompatActivity {
      */
     private Bitmap generateProfilePicture(String firstLetter) {
         int imageSize = 150;  // 150x150
-
+        generatedPicture = true;
         Bitmap bitmap = Bitmap.createBitmap(imageSize, imageSize, Bitmap.Config.RGB_565);
         Canvas canvas = new Canvas(bitmap);
 
@@ -247,7 +241,6 @@ public class editUserActivity extends AppCompatActivity {
         int y = (int) ((canvas.getHeight() / 2) - ((paint.descent() + paint.ascent()) / 2));
 
         canvas.drawText(firstLetter, x, y, paint);
-
         return bitmap;
     }
 
@@ -273,8 +266,17 @@ public class editUserActivity extends AppCompatActivity {
      */
     private void sendEntrantData(String id,String name, String phone, String email, double latitude, double longitude){
         Bitmap profilePicture = getBitmapFromImageView(profileImageView);
+        if(uriBitmap != null){
+            profilePicture = uriBitmap;
+        }
+        String path;
+        if(generatedPicture){
+            path = "generated_pictures/";
+        } else {
+            path = "profile_images/";
+        }
         FirebaseStorage storage = FirebaseStorage.getInstance();
-        StorageReference storageRef = storage.getReference().child("profile_images/" + android_id + ".jpg");
+        StorageReference storageRef = storage.getReference().child(path + android_id + ".jpg");
         // Convert Bitmap to ByteArray
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         profilePicture.compress(Bitmap.CompressFormat.JPEG, 100, baos);
@@ -282,18 +284,29 @@ public class editUserActivity extends AppCompatActivity {
         storageRef.putBytes(profilePictureByte)
                 .addOnSuccessListener(taskSnapshot -> storageRef.getDownloadUrl().addOnSuccessListener(uri -> {
                     String downloadUrl = uri.toString();
+                    db.collection("AndroidID").document(android_id).get().addOnSuccessListener(findURL ->{
+                        String oldURL = findURL.getString("profilePictureUrl");
+                        FirebaseStorage storage2 = FirebaseStorage.getInstance();
 
-                    // Create Entrant object with the download URL
-                    Entrant user = new Entrant(id, name, phone, email, downloadUrl, false, facilityID, latitude, longitude);
-                    System.out.println(""+user.isAdmin());
-                    // Save Entrant data to Firestore
-                    db.collection("AndroidID").document(android_id).set(user)
-                            .addOnSuccessListener(aVoid -> {
-                                // Successfully saved data to Firestore
-                                Intent intent = new Intent(editUserActivity.this, userProfileActivity.class);
-                                intent.putExtra("AndroidID", android_id);
-                                startActivity(intent);
-                            });
+                        // Create Entrant object with the download URL
+                        Entrant user = new Entrant(id, name, phone, email, downloadUrl, false, facilityID, latitude, longitude);
+                        StorageReference imageRefNew = storage2.getReferenceFromUrl(downloadUrl);
+                        if(oldURL!= null) {
+                            StorageReference imageRefOld = storage2.getReferenceFromUrl(oldURL);
+                            if (!imageRefNew.equals(imageRefOld)) {
+                                imageRefOld.delete();
+                            }
+                        }
+                        user.setGeneratedPicture(generatedPicture);
+                        // Save Entrant data to Firestore
+                        db.collection("AndroidID").document(android_id).set(user)
+                                .addOnSuccessListener(aVoid -> {
+                                    // Successfully saved data to Firestore
+                                    Intent intent = new Intent(editUserActivity.this, userProfileActivity.class);
+                                    intent.putExtra("AndroidID", android_id);
+                                    startActivity(intent);
+                                });
+                    });
                 }));
     }
 
@@ -339,16 +352,24 @@ public class editUserActivity extends AppCompatActivity {
      */
     private void loadProfilePicture(String android_id) {
         FirebaseStorage storage = FirebaseStorage.getInstance();
-        StorageReference storageRef = storage.getReference().child("profile_images/" + android_id + ".jpg");
+        db.collection("AndroidID").document(android_id).get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        boolean generated = documentSnapshot.getBoolean("generatedPicture");
+                        String path = generated ? "generated_pictures/" : "profile_images/";
+                        StorageReference storageRef = storage.getReference().child(path + android_id + ".jpg");
 
-        long size = 1024 * 1024;
-        storageRef.getBytes(size)
-                .addOnSuccessListener(bytes -> {
-                    // Convert the byte array to a Bitmap
-                    defaultFlag = false;
-                    bitmapImage = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
-                    profileImageView.setImageBitmap(bitmapImage);
+                        long size = 1024 * 1024;
+                        storageRef.getBytes(size)
+                                .addOnSuccessListener(bytes -> {
+                                    // Convert the byte array to a Bitmap
+                                    defaultFlag = false;
+                                    bitmapImage = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+                                    profileImageView.setImageBitmap(bitmapImage);
+                                });
+                    }
                 });
+
     }
 
 }

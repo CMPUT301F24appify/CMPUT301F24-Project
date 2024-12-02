@@ -16,12 +16,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
-import androidx.core.content.ContextCompat;
-import androidx.core.app.ActivityCompat;
-
-import android.Manifest;
-import android.content.pm.PackageManager;
-import android.os.Build;
 
 import com.example.appify.Activities.EntrantHomePageActivity;
 import com.example.appify.Activities.editUserActivity;
@@ -150,16 +144,13 @@ public class MainActivity extends AppCompatActivity {
                         DocumentSnapshot document = task.getResult();
                         if (document != null && document.exists()) {
                             // Existing user, navigate to HomePage
-                            Log.d("MainActivity", "User exists. Navigating to EntrantHomePageActivity.");
                             navigateToHomePage(androidId);
                         } else {
                             // New user, navigate to editUserActivity
-                            Log.d("MainActivity", "User is new. Navigating to editUserActivity.");
                             navigateToEditUser(androidId);
                         }
                     } else {
                         // Handle the error
-                        Log.w("MainActivity", "Error checking for AndroidID", task.getException());
                         Toast.makeText(MainActivity.this, "Error checking user status. Please try again.", Toast.LENGTH_SHORT).show();
 
                         // Log additional information

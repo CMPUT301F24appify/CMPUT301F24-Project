@@ -428,18 +428,20 @@ public class EntrantEnlistActivity extends AppCompatActivity {
         // Add user to waiting list
         HashMap<String, Object> waitlistData = new HashMap<>();
         waitlistData.put("status", "enrolled");
+        waitlistData.put("inviteNotificationSent", false);
         waitlistData.put("latitude", deviceLatitude);
         waitlistData.put("longitude", deviceLongitude);
 
         waitingListRef.document(androidId).set(waitlistData)
                 .addOnSuccessListener(aVoid -> {
-                    // Add event to user's waitListedEvents with status "enrolled"
+                    // Add event to user's waitListedEvents
                     CollectionReference userWaitListedEventsRef = db.collection("AndroidID")
                             .document(androidId)
                             .collection("waitListedEvents");
 
                     HashMap<String, Object> eventStatusData = new HashMap<>();
                     eventStatusData.put("status", "enrolled");
+                    eventStatusData.put("inviteNotificationSent", false);
 
                     userWaitListedEventsRef.document(eventId).set(eventStatusData)
                             .addOnSuccessListener(aVoid2 -> {
@@ -453,9 +455,17 @@ public class EntrantEnlistActivity extends AppCompatActivity {
                                             intent.putExtra("name", name);
                                             intent.putExtra("date", date);
                                             intent.putExtra("registrationEndDate", registrationEndDate);
-                                            intent.putExtra("facility", facility);
+
                                             intent.putExtra("geolocate", isGeolocate);
+
+                                            db.collection("facilities").document(facility).get().addOnSuccessListener(documentSnapshot -> {
+                                                String facName = documentSnapshot.getString("name");
+                                                intent.putExtra("facility", facName);
+                                                startActivity(intent);
+                                            });
                                             startActivity(intent);
+
+
                                         })
                                         .addOnFailureListener(e -> {
                                             Toast.makeText(this, "Failed to update your location.", Toast.LENGTH_SHORT).show();

@@ -89,12 +89,21 @@ public class CustomEntrantAdminAdapter extends ArrayAdapter<Entrant> {
 
 
         FirebaseStorage storage = FirebaseStorage.getInstance();
-        StorageReference storageRef = storage.getReference().child("profile_images/" + entrantID + ".jpg");
         long size = 1024 * 1024;
-        storageRef.getBytes(size).addOnSuccessListener(bytes -> {
-            // Convert the byte array to a Bitmap
+
+        StorageReference profileImageRef = storage.getReference().child("profile_images/" + entrantID + ".jpg");
+        StorageReference generatedImageRef = storage.getReference().child("generated_pictures/" + entrantID + ".jpg");
+
+        profileImageRef.getBytes(size).addOnSuccessListener(bytes -> {
+            // If profile_images/ has the image
             Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
             statusIcon.setImageBitmap(bitmap);
+        }).addOnFailureListener(e -> {
+            // If fails, check generated_pictures
+            generatedImageRef.getBytes(size).addOnSuccessListener(bytesGenerated -> {
+                Bitmap bitmap = BitmapFactory.decodeByteArray(bytesGenerated, 0, bytesGenerated.length);
+                statusIcon.setImageBitmap(bitmap);
+            });
         });
         email.setText("Email: " + entrant.getEmail());
         name.setText(entrant.getName());
@@ -180,9 +189,33 @@ public class CustomEntrantAdminAdapter extends ArrayAdapter<Entrant> {
                                                                                     }
                                                                                 })
                                                                                 .addOnCompleteListener(waitingListTask -> {
-                                                                                    // Delete event from 'events' collection
+                                                                                    // Delete the Event along with its poster
                                                                                     db.collection("events").document(eventID)
-                                                                                            .delete();
+                                                                                            .get()
+                                                                                            .addOnSuccessListener(documentSnapshot1 -> {
+                                                                                                if (documentSnapshot1.exists()) {
+                                                                                                    String qrCodeLocationUrl = documentSnapshot1.getString("qrCodeLocationUrl");
+                                                                                                    if (qrCodeLocationUrl != null && !qrCodeLocationUrl.isEmpty()) {
+                                                                                                        // Delete the qrCode image from Firebase Storage
+                                                                                                        FirebaseStorage storage = FirebaseStorage.getInstance();
+                                                                                                        StorageReference imageRef = storage.getReferenceFromUrl(qrCodeLocationUrl);
+                                                                                                        imageRef.delete();
+                                                                                                    }
+
+                                                                                                    String posterUri = documentSnapshot1.getString("posterUri");
+
+                                                                                                    if (posterUri != null && !posterUri.isEmpty()) {
+                                                                                                        // Delete the poster image from Firebase Storage
+                                                                                                        FirebaseStorage storage = FirebaseStorage.getInstance();
+                                                                                                        StorageReference imageRef = storage.getReferenceFromUrl(posterUri);
+                                                                                                        imageRef.delete();
+                                                                                                    }
+                                                                                                }
+
+                                                                                                // Delete the Event all together
+                                                                                                db.collection("events").document(eventID)
+                                                                                                        .delete();
+                                                                                            });
 
                                                                                     // Delete event document from 'facilities/facilityID/events' collection
                                                                                     db.collection("facilities").document(entrant.getFacilityID()).collection("events")
