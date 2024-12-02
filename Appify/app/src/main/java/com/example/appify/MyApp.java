@@ -9,6 +9,7 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Handler;
@@ -18,7 +19,9 @@ import android.util.Log;
 
 
 import androidx.annotation.NonNull;
+import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
 
 
 import com.example.appify.Activities.EntrantEnlistActivity;
@@ -31,11 +34,16 @@ import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.ListenerRegistration;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 
 public class MyApp extends Application {
@@ -59,22 +67,22 @@ public class MyApp extends Application {
 
     // Handler for scheduling flag and message resets
     private Handler handler = new Handler(Looper.getMainLooper());
+    private ScheduledExecutorService scheduler;
 
 
     @Override
     public void onCreate() {
         super.onCreate();
 
-
         // Initialize Firestore
         db = FirebaseFirestore.getInstance();
-
 
         // Retrieve Android ID
         androidId = getAndroidId();
         Log.d(TAG, "Android ID: " + androidId);
 
-
+        scheduler = Executors.newScheduledThreadPool(1);
+        scheduler.scheduleWithFixedDelay(this::checkFirestore, 0, 10, TimeUnit.SECONDS);
         if (androidId == null) {
             Log.e(TAG, "Failed to retrieve Android ID.");
             // Handle the error as needed, possibly exit the app or retry
@@ -92,7 +100,42 @@ public class MyApp extends Application {
         // **Start listening for waitingList subcollection changes**
         listenForWaitingListAdditions();
     }
+    private void checkFirestore() {
+        String android_id2 = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
+        System.out.println(android_id2);
+        db.collection("AndroidID").document(android_id2).collection("waitListedEvents").get().addOnCompleteListener(task -> {
+            System.out.println("cp2");
+            if (task.isSuccessful()){
+                QuerySnapshot querySnapshot = task.getResult();
+                if (querySnapshot !=null){
 
+                    for (QueryDocumentSnapshot queryDocumentSnapshot : querySnapshot){
+                        String eventID = queryDocumentSnapshot.getId();
+                        String status = queryDocumentSnapshot.getString("status");
+                        Boolean inviteNotificationSent = queryDocumentSnapshot.getBoolean("inviteNotificationSent");
+                        System.out.println(eventID +" "+status);
+                        if (Objects.equals(status, "invited") && Boolean.FALSE.equals(inviteNotificationSent)){
+                            String channelId = "my_channel_id"; // Must match the channel ID used earlier
+
+                            NotificationCompat.Builder builder = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
+                                    .setSmallIcon(R.drawable.notification_bell) // Replace with your own icon
+                                    .setContentTitle("Invited")
+                                    .setContentText("You have been invited")
+                                    .setPriority(NotificationCompat.PRIORITY_DEFAULT);
+
+                            // Get the NotificationManager
+                            NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+
+                            int notificationId = (int) System.currentTimeMillis();
+//                            notificationManager.notify(notificationId, builder.build());
+                        }
+
+                    }
+
+                }
+            }
+        });
+    }
 
     /**
      * Retrieves the device's Android ID.
