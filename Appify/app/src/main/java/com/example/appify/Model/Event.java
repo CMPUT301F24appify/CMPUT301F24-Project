@@ -38,6 +38,8 @@ public class Event {
     private String enrolledMessage;    // For "accepted" status
     private String cancelledMessage;   // For "rejected" status
     private String invitedMessage;     // For "invited" status
+    private Boolean lotteryRanFlag;
+    private Boolean lotteryButton;
 
     /**
      * Constructs an Event object with the specified attributes.
@@ -87,6 +89,8 @@ public class Event {
         this.cancelledMessage = cancelledMessage;
         this.invitedMessage = invitedMessage;
         this.organizerID = organizerID;
+        this.lotteryRanFlag = false;
+        this.lotteryButton = false;
     }
     /**
      * Constructor used for Admin View, only taking required fields.
@@ -194,6 +198,14 @@ public class Event {
         return invitedMessage;
     }
 
+    public Boolean getLotteryRanFlag() {
+        return lotteryRanFlag;
+    }
+
+    public Boolean getLotteryButton() {
+        return lotteryRanFlag;
+    }
+
     // Setters
 
     public void setGeolocate(boolean geolocate) {
@@ -276,6 +288,14 @@ public class Event {
         this.eventId = eventId;
     }
 
+    public void setLotteryRanFlag(boolean lotteryRanFlagStatus) {
+        this.lotteryRanFlag = lotteryRanFlagStatus;
+    }
+
+    public void setLotteryButton(boolean lotteryButtonStatus) {
+        this.lotteryRanFlag = lotteryButtonStatus;
+    }
+
     /**
      * Interface for callback after adding an event to Firestore.
      */
@@ -334,60 +354,89 @@ public class Event {
                     // If there are no slots available, exit early
                     if (slotsAvailable <= 0) {
                         Log.d("Lottery", "No slots available for additional invites.");
+                        db.collection("events").document(eventID)
+                                .update("lotteryRanFlag", true, "lotteryButton", true)
+                                .addOnSuccessListener(aVoid -> Log.d("Lottery", "lotteryRanFlag and lotteryButton reset for event " + eventID))
+                                .addOnFailureListener(e -> Log.e("Lottery", "Error resetting flags for event " + eventID, e));
                         return;
                     }
 
-                    // Retrieve the waiting list for "enrolled" entrants
+
                     db.collection("events").document(eventID)
                             .collection("waitingList")
-                            .whereEqualTo("status", "enrolled") // Only consider entrants with "enrolled" status
+                            .whereEqualTo("status", "accepted")
                             .get()
-                            .addOnSuccessListener(querySnapshot -> {
-                                // Collect all eligible entrants' IDs
-                                for (QueryDocumentSnapshot document : querySnapshot) {
-                                    eligibleEntrants.add(document.getId());
-                                }
+                            .addOnSuccessListener(invitedSnapshot -> {
+                                int invitedCount = acceptedSnapshot.size();
+                                int slotsAvaliableFinal = slotsAvailable - invitedCount; // Adjust for remaining slots
 
-                                // Randomly select entrants until reaching available slots or list is empty
-                                while (selectedEntrants.size() < slotsAvailable && !eligibleEntrants.isEmpty()) {
-                                    int randomIndex = random.nextInt(eligibleEntrants.size());
-                                    String selectedEntrantId = eligibleEntrants.remove(randomIndex); // Remove to avoid re-selection
-                                    selectedEntrants.add(selectedEntrantId); // Add to selected list
-                                }
-
-                                // Invite only the selected entrants
-                                for (String entrantId : selectedEntrants) {
-                                    // Update the entrant's status to "invited" in the waiting list of the event
+                                // If there are no slots available, exit early
+                                if (slotsAvaliableFinal <= 0) {
+                                    Log.d("Lottery", "No slots available for additional invites.");
                                     db.collection("events").document(eventID)
-                                            .collection("waitingList").document(entrantId)
-                                            .update("status", "invited")
-                                            .addOnSuccessListener(aVoid -> {
-                                                Log.d("Lottery", "Entrant " + entrantId + " invited successfully.");
-
-                                                // Update the entrant's status in their AndroidID collection as well
-                                                db.collection("AndroidID").document(entrantId)
-                                                        .collection("waitListedEvents").document(eventID)
-                                                        .update("status", "invited")
-                                                        .addOnSuccessListener(innerVoid -> {
-                                                            Log.d("Lottery", "Entrant " + entrantId + " status updated in AndroidID collection for event " + eventID);
-                                                        })
-                                                        .addOnFailureListener(e -> {
-                                                            Log.w("Lottery", "Error updating entrant " + entrantId + " status in AndroidID collection for event " + eventID, e);
-                                                        });
-                                            })
-                                            .addOnFailureListener(e -> {
-                                                Log.w("Lottery", "Error inviting entrant " + entrantId, e);
-                                            });
+                                            .update("lotteryRanFlag", true, "lotteryButton", true)
+                                            .addOnSuccessListener(aVoid -> Log.d("Lottery", "lotteryRanFlag and lotteryButton reset for event " + eventID))
+                                            .addOnFailureListener(e -> Log.e("Lottery", "Error resetting flags for event " + eventID, e));
+                                    return;
                                 }
 
-                                Log.d("Lottery", "Lottery completed. Total invited entrants: " + selectedEntrants.size());
-                            })
-                            .addOnFailureListener(e -> {
-                                Log.e("Lottery", "Error retrieving waiting list for event " + eventID, e);
-                            });
-                })
-                .addOnFailureListener(e -> {
-                    Log.e("Lottery", "Error retrieving accepted entrants for event " + eventID, e);
+                            // Retrieve the waiting list for "enrolled" entrants
+                            db.collection("events").document(eventID)
+                                    .collection("waitingList")
+                                    .whereEqualTo("status", "enrolled") // Only consider entrants with "enrolled" status
+                                    .get()
+                                    .addOnSuccessListener(querySnapshot -> {
+                                        // Collect all eligible entrants' IDs
+                                        for (QueryDocumentSnapshot document : querySnapshot) {
+                                            eligibleEntrants.add(document.getId());
+                                        }
+
+                                        // Randomly select entrants until reaching available slots or list is empty
+                                        while (selectedEntrants.size() < slotsAvaliableFinal && !eligibleEntrants.isEmpty()) {
+                                            int randomIndex = random.nextInt(eligibleEntrants.size());
+                                            String selectedEntrantId = eligibleEntrants.remove(randomIndex); // Remove to avoid re-selection
+                                            selectedEntrants.add(selectedEntrantId); // Add to selected list
+                                        }
+
+                                        // Invite only the selected entrants
+                                        for (String entrantId : selectedEntrants) {
+                                            // Update the entrant's status to "invited" in the waiting list of the event
+                                            db.collection("events").document(eventID)
+                                                    .collection("waitingList").document(entrantId)
+                                                    .update("status", "invited")
+                                                    .addOnSuccessListener(aVoid -> {
+                                                        Log.d("Lottery", "Entrant " + entrantId + " invited successfully.");
+
+                                                        // Update the entrant's status in their AndroidID collection as well
+                                                        db.collection("AndroidID").document(entrantId)
+                                                                .collection("waitListedEvents").document(eventID)
+                                                                .update("status", "invited")
+                                                                .addOnSuccessListener(innerVoid -> {
+                                                                    Log.d("Lottery", "Entrant " + entrantId + " status updated in AndroidID collection for event " + eventID);
+                                                                })
+                                                                .addOnFailureListener(e -> {
+                                                                    Log.w("Lottery", "Error updating entrant " + entrantId + " status in AndroidID collection for event " + eventID, e);
+                                                                });
+                                                    })
+                                                    .addOnFailureListener(e -> {
+                                                        Log.w("Lottery", "Error inviting entrant " + entrantId, e);
+                                                    });
+                                        }
+                                        db.collection("events").document(eventID)
+                                                .update("lotteryRanFlag", true, "lotteryButton", true)
+                                                .addOnSuccessListener(aVoid -> Log.d("Lottery", "lotteryRanFlag and lotteryButton reset for event " + eventID))
+                                                .addOnFailureListener(e -> Log.e("Lottery", "Error resetting flags for event " + eventID, e));
+
+                                        Log.d("Lottery", "Lottery completed. Total invited entrants: " + selectedEntrants.size());
+                                    })
+                                    .addOnFailureListener(e -> {
+                                        Log.e("Lottery", "Error retrieving waiting list for event " + eventID, e);
+                                    });
+                        })
+                        .addOnFailureListener(e -> {
+                            Log.e("Lottery", "Error retrieving accepted entrants for event " + eventID, e);
+                        });
+
                 });
     }
 }

@@ -9,6 +9,7 @@ import android.graphics.Color;
 import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -248,23 +249,91 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
                 startActivity(intent2);
             });
 
+            // Set up the back button to return to EventActivity
+            backButton.setOnClickListener(v -> {
+                Intent intent2 = new Intent(EventDetailActivity.this, EventActivity.class);
+                intent2.putExtra("eventID", eventID);
+                startActivity(intent2);
+            });
+            db.collection("events").document(eventID)
+                    .get()
+                    .addOnSuccessListener(documentSnapshot -> {
+                        if (documentSnapshot.exists()) {
+                            Boolean lotteryButton = documentSnapshot.getBoolean("lotteryButton");
+                            if (lotteryButton != null && lotteryButton) {
+                                // Lottery already ran, update button appearance
+                                organizerActionsButton.setText("Lottery has been ran");
+                                organizerActionsButton.setEnabled(false);
+                                organizerActionsButton.setBackgroundColor(getResources().getColor(android.R.color.holo_blue_light));
+                            } else {
+                                // Enable the button if lotteryButton is false or null
+                                organizerActionsButton.setText("Run Lottery");
+                                organizerActionsButton.setEnabled(true);
+                            }
+                        } else {
+                            Log.w("EventDetailActivity", "No event found with ID: " + eventID);
+                        }
+                    })
+                    .addOnFailureListener(e -> Log.e("EventDetailActivity", "Error retrieving event with ID: " + eventID, e));
+
             // Set up organizer actions button to navigate to EventActionsActivity
-            organizerActionsButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    Intent intent = new Intent(EventDetailActivity.this, EventActionsActivity.class);
-                    intent.putExtra("name", name );
-                    intent.putExtra("date", date);
-                    intent.putExtra("facility", facility);
-                    intent.putExtra("registrationEndDate", registrationEndDate);
-                    intent.putExtra("description",description );
-                    intent.putExtra("maxWaitEntrants", maxWaitEntrants);
-                    intent.putExtra("maxSampleEntrants", maxSampleEntrants);
-                    intent.putExtra("eventID", eventID);
-                    intent.putExtra("posterUri", posterUriString);
-                    intent.putExtra("isGeolocate", isGeolocate);
-                    startActivity(intent);
-                }
+            organizerActionsButton.setOnClickListener(v -> {
+                db.collection("events").document(eventID)
+                        .get()
+                        .addOnSuccessListener(documentSnapshot -> {
+                            if (documentSnapshot.exists()) {
+                                Boolean lotteryButton = documentSnapshot.getBoolean("lotteryButton");
+                                if (lotteryButton != null && lotteryButton) {
+                                    // Lottery has already been run, update button appearance and disable
+                                    organizerActionsButton.setText("Lottery has been ran");
+                                    organizerActionsButton.setEnabled(false);
+                                    organizerActionsButton.setBackgroundColor(getResources().getColor(android.R.color.holo_blue_light));
+                                    Log.d("EventDetailActivity", "Lottery already ran for event ID: " + eventID);
+                                    return; // Exit early
+                                }
+
+                                // Create Event object with event details
+                                Event event = new Event(
+                                        name,
+                                        date,
+                                        facility,
+                                        registrationEndDate,
+                                        description,
+                                        maxWaitEntrants,
+                                        maxSampleEntrants,
+                                        posterUriString,
+                                        isGeolocate,
+                                        documentSnapshot.getBoolean("notifyWaitlisted"),
+                                        documentSnapshot.getBoolean("notifyEnrolled"),
+                                        documentSnapshot.getBoolean("notifyCancelled"),
+                                        documentSnapshot.getBoolean("notifyInvited"),
+                                        documentSnapshot.getString("waitlistedMessage"),
+                                        documentSnapshot.getString("enrolledMessage"),
+                                        documentSnapshot.getString("cancelledMessage"),
+                                        documentSnapshot.getString("invitedMessage"),
+                                        documentSnapshot.getString("organizerID")
+                                );
+
+                                // Run the lottery for this event
+                                event.lottery(db, eventID);
+
+                                // Update button state and Firestore after lottery
+                                Map<String, Object> updates = new HashMap<>();
+                                updates.put("lotteryButton", true); // Mark lottery as run
+                                db.collection("events").document(eventID)
+                                        .update(updates)
+                                        .addOnSuccessListener(aVoid -> {
+                                            organizerActionsButton.setText("Lottery has been ran");
+                                            organizerActionsButton.setEnabled(false);
+                                            organizerActionsButton.setBackgroundColor(getResources().getColor(android.R.color.holo_blue_light));
+                                            Log.d("EventDetailActivity", "Lottery successfully ran and button updated for event ID: " + eventID);
+                                        })
+                                        .addOnFailureListener(e -> Log.e("EventDetailActivity", "Failed to update lotteryButton flag", e));
+                            } else {
+                                Log.w("EventDetailActivity", "No event found with ID: " + eventID);
+                            }
+                        })
+                        .addOnFailureListener(e -> Log.e("EventDetailActivity", "Error retrieving event with ID: " + eventID, e));
             });
 
 
