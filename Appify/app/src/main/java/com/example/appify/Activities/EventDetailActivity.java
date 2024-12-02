@@ -8,6 +8,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -74,9 +75,6 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
         // Initialize header navigation with highlighting for the "Organize" section
         HeaderNavigation headerNavigation = new HeaderNavigation(this);
         headerNavigation.setupNavigation();
-//        TextView organizeText = findViewById(R.id.organizeText_navBar);
-//        organizeText.setTextColor(Color.parseColor("#800080"));
-//        organizeText.setTypeface(organizeText.getTypeface(), Typeface.BOLD);
 
         // Initialize Firebase Firestore instance
         db = FirebaseFirestore.getInstance();
@@ -108,44 +106,7 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
                             Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
                             qrImageView.setImageBitmap(bitmap);
                         });
-            }
-//            else {
-//                // Create QR Code and store it
-//                try {
-//
-//                    QRCodeWriter qrCodeWriter = new QRCodeWriter();
-//
-//                    // Generate a passKey for this version of the QRcode, store in database
-//                    String passKey = UUID.randomUUID().toString();
-//                    db.collection("events").document(eventID).update("qrCodePassKey", passKey);
-//                    String qrContent = "myapp://event/" + eventID +"/"+passKey;
-//
-//                    BitMatrix bitMatrix = qrCodeWriter.encode(qrContent, BarcodeFormat.QR_CODE, 200, 200);
-//                    int width = bitMatrix.getWidth();
-//                    int height = bitMatrix.getHeight();
-//                    Bitmap qrBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565);
-//                    byte[] qrCodeByte;
-//                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-//                    for (int x = 0; x < width; x++) {
-//                        for (int y = 0; y < height; y++) {
-//                            qrBitmap.setPixel(x, y, bitMatrix.get(x, y) ? Color.BLACK : Color.WHITE);
-//                        }
-//                    }
-//                    qrBitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
-//                    qrCodeByte = baos.toByteArray();
-//                    storageRef.putBytes(qrCodeByte)
-//                            .addOnSuccessListener(taskSnapshot -> storageRef.getDownloadUrl().addOnSuccessListener(uri -> {
-//                                String qrCodeLocationUrl = uri.toString();
-//                                db.collection("events").document(eventID).update("qrCodeLocationUrl", qrCodeLocationUrl);
-//                            }));
-//                    System.out.println(storageRef.getBytes(1024 * 1024));
-//
-//                    // Set the QR code bitmap to the ImageView
-//                    qrImageView.setImageBitmap(qrBitmap);
-//                } catch (WriterException e) {
-//                    e.printStackTrace();
-//                }
-//            }
+            }         
         });
 
         // Retrieve event data from intent extras
@@ -190,7 +151,11 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
         facilityTextView.setText(facility);
         registrationEndDateTextView.setText(registrationEndDate);
         descriptionTextView.setText(description);
-        maxWaitTextView.setText(""+maxWaitEntrants);
+        if (maxWaitEntrants == Integer.MAX_VALUE) {
+            maxWaitTextView.setText(""+"No Limit");
+        } else {
+            maxWaitTextView.setText(""+maxWaitEntrants);
+        }
         maxSampleTextView.setText(""+maxSampleEntrants);
         geolocateTextView.setText(isGeolocate ? "Geo-Location Enabled" : "Geo-Location Disabled");
 
@@ -216,7 +181,7 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
                 updateButtonAppearance(notifyWaitlisted, !message.isEmpty());
             }));
 
-            notifyEnrolled.setOnClickListener(v -> showNotificationInputDialog("Enrolled Notification", enrolledMessage, message -> {
+            notifyEnrolled.setOnClickListener(v -> showNotificationInputDialog("Accepted Notification", enrolledMessage, message -> {
                 enrolledMessage = message;
                 updateNotificationMessage("enrolledMessage", message, "notifyEnrolled");
                 updateButtonAppearance(notifyEnrolled, !message.isEmpty());
@@ -241,23 +206,91 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
                 startActivity(intent2);
             });
 
+            // Set up the back button to return to EventActivity
+            backButton.setOnClickListener(v -> {
+                Intent intent2 = new Intent(EventDetailActivity.this, EventActivity.class);
+                intent2.putExtra("eventID", eventID);
+                startActivity(intent2);
+            });
+            db.collection("events").document(eventID)
+                    .get()
+                    .addOnSuccessListener(documentSnapshot -> {
+                        if (documentSnapshot.exists()) {
+                            Boolean lotteryButton = documentSnapshot.getBoolean("lotteryButton");
+                            if (lotteryButton != null && lotteryButton) {
+                                // Lottery already ran, update button appearance
+                                organizerActionsButton.setText("Lottery has been ran");
+                                organizerActionsButton.setEnabled(false);
+                                organizerActionsButton.setBackgroundColor(getResources().getColor(android.R.color.holo_blue_light));
+                            } else {
+                                // Enable the button if lotteryButton is false or null
+                                organizerActionsButton.setText("Run Lottery");
+                                organizerActionsButton.setEnabled(true);
+                            }
+                        } else {
+                            Log.w("EventDetailActivity", "No event found with ID: " + eventID);
+                        }
+                    })
+                    .addOnFailureListener(e -> Log.e("EventDetailActivity", "Error retrieving event with ID: " + eventID, e));
+
             // Set up organizer actions button to navigate to EventActionsActivity
-            organizerActionsButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    Intent intent = new Intent(EventDetailActivity.this, EventActionsActivity.class);
-                    intent.putExtra("name", name );
-                    intent.putExtra("date", date);
-                    intent.putExtra("facility", facility);
-                    intent.putExtra("registrationEndDate", registrationEndDate);
-                    intent.putExtra("description",description );
-                    intent.putExtra("maxWaitEntrants", maxWaitEntrants);
-                    intent.putExtra("maxSampleEntrants", maxSampleEntrants);
-                    intent.putExtra("eventID", eventID);
-                    intent.putExtra("posterUri", posterUriString);
-                    intent.putExtra("isGeolocate", isGeolocate);
-                    startActivity(intent);
-                }
+            organizerActionsButton.setOnClickListener(v -> {
+                db.collection("events").document(eventID)
+                        .get()
+                        .addOnSuccessListener(documentSnapshot -> {
+                            if (documentSnapshot.exists()) {
+                                Boolean lotteryButton = documentSnapshot.getBoolean("lotteryButton");
+                                if (lotteryButton != null && lotteryButton) {
+                                    // Lottery has already been run, update button appearance and disable
+                                    organizerActionsButton.setText("Lottery has been ran");
+                                    organizerActionsButton.setEnabled(false);
+                                    organizerActionsButton.setBackgroundColor(getResources().getColor(android.R.color.holo_blue_light));
+                                    Log.d("EventDetailActivity", "Lottery already ran for event ID: " + eventID);
+                                    return; // Exit early
+                                }
+
+                                // Create Event object with event details
+                                Event event = new Event(
+                                        name,
+                                        date,
+                                        facility,
+                                        registrationEndDate,
+                                        description,
+                                        maxWaitEntrants,
+                                        maxSampleEntrants,
+                                        posterUriString,
+                                        isGeolocate,
+                                        documentSnapshot.getBoolean("notifyWaitlisted"),
+                                        documentSnapshot.getBoolean("notifyEnrolled"),
+                                        documentSnapshot.getBoolean("notifyCancelled"),
+                                        documentSnapshot.getBoolean("notifyInvited"),
+                                        documentSnapshot.getString("waitlistedMessage"),
+                                        documentSnapshot.getString("enrolledMessage"),
+                                        documentSnapshot.getString("cancelledMessage"),
+                                        documentSnapshot.getString("invitedMessage"),
+                                        documentSnapshot.getString("organizerID")
+                                );
+
+                                // Run the lottery for this event
+                                event.lottery(db, eventID);
+
+                                // Update button state and Firestore after lottery
+                                Map<String, Object> updates = new HashMap<>();
+                                updates.put("lotteryButton", true); // Mark lottery as run
+                                db.collection("events").document(eventID)
+                                        .update(updates)
+                                        .addOnSuccessListener(aVoid -> {
+                                            organizerActionsButton.setText("Lottery has been ran");
+                                            organizerActionsButton.setEnabled(false);
+                                            organizerActionsButton.setBackgroundColor(getResources().getColor(android.R.color.holo_blue_light));
+                                            Log.d("EventDetailActivity", "Lottery successfully ran and button updated for event ID: " + eventID);
+                                        })
+                                        .addOnFailureListener(e -> Log.e("EventDetailActivity", "Failed to update lotteryButton flag", e));
+                            } else {
+                                Log.w("EventDetailActivity", "No event found with ID: " + eventID);
+                            }
+                        })
+                        .addOnFailureListener(e -> Log.e("EventDetailActivity", "Error retrieving event with ID: " + eventID, e));
             });
 
 
@@ -589,8 +622,12 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
         facilityTextView.setText(facilityName);
         registrationEndDateTextView.setText(registrationEndDate);
         descriptionTextView.setText(description);
-        maxWaitTextView.setText("Max Waitlist Entrants: " + maxWaitEntrants);
-        maxSampleTextView.setText("Max Sample Entrants: " + maxSampleEntrants);
+        if (maxWaitEntrants == Integer.MAX_VALUE) {
+            maxWaitTextView.setText(""+"No Limit");
+        } else {
+            maxWaitTextView.setText(""+maxWaitEntrants);
+        }
+        maxSampleTextView.setText(""+maxSampleEntrants);
         geolocateTextView.setText(isGeolocate ? "Geo-Location Enabled" : "Geo-Location Disabled");
 
         if (posterUri != null && !posterUri.isEmpty()) {
