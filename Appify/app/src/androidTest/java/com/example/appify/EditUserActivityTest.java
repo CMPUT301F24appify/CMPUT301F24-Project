@@ -76,22 +76,6 @@ public class EditUserActivityTest {
     }
 
     @Test
-    public void testNotificationsCheckbox() {
-        // First, ensure the checkbox is unchecked
-        onView(withId(R.id.notificationsCheckBox)).check((view, noViewFoundException) -> {
-            if (((CheckBox) view).isChecked()) {
-                onView(withId(R.id.notificationsCheckBox)).perform(click());
-            }
-        });
-
-        // Verify that the checkbox is now unchecked
-        onView(withId(R.id.notificationsCheckBox)).check(matches(isNotChecked()));
-
-        // Perform a click to check the checkbox and then verify it is checked
-        onView(withId(R.id.notificationsCheckBox)).perform(click()).check(matches(isChecked()));
-    }
-
-    @Test
     public void testInvalidNameInput() {
         // Clear any text, then input an invalid name to trigger the validation error
         onView(withId(R.id.nameEditText)).perform(clearText(), typeText("InvalidName"), closeSoftKeyboard());
@@ -120,9 +104,7 @@ public class EditUserActivityTest {
         onView(withId(R.id.nameEditText)).perform(clearText(), typeText("John Doe"), closeSoftKeyboard());
         onView(withId(R.id.phoneEditText)).perform(clearText(), typeText("1234567890"), closeSoftKeyboard());
         onView(withId(R.id.emailEditText)).perform(clearText(), typeText("john@example.com"), closeSoftKeyboard());
-
-        // Toggle notifications checkbox
-        onView(withId(R.id.notificationsCheckBox)).perform(click());
+        
 
         // Click the submit button
         onView(withId(R.id.submitButton)).perform(click());

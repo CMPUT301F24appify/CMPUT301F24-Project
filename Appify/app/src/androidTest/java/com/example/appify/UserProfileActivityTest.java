@@ -53,7 +53,6 @@ public class UserProfileActivityTest {
         onView(withId(R.id.nameTextView)).check(matches(isDisplayed()));
         onView(withId(R.id.phoneTextView)).check(matches(isDisplayed()));
         onView(withId(R.id.emailTextView)).check(matches(isDisplayed()));
-        onView(withId(R.id.notificationTextView)).check(matches(isDisplayed()));
     }
 
     @Test
