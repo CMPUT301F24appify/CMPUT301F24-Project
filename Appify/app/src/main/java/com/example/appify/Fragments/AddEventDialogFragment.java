@@ -69,7 +69,7 @@ public class AddEventDialogFragment extends DialogFragment {
          * @param invitedMessage    Notification message for invited entrants.
          */
         void onEventAdded(String name, String date, String facility, String registrationEndDate,
-                          String description, @Nullable Integer maxWaitEntrants, int maxSampleEntrants,
+                          String description, int maxWaitEntrants, int maxSampleEntrants,
                           String posterUri, boolean isGeolocate,
                           String waitlistedMessage, String enrolledMessage,
                           String cancelledMessage, String invitedMessage);
@@ -176,7 +176,7 @@ public class AddEventDialogFragment extends DialogFragment {
                     String date = buttonEventDate.getText().toString();
                     String registrationEndDate = buttonRegistrationEndDate.getText().toString();
                     String description = eventDescription.getText().toString();
-                    Integer waitMax = parseIntegerOptional(maxWaitEntrant.getText().toString());
+                    int waitMax = parseIntegerOptional(maxWaitEntrant.getText().toString());
                     int sampleMax = Integer.parseInt(maxSampleEntrant.getText().toString());
 
                     positiveButton.setEnabled(false); // Disable to prevent multiple clicks
@@ -189,7 +189,7 @@ public class AddEventDialogFragment extends DialogFragment {
                             public void onSuccess(String posterUri) {
                                 // Proceed after image upload
                                 listener.onEventAdded(name, date, facilityID, registrationEndDate, description,
-                                        waitMax != null ? waitMax : 0, sampleMax, posterUri, isGeolocate, "", "", "", "");
+                                        waitMax, sampleMax, posterUri, isGeolocate, "", "", "", "");
                                 dialog.dismiss();
                             }
 
@@ -202,7 +202,7 @@ public class AddEventDialogFragment extends DialogFragment {
                     } else {
                         // No image selected; proceed without posterUri
                         listener.onEventAdded(name, date, facilityID, registrationEndDate, description,
-                                waitMax != null ? waitMax : 0, sampleMax, null, isGeolocate, "", "", "", "");
+                                waitMax, sampleMax, null, isGeolocate, "", "", "", "");
                         dialog.dismiss();
                     }
                 } else {
@@ -249,8 +249,8 @@ public class AddEventDialogFragment extends DialogFragment {
 
     private boolean validateInputs(EditText eventName, EditText eventFacility, EditText eventDescription, EditText maxWaitEntrant, EditText maxSampleEntrant) {
         boolean isValid = true;
-        Integer waitMax = parseIntegerOptional(maxWaitEntrant.getText().toString());
-        Integer sampleMax = parseIntegerOptional(maxSampleEntrant.getText().toString());
+        int waitMax = parseIntegerOptional(maxWaitEntrant.getText().toString());
+        int sampleMax = Integer.parseInt(maxSampleEntrant.getText().toString());
         SimpleDateFormat sdf = new SimpleDateFormat("MMM dd, yyyy", Locale.getDefault());
 
         if (eventName.getText().toString().trim().isEmpty()) {
@@ -276,12 +276,17 @@ public class AddEventDialogFragment extends DialogFragment {
             Toast.makeText(getContext(), "Please select a registration end date", Toast.LENGTH_SHORT).show();
             isValid = false;
         }
-        if (maxSampleEntrant.getText().toString().trim().isEmpty()) {
+        if (maxSampleEntrant.getText().toString().trim().isEmpty() && sampleMax <= 0) {
             Toast.makeText(getContext(), "Please select number of max sample entrants", Toast.LENGTH_SHORT).show();
             maxSampleEntrant.setError("Please select number of max sample entrants");
             isValid = false;
         }
-        if (waitMax != null) {
+        if (maxWaitEntrant.getText().toString().trim().isEmpty() && waitMax <= 0) {
+            Toast.makeText(getContext(), "Please select number of max sample entrants", Toast.LENGTH_SHORT).show();
+            maxWaitEntrant.setError("Please select number of max sample entrants");
+            isValid = false;
+        }
+        if (waitMax != Integer.MAX_VALUE) {
             if (sampleMax > waitMax) {
                 Toast.makeText(getContext(), "Max sample entrants cannot exceed max waitlist entrants (" + waitMax + ")", Toast.LENGTH_SHORT).show();
                 maxSampleEntrant.setError("Cannot exceed max waitlist entrants");
@@ -374,12 +379,12 @@ public class AddEventDialogFragment extends DialogFragment {
      */
     private Integer parseIntegerOptional(String text) {
         if (text == null || text.trim().isEmpty()) {
-            return null;
+            return Integer.MAX_VALUE;
         }
         try {
             return Integer.parseInt(text.trim());
         } catch (NumberFormatException e) {
-            return null;
+            return Integer.MAX_VALUE;
         }
     }
 

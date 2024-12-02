@@ -141,7 +141,7 @@ public class EventActivity extends AppCompatActivity implements AddEventDialogFr
      */
     @Override
     public void onEventAdded(String name, String date, String facility, String registrationEndDate,
-                             String description, @Nullable Integer maxWaitEntrants, int maxSampleEntrants,
+                             String description, int maxWaitEntrants, int maxSampleEntrants,
                              String posterUri, boolean isGeolocate,
                              String waitlistedMessage, String enrolledMessage,
                              String cancelledMessage, String invitedMessage) {
