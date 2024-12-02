@@ -48,7 +48,7 @@ tasks.register("updateGoogleServicesJson") {
             throw GradleException("GOOGLE_API_KEY environment variable is not set!")
         }
 
-        val googleServicesFile = file("${projectDir}/app/google-services.json")
+        val googleServicesFile = file("${projectDir}/app/google-s`ervices.json")
         if (googleServicesFile.exists()) {
             val content = googleServicesFile.readText()
             val updatedContent = content.replace(

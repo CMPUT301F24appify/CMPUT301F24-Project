@@ -142,8 +142,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                                         markerList.add(marker); // Add the marker to the list
                                     }
 
-                                } else {
-                                    System.out.println("Error getting AndroidID document for " + userID + ": " + task2.getException());
                                 }
                                 tasksCompleted[0]++;
 
@@ -155,8 +153,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
                 }
 
-            } else {
-                System.out.println("Error getting documents: " + task.getException());
             }
         });
     }

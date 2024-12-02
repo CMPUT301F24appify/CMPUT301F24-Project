@@ -42,7 +42,7 @@ public class EventFunctionalityTest {
         testEvent.setEventId("test_event_id");
         eventID = testEvent.getEventId();
         entrantID = "test_entrant_id";
-        //testEntrant = new Entrant(entrantID, "Test User", "1234567890", "testuser@example.com", "profilePicUrl", true);
+        testEntrant = new Entrant(entrantID, "Test User", "1234567890", "testuser@example.com", "profilePicUrl", true, "testFacilityID");
         // Prepopulate the waiting list with an "invited" status for the test entrant
         CollectionReference waitingListRef = db.collection("events").document(eventID).collection("waitingList");
         waitingListRef.document(entrantID).set(Collections.singletonMap("status", "invited"));
