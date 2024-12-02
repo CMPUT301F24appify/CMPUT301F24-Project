@@ -376,7 +376,6 @@ public class Event {
                                     db.collection("events").document(eventID)
                                             .update("lotteryRanFlag", true, "lotteryButton", true)
                                             .addOnSuccessListener(aVoid -> Log.d("Lottery", "lotteryRanFlag and lotteryButton reset for event " + eventID))
-                                            .addOnSuccessListener(aVoid -> Log.d("Lottery", "current free spaces " +slotsAvaliableFinal))
                                             .addOnFailureListener(e -> Log.e("Lottery", "Error resetting flags for event " + eventID, e));
                                     return;
                                 }
@@ -391,6 +390,7 @@ public class Event {
                                         for (QueryDocumentSnapshot document : querySnapshot) {
                                             eligibleEntrants.add(document.getId());
                                         }
+
 
                                         // Randomly select entrants until reaching available slots or list is empty
                                         while (selectedEntrants.size() < slotsAvaliableFinal && !eligibleEntrants.isEmpty()) {
