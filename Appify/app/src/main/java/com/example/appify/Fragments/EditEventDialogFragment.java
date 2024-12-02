@@ -253,7 +253,7 @@ public class EditEventDialogFragment extends DialogFragment {
                     } else {
                         // No image selected; proceed without posterUri
                         listener.onEventEdited(name, date, facilityID, registrationEndDate, description,
-                                waitMax, sampleMax, null, isGeolocate, "", "", "", "");
+                                waitMax, sampleMax, posterUri, isGeolocate, "", "", "", "");
                         dialog.dismiss();
                     }
                 } else {
