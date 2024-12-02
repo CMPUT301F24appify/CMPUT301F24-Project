@@ -385,7 +385,6 @@ public class Event {
                                     .collection("waitingList")
                                     .whereEqualTo("status", "enrolled") // Only consider entrants with "enrolled" status
                                     .get()
-                                    .addOnSuccessListener(aVoid -> Log.d("Lottery", "current free spaces " + slotsAvaliableFinal))
                                     .addOnSuccessListener(querySnapshot -> {
                                         // Collect all eligible entrants' IDs
                                         for (QueryDocumentSnapshot document : querySnapshot) {
