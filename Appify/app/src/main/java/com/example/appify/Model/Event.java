@@ -364,10 +364,10 @@ public class Event {
 
                     db.collection("events").document(eventID)
                             .collection("waitingList")
-                            .whereEqualTo("status", "accepted")
+                            .whereEqualTo("status", "invited")
                             .get()
                             .addOnSuccessListener(invitedSnapshot -> {
-                                int invitedCount = acceptedSnapshot.size();
+                                int invitedCount = invitedSnapshot.size();
                                 int slotsAvaliableFinal = slotsAvailable - invitedCount; // Adjust for remaining slots
 
                                 // If there are no slots available, exit early
