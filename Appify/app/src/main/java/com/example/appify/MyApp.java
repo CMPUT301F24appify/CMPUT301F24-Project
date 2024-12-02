@@ -102,9 +102,9 @@ public class MyApp extends Application {
     }
     private void checkFirestore() {
         String android_id2 = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
-        System.out.println(android_id2);
+
         db.collection("AndroidID").document(android_id2).collection("waitListedEvents").get().addOnCompleteListener(task -> {
-            System.out.println("cp2");
+
             if (task.isSuccessful()){
                 QuerySnapshot querySnapshot = task.getResult();
                 if (querySnapshot !=null){
@@ -113,9 +113,9 @@ public class MyApp extends Application {
                         String eventID = queryDocumentSnapshot.getId();
                         String status = queryDocumentSnapshot.getString("status");
                         Boolean inviteNotificationSent = queryDocumentSnapshot.getBoolean("inviteNotificationSent");
-                        System.out.println(eventID +" "+status);
+
+                        // If user gets invited, send them a notification
                         if (Objects.equals(status, "invited") && Boolean.FALSE.equals(inviteNotificationSent)){
-                            String channelId = "my_channel_id"; // Must match the channel ID used earlier
 
                             NotificationCompat.Builder builder = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
                                     .setSmallIcon(R.drawable.notification_bell) // Replace with your own icon
@@ -125,10 +125,12 @@ public class MyApp extends Application {
 
                             // Get the NotificationManager
                             NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-
                             int notificationId = (int) System.currentTimeMillis();
-//                            notificationManager.notify(notificationId, builder.build());
+                            notificationManager.notify(notificationId, builder.build());
+                            db.collection("AndroidID").document(android_id2).collection("waitListedEvents").document(eventID).update("inviteNotificationSent", true);
                         }
+
+                        // If lottery is ran, send notification to users who did not get invited.
 
                     }
 
