@@ -59,7 +59,7 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
     private String enrolledMessage = "";
     private String cancelledMessage = "";
     private String invitedMessage = "";
-    String qrCodeLocationURL;
+    private String qrCodeLocationURL;
 
 
     /**
@@ -219,7 +219,7 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
                 updateButtonAppearance(notifyWaitlisted, !message.isEmpty());
             }));
 
-            notifyEnrolled.setOnClickListener(v -> showNotificationInputDialog("Enrolled Notification", enrolledMessage, message -> {
+            notifyEnrolled.setOnClickListener(v -> showNotificationInputDialog("Accepted Notification", enrolledMessage, message -> {
                 enrolledMessage = message;
                 updateNotificationMessage("enrolledMessage", message, "notifyEnrolled");
                 updateButtonAppearance(notifyEnrolled, !message.isEmpty());
