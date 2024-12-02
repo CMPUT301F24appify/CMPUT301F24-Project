@@ -18,6 +18,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -41,21 +42,20 @@ public class AdminListActivityTest {
     @Test
     public void testAdminListActivityLoadsEntrants() {
         activityRule.getScenario().onActivity(activity -> {
-            // Create mock entrant data
+
             List<Entrant> mockEntrants = Arrays.asList(
-                    new Entrant("1", "John Doe", "1234567890", "john.doe@example.com", null, true, "facility1"),
-                    new Entrant("2", "Jane Smith", "0987654321", "jane.smith@example.com", null, false, "facility2")
+                    new Entrant("1", "John Doe", "1234567890", "johndoe@test.com", null, true, "facility1"),
+                    new Entrant("2", "John No", "0987654321", "johnno@test.com", null, false, "facility2")
             );
 
-            // Set up the adapter with mock data
+            // Mock Adapter
             CustomEntrantAdminAdapter entrantAdapter = new CustomEntrantAdminAdapter(activity, mockEntrants);
             ListView listView = activity.findViewById(R.id.admin_list);
             listView.setAdapter(entrantAdapter);
         });
 
-        // Verify entrant names are displayed
         onView(withText("John Doe")).check(matches(isDisplayed()));
-        onView(withText("Jane Smith")).check(matches(isDisplayed()));
+        onView(withText("John No")).check(matches(isDisplayed()));
     }
 
     /**
@@ -64,21 +64,20 @@ public class AdminListActivityTest {
     @Test
     public void testAdminListActivityLoadsFacilities() {
         activityRule.getScenario().onActivity(activity -> {
-            // Create mock facility data
+
             List<Facility> mockFacilities = Arrays.asList(
-                    new Facility("1", "Facility A", "Location A", "emailA@example.com", "Description A", 100, "organizer1"),
-                    new Facility("2", "Facility B", "Location B", "emailB@example.com", "Description B", 200, "organizer2")
+                    new Facility("1", "Facility 1", "Location 1", "email1@test.com", "Description 1", 100, "organizer1"),
+                    new Facility("2", "Facility 2", "Location 2", "email2@test.com", "Description 2", 200, "organizer2")
             );
 
-            // Set up the adapter with mock data
+            // Mock Adapter
             CustomFacilityAdapter facilityAdapter = new CustomFacilityAdapter(activity, mockFacilities);
             ListView listView = activity.findViewById(R.id.admin_list);
             listView.setAdapter(facilityAdapter);
         });
 
-        // Verify facility names are displayed
-        onView(withText("Facility A")).check(matches(isDisplayed()));
-        onView(withText("Facility B")).check(matches(isDisplayed()));
+        onView(withText("Facility 1")).check(matches(isDisplayed()));
+        onView(withText("Facility 2")).check(matches(isDisplayed()));
     }
 
     /**
@@ -87,19 +86,18 @@ public class AdminListActivityTest {
     @Test
     public void testAdminListActivityLoadsEvents() {
         activityRule.getScenario().onActivity(activity -> {
-            // Create mock event data
+
             List<Event> mockEvents = Arrays.asList(
-                    new Event("Event 1", "2024-12-01", "Facility A", "2024-11-30", 100, 50, "organizer1"),
-                    new Event("Event 2", "2024-12-05", "Facility B", "2024-11-29", 150, 75, "organizer2")
+                    new Event("Event 1", "2024-12-01", "Facility 1", "2024-11-30", 100, 50, "organizer1"),
+                    new Event("Event 2", "2024-12-05", "Facility 2", "2024-11-29", 150, 75, "organizer2")
             );
 
-            // Set up the adapter with mock data
+            // Mock Adapter
             CustomEventAdapter eventAdapter = new CustomEventAdapter(activity, mockEvents, false, true);
             ListView listView = activity.findViewById(R.id.admin_list);
             listView.setAdapter(eventAdapter);
         });
 
-        // Verify event names are displayed
         onView(withText("Event 1")).check(matches(isDisplayed()));
         onView(withText("Event 2")).check(matches(isDisplayed()));
     }
@@ -109,15 +107,12 @@ public class AdminListActivityTest {
      */
     @Test
     public void testToggleBetweenViews() {
-        // Click on profiles toggle
         onView(withId(R.id.toggle_profiles)).perform(click());
         onView(withId(R.id.admin_list)).check(matches(isDisplayed()));
 
-        // Click on events toggle
         onView(withId(R.id.toggle_events)).perform(click());
         onView(withId(R.id.admin_list)).check(matches(isDisplayed()));
 
-        // Click on facilities toggle
         onView(withId(R.id.toggle_facilities)).perform(click());
         onView(withId(R.id.admin_list)).check(matches(isDisplayed()));
     }
@@ -127,25 +122,24 @@ public class AdminListActivityTest {
      */
     @Test
     public void testDeleteEntrantTriggersDialog() {
+        Entrant entrant = new Entrant("1", "John Doe", "1234567890", "john.doe@example.com", null, true, "facility1");
         activityRule.getScenario().onActivity(activity -> {
-            // Create mock entrant data
-            List<Entrant> mockEntrants = Arrays.asList(
-                    new Entrant("1", "John Doe", "1234567890", "john.doe@example.com", null, true, "facility1")
-            );
+            List<Entrant> mockEntrants = new ArrayList<>(Arrays.asList(
+                    entrant
+            ));
 
-            // Set up the adapter with mock data
+            //Mock adapter
             CustomEntrantAdminAdapter entrantAdapter = new CustomEntrantAdminAdapter(activity, mockEntrants);
             ListView listView = activity.findViewById(R.id.admin_list);
             listView.setAdapter(entrantAdapter);
         });
 
-        // Click the delete icon
         onView(withId(R.id.x_icon)).perform(click());
+        onView(withText("Delete User: " + entrant.getName())).check(matches(isDisplayed()));
 
-        // Verify the confirmation dialog is displayed
-        onView(withText("Delete User")).check(matches(isDisplayed()));
-
-        // Confirm deletion
+        onView(withText("Please confirm that you want to delete: " + entrant.getName() + ". User will be removed from all waiting lists. If the user owns a facility, ALL events at that facility as well as the facility will be deleted. This action cannot be undone."))
+                .check(matches(isDisplayed()));
         onView(withText("Confirm")).perform(click());
     }
+
 }

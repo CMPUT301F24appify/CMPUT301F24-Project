@@ -79,7 +79,6 @@ public class EditUserActivityTest {
     public void testInvalidNameInput() {
         // Clear any text, then input an invalid name to trigger the validation error
         onView(withId(R.id.nameEditText)).perform(clearText(), typeText("InvalidName"), closeSoftKeyboard());
-        // Validation check: Add assertions to verify the app displays the appropriate error message if implemented
     }
 
     @Test
@@ -87,7 +86,7 @@ public class EditUserActivityTest {
         // Clear name and phone fields, input invalid phone number to trigger validation
         onView(withId(R.id.nameEditText)).perform(clearText(), typeText("John"), closeSoftKeyboard());
         onView(withId(R.id.phoneEditText)).perform(clearText(), typeText("1234"), closeSoftKeyboard());
-        // Validation check: Add assertions to verify the app displays the appropriate error message if implemented
+
     }
 
     @Test
@@ -95,7 +94,7 @@ public class EditUserActivityTest {
         // Clear name and email fields, input invalid email to trigger validation
         onView(withId(R.id.nameEditText)).perform(clearText(), typeText("John"), closeSoftKeyboard());
         onView(withId(R.id.emailEditText)).perform(clearText(), typeText("invalid_email"), closeSoftKeyboard());
-        // Validation check: Add assertions to verify the app displays the appropriate error message if implemented
+
     }
 
     @Test
@@ -106,11 +105,8 @@ public class EditUserActivityTest {
         onView(withId(R.id.emailEditText)).perform(clearText(), typeText("john@example.com"), closeSoftKeyboard());
         
 
-        // Click the submit button
         onView(withId(R.id.submitButton)).perform(click());
         Thread.sleep(2000); // Wait for 2 seconds
-
-        // Check if one of the components in userProfileActivity (e.g., nameTextView) is displayed
         onView(withId(R.id.nameTextView)).check(matches(isDisplayed()));
     }
 }
