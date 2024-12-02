@@ -16,6 +16,11 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        val googleMapsApiKey = System.getenv("GOOGLE_API_KEY") ?: ""
+        resValue("string", "google_maps_key", googleMapsApiKey)
+
+
     }
 
     buildTypes {
