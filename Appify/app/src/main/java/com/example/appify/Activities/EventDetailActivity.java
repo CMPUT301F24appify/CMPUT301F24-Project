@@ -555,8 +555,12 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
         facilityTextView.setText(facilityName);
         registrationEndDateTextView.setText(registrationEndDate);
         descriptionTextView.setText(description);
-        maxWaitTextView.setText("Max Waitlist Entrants: " + maxWaitEntrants);
-        maxSampleTextView.setText("Max Sample Entrants: " + maxSampleEntrants);
+        if (maxWaitEntrants == Integer.MAX_VALUE) {
+            maxWaitTextView.setText(""+"No Limit");
+        } else {
+            maxWaitTextView.setText(""+maxWaitEntrants);
+        }
+        maxSampleTextView.setText(""+maxSampleEntrants);
         geolocateTextView.setText(isGeolocate ? "Geo-Location Enabled" : "Geo-Location Disabled");
 
         if (posterUri != null && !posterUri.isEmpty()) {
