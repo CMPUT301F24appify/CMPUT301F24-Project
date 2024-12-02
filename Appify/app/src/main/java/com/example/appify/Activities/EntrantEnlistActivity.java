@@ -370,12 +370,12 @@ public class EntrantEnlistActivity extends AppCompatActivity {
                                                 requestDeviceLocation();
                                             } else {
                                                 getDeviceLocation(() -> {
-                                                    enlistInEvent(eventId, name, date, registrationEndDate, facility, isGeolocate, androidId, deviceLatitude, deviceLongitude);
+                                                    enlistInEvent(eventId, name, date, registrationEndDate, facility, isGeolocate, androidId);
                                                 });
                                             }
                                         });
                                     } else {
-                                        enlistInEvent(eventId, name, date, registrationEndDate, facility, isGeolocate, androidId, deviceLatitude, deviceLongitude);
+                                        enlistInEvent(eventId, name, date, registrationEndDate, facility, isGeolocate, androidId);
                                     }
                                 });
                             }
@@ -421,7 +421,7 @@ public class EntrantEnlistActivity extends AppCompatActivity {
      *
      * @param eventId The unique ID of the event the user wishes to join.
      */
-    private void enlistInEvent(String eventId, String name, String date, String registrationEndDate, String facility, boolean isGeolocate, String androidId, double latitude, double longitude) {
+    private void enlistInEvent(String eventId, String name, String date, String registrationEndDate, String facility, boolean isGeolocate, String androidId) {
         DocumentReference eventRef = db.collection("events").document(eventId);
         CollectionReference waitingListRef = eventRef.collection("waitingList");
 
@@ -544,7 +544,7 @@ public class EntrantEnlistActivity extends AppCompatActivity {
                 Toast.makeText(this, "GPS is already turned on", Toast.LENGTH_SHORT).show();
                 // Proceed to get location
                 getDeviceLocation(() -> {
-                    enlistInEvent(eventId, name, date, registrationEndDate, facility, isGeolocate, androidId, deviceLatitude, deviceLongitude);
+                    enlistInEvent(eventId, name, date, registrationEndDate, facility, isGeolocate, androidId);
                 });
             } catch (ApiException e) {
                 if (e.getStatusCode() == LocationSettingsStatusCodes.RESOLUTION_REQUIRED) {
@@ -566,7 +566,7 @@ public class EntrantEnlistActivity extends AppCompatActivity {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 if (isDeviceLocationEnabled()) {
                     getDeviceLocation(() -> {
-                        enlistInEvent(eventId, name, date, registrationEndDate, facility, isGeolocate, androidId, deviceLatitude, deviceLongitude);
+                        enlistInEvent(eventId, name, date, registrationEndDate, facility, isGeolocate, androidId);
                     });
                 } else {
                     requestDeviceLocation();
@@ -584,7 +584,7 @@ public class EntrantEnlistActivity extends AppCompatActivity {
             if (resultCode == RESULT_OK) {
                 Toast.makeText(this, "GPS is turned on", Toast.LENGTH_SHORT).show();
                 getDeviceLocation(() -> {
-                    enlistInEvent(eventId, name, date, registrationEndDate, facility, isGeolocate, androidId, deviceLatitude, deviceLongitude);
+                    enlistInEvent(eventId, name, date, registrationEndDate, facility, isGeolocate, androidId);
                 });
             } else {
                 Toast.makeText(this, "GPS is required to enlist in this event.", Toast.LENGTH_SHORT).show();
