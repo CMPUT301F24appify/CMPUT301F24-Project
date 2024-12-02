@@ -4,7 +4,9 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -36,6 +38,7 @@ public class EventActivity extends AppCompatActivity implements AddEventDialogFr
     ArrayList<Event> eventList = new ArrayList<>();  // List to store Event objects
     String facilityName;
     String facilityID;
+    LinearLayout noCreatedEventsLayout;
     /**
      * Initializes the EventActivity, setting up the user interface and loading events from Firestore.
      *
@@ -52,7 +55,7 @@ public class EventActivity extends AppCompatActivity implements AddEventDialogFr
         TextView organizeText = findViewById(R.id.organizeText_navBar);
         organizeText.setTextColor(Color.parseColor("#000000"));
         organizeText.setTypeface(organizeText.getTypeface(), Typeface.BOLD);
-
+        noCreatedEventsLayout = findViewById(R.id.noCreatedEventsLayout);
         MyApp app = (MyApp) getApplication();
         db = app.getFirebaseInstance();
 
@@ -161,6 +164,7 @@ public class EventActivity extends AppCompatActivity implements AddEventDialogFr
         newEvent.addToFirestore(event -> {
             Toast.makeText(EventActivity.this, "Event added: " + event.getName(), Toast.LENGTH_SHORT).show();
             eventList.add(event);
+            noCreatedEventsLayout.setVisibility(View.GONE);
             eventAdapter.notifyDataSetChanged();
         });
     }
@@ -184,6 +188,8 @@ public class EventActivity extends AppCompatActivity implements AddEventDialogFr
                     for (DocumentSnapshot document : queryDocumentSnapshots) {
                         Event event = document.toObject(Event.class);
                         eventList.add(event);
+                        System.out.println("yo");
+                        noCreatedEventsLayout.setVisibility(View.GONE);
                     }
 
                     eventAdapter.notifyDataSetChanged();  // Notify the adapter of data changes
