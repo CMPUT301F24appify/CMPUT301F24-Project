@@ -597,37 +597,41 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
      * @param posterUri URI of the event poster
      * @param isGeolocate Geo-location status of the event
      */
-    private void refreshEventUI(String name, String date, String facilityName, String registrationEndDate,
+    private void refreshEventUI(String name, String date, String facilityId, String registrationEndDate,
                                 String description, int maxWaitEntrants, int maxSampleEntrants,
                                 String posterUri, boolean isGeolocate) {
 
-        // Update UI components with new event details
-        TextView nameTextView = findViewById(R.id.textViewName);
-        TextView dateTextView = findViewById(R.id.textViewDate);
-        TextView facilityTextView = findViewById(R.id.textViewFacility);
-        TextView registrationEndDateTextView = findViewById(R.id.textViewRegistrationEndDate);
-        TextView descriptionTextView = findViewById(R.id.textViewDescription);
-        TextView maxWaitTextView = findViewById(R.id.textViewMaxWaitEntrants);
-        TextView maxSampleTextView = findViewById(R.id.textViewMaxSampleEntrants);
-        ImageView posterImageView = findViewById(R.id.imageViewPoster);
-        TextView geolocateTextView = findViewById(R.id.textViewGeolocate);
+        db.collection("facilities").document(facilityId).get().addOnSuccessListener(documentSnapshot -> {
+           String facName = documentSnapshot.getString("name");
+            // Update UI components with new event details
+            TextView nameTextView = findViewById(R.id.textViewName);
+            TextView dateTextView = findViewById(R.id.textViewDate);
+            TextView facilityTextView = findViewById(R.id.textViewFacility);
+            TextView registrationEndDateTextView = findViewById(R.id.textViewRegistrationEndDate);
+            TextView descriptionTextView = findViewById(R.id.textViewDescription);
+            TextView maxWaitTextView = findViewById(R.id.textViewMaxWaitEntrants);
+            TextView maxSampleTextView = findViewById(R.id.textViewMaxSampleEntrants);
+            ImageView posterImageView = findViewById(R.id.imageViewPoster);
+            TextView geolocateTextView = findViewById(R.id.textViewGeolocate);
 
-        nameTextView.setText(name);
-        dateTextView.setText(date);
-        facilityTextView.setText(facilityName);
-        registrationEndDateTextView.setText(registrationEndDate);
-        descriptionTextView.setText(description);
-        if (maxWaitEntrants == Integer.MAX_VALUE) {
-            maxWaitTextView.setText(""+"No Limit");
-        } else {
-            maxWaitTextView.setText(""+maxWaitEntrants);
-        }
-        maxSampleTextView.setText(""+maxSampleEntrants);
-        geolocateTextView.setText(isGeolocate ? "Geo-Location Enabled" : "Geo-Location Disabled");
+            nameTextView.setText(name);
+            dateTextView.setText(date);
+            facilityTextView.setText(facName);
+            registrationEndDateTextView.setText(registrationEndDate);
+            descriptionTextView.setText(description);
+            if (maxWaitEntrants == Integer.MAX_VALUE) {
+                maxWaitTextView.setText(""+"No Limit");
+            } else {
+                maxWaitTextView.setText(""+maxWaitEntrants);
+            }
+            maxSampleTextView.setText(""+maxSampleEntrants);
+            geolocateTextView.setText(isGeolocate ? "Geo-Location Enabled" : "Geo-Location Disabled");
 
-        if (posterUri != null && !posterUri.isEmpty()) {
-            Glide.with(this).load(posterUri).into(posterImageView);
-        }
+            if (posterUri != null && !posterUri.isEmpty()) {
+                Glide.with(this).load(posterUri).into(posterImageView);
+            }
+        });
+
     }
 
     /**
