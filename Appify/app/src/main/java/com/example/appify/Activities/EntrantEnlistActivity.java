@@ -436,6 +436,8 @@ public class EntrantEnlistActivity extends AppCompatActivity {
         // Add user to waiting list
         HashMap<String, Object> waitlistData = new HashMap<>();
         waitlistData.put("status", "enrolled");
+        waitlistData.put("inviteNotificationSent", false);
+        waitlistData.put("notSelectedNotificationSent", false);
         waitlistData.put("latitude", deviceLatitude);
         waitlistData.put("longitude", deviceLongitude);
 
@@ -448,6 +450,8 @@ public class EntrantEnlistActivity extends AppCompatActivity {
 
                     HashMap<String, Object> eventStatusData = new HashMap<>();
                     eventStatusData.put("status", "enrolled");
+                    eventStatusData.put("inviteNotificationSent", false);
+                    eventStatusData.put("notSelectedNotificationSent", false);
 
                     userWaitListedEventsRef.document(eventId).set(eventStatusData)
                             .addOnSuccessListener(aVoid2 -> {
