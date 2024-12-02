@@ -6,7 +6,6 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
-import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
@@ -28,9 +27,7 @@ import com.example.appify.Model.Event;
 import com.example.appify.MyApp;
 import com.example.appify.R;
 import com.google.firebase.firestore.CollectionReference;
-import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.zxing.BarcodeFormat;
@@ -42,8 +39,6 @@ import java.io.ByteArrayOutputStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 /**
  * The EventDetailActivity class displays and manages the details of a selected event.
@@ -60,6 +55,8 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
     private String cancelledMessage = "";
     private String invitedMessage = "";
     String qrCodeLocationURL;
+    StorageReference storageRef;
+    ImageView qrImageView;
 
 
     /**
@@ -90,10 +87,10 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
             finish(); // Close the activity gracefully
             return;
         }
-        StorageReference storageRef = storage.getReference().child("qrcode_images/" + eventID + ".jpg");
+        storageRef = storage.getReference().child("qrcode_images/" + eventID + ".jpg");
 
         // QR code generation for event-specific content
-        ImageView qrImageView = findViewById(R.id.qr_code);
+        qrImageView = findViewById(R.id.qr_code);
 
 
 
@@ -112,43 +109,43 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
                             qrImageView.setImageBitmap(bitmap);
                         });
             }
-            else {
-                // Create QR Code and store it
-                try {
-
-                    QRCodeWriter qrCodeWriter = new QRCodeWriter();
-
-                    // Generate a passKey for this version of the QRcode, store in database
-                    String passKey = UUID.randomUUID().toString();
-                    db.collection("events").document(eventID).update("qrCodePassKey", passKey);
-                    String qrContent = "myapp://event/" + eventID +"/"+passKey;
-
-                    BitMatrix bitMatrix = qrCodeWriter.encode(qrContent, BarcodeFormat.QR_CODE, 200, 200);
-                    int width = bitMatrix.getWidth();
-                    int height = bitMatrix.getHeight();
-                    Bitmap qrBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565);
-                    byte[] qrCodeByte;
-                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                    for (int x = 0; x < width; x++) {
-                        for (int y = 0; y < height; y++) {
-                            qrBitmap.setPixel(x, y, bitMatrix.get(x, y) ? Color.BLACK : Color.WHITE);
-                        }
-                    }
-                    qrBitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
-                    qrCodeByte = baos.toByteArray();
-                    storageRef.putBytes(qrCodeByte)
-                            .addOnSuccessListener(taskSnapshot -> storageRef.getDownloadUrl().addOnSuccessListener(uri -> {
-                                String qrCodeLocationUrl = uri.toString();
-                                db.collection("events").document(eventID).update("qrCodeLocationUrl", qrCodeLocationUrl);
-                            }));
-                    System.out.println(storageRef.getBytes(1024 * 1024));
-
-                    // Set the QR code bitmap to the ImageView
-                    qrImageView.setImageBitmap(qrBitmap);
-                } catch (WriterException e) {
-                    e.printStackTrace();
-                }
-            }
+//            else {
+//                // Create QR Code and store it
+//                try {
+//
+//                    QRCodeWriter qrCodeWriter = new QRCodeWriter();
+//
+//                    // Generate a passKey for this version of the QRcode, store in database
+//                    String passKey = UUID.randomUUID().toString();
+//                    db.collection("events").document(eventID).update("qrCodePassKey", passKey);
+//                    String qrContent = "myapp://event/" + eventID +"/"+passKey;
+//
+//                    BitMatrix bitMatrix = qrCodeWriter.encode(qrContent, BarcodeFormat.QR_CODE, 200, 200);
+//                    int width = bitMatrix.getWidth();
+//                    int height = bitMatrix.getHeight();
+//                    Bitmap qrBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565);
+//                    byte[] qrCodeByte;
+//                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+//                    for (int x = 0; x < width; x++) {
+//                        for (int y = 0; y < height; y++) {
+//                            qrBitmap.setPixel(x, y, bitMatrix.get(x, y) ? Color.BLACK : Color.WHITE);
+//                        }
+//                    }
+//                    qrBitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+//                    qrCodeByte = baos.toByteArray();
+//                    storageRef.putBytes(qrCodeByte)
+//                            .addOnSuccessListener(taskSnapshot -> storageRef.getDownloadUrl().addOnSuccessListener(uri -> {
+//                                String qrCodeLocationUrl = uri.toString();
+//                                db.collection("events").document(eventID).update("qrCodeLocationUrl", qrCodeLocationUrl);
+//                            }));
+//                    System.out.println(storageRef.getBytes(1024 * 1024));
+//
+//                    // Set the QR code bitmap to the ImageView
+//                    qrImageView.setImageBitmap(qrBitmap);
+//                } catch (WriterException e) {
+//                    e.printStackTrace();
+//                }
+//            }
         });
 
         // Retrieve event data from intent extras
@@ -330,6 +327,38 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
         if (posterUri != null) {
             Glide.with(this).load(posterUri).into(posterImageView);
         }
+
+        Button regenerateQRCodeButton = findViewById(R.id.RegenerateQrCode);
+        regenerateQRCodeButton.setOnClickListener(new View.OnClickListener(){
+
+            @Override
+            public void onClick(View v) {
+                AlertDialog.Builder builder = new AlertDialog.Builder(EventDetailActivity.this);
+                builder.setTitle("Confirm QR Code Regeneration");
+                builder.setMessage("Are you sure you want to regeneration this events' QR Code? This will deactivate the current QR Code and generate a new one.");
+
+                builder.setPositiveButton("Confirm Regeneration", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+
+
+                        regenerateQRCode();
+                        Toast.makeText(EventDetailActivity.this, "Regenerated QR Code.", Toast.LENGTH_SHORT).show();
+                        dialog.dismiss();
+                    }
+                });
+                builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        Toast.makeText(EventDetailActivity.this, "Cancelled.", Toast.LENGTH_SHORT).show();
+                        dialog.dismiss();
+                    }
+                });
+                AlertDialog dialog = builder.create();
+                dialog.show();
+            }
+        });
+
     }
 
     public void setDeleteQRCodeButton(Button oldButton){
@@ -340,16 +369,21 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
             public void onClick(View v) {
                 AlertDialog.Builder builder = new AlertDialog.Builder(EventDetailActivity.this);
                 builder.setTitle("Confirm QR Code Deletion");
-                builder.setMessage("Are you sure you want to delete this events' QR Code? This will deactivate this QR Code and generate a new one.");
+                builder.setMessage("Are you sure you want to delete this events' QR Code? This will deactivate the current QR Code.");
 
                 builder.setPositiveButton("Confirm Deletion", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         Toast.makeText(EventDetailActivity.this, "Deleted QR Code.", Toast.LENGTH_SHORT).show();
 
-                        deleteQRCode();
-
-                        dialog.dismiss();
+                        db.collection("events").document(eventID).get().addOnSuccessListener(documentSnapshot -> {
+                            qrCodeLocationURL = documentSnapshot.getString("qrCodeLocationUrl");
+                            System.out.println(qrCodeLocationURL);
+                            db.collection("events").document(eventID).update("qrCodeLocationUrl", null);
+                            db.collection("events").document(eventID).update("qrCodePassKey", null);
+                            dialog.dismiss();
+                            recreate();
+                        });
                     }
                 });
                 builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -365,18 +399,91 @@ public class EventDetailActivity extends AppCompatActivity implements EditEventD
         });
     }
 
-    public void deleteQRCode(){
+    public void regenerateQRCode(){
 
         db.collection("events").document(eventID).get().addOnSuccessListener(documentSnapshot -> {
             qrCodeLocationURL = documentSnapshot.getString("qrCodeLocationUrl");
-            System.out.println(qrCodeLocationURL);
-            db.collection("events").document(eventID).update("qrCodeLocationUrl", null);
-            db.collection("events").document(eventID).update("qrCodePassKey", null);
+            System.out.println("abc"+qrCodeLocationURL);
+            if (qrCodeLocationURL != null){
+                db.collection("events").document(eventID).update("qrCodeLocationUrl", null);
+                db.collection("events").document(eventID).update("qrCodePassKey", null);
+            }
+
             FirebaseStorage storage = FirebaseStorage.getInstance();
-            StorageReference qrCodeRef = storage.getReferenceFromUrl(qrCodeLocationURL);
-            qrCodeRef.delete().addOnSuccessListener(v -> {
-                this.recreate();
-            });
+            if (qrCodeLocationURL  != null){
+                StorageReference qrCodeRef = storage.getReferenceFromUrl(qrCodeLocationURL);
+                qrCodeRef.delete().addOnSuccessListener(v -> {
+                    try {
+
+                        QRCodeWriter qrCodeWriter = new QRCodeWriter();
+
+                        // Generate a passKey for this version of the QRcode, store in database
+                        String passKey = UUID.randomUUID().toString();
+                        db.collection("events").document(eventID).update("qrCodePassKey", passKey);
+                        String qrContent = "myapp://event/" + eventID +"/"+passKey;
+
+                        BitMatrix bitMatrix = qrCodeWriter.encode(qrContent, BarcodeFormat.QR_CODE, 200, 200);
+                        int width = bitMatrix.getWidth();
+                        int height = bitMatrix.getHeight();
+                        Bitmap qrBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565);
+                        byte[] qrCodeByte;
+                        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                        for (int x = 0; x < width; x++) {
+                            for (int y = 0; y < height; y++) {
+                                qrBitmap.setPixel(x, y, bitMatrix.get(x, y) ? Color.BLACK : Color.WHITE);
+                            }
+                        }
+                        qrBitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+                        qrCodeByte = baos.toByteArray();
+                        storageRef.putBytes(qrCodeByte)
+                                .addOnSuccessListener(taskSnapshot -> storageRef.getDownloadUrl().addOnSuccessListener(uri -> {
+                                    String qrCodeLocationUrl = uri.toString();
+                                    db.collection("events").document(eventID).update("qrCodeLocationUrl", qrCodeLocationUrl);
+                                }));
+                        System.out.println(storageRef.getBytes(1024 * 1024));
+
+                        // Set the QR code bitmap to the ImageView
+                        qrImageView.setImageBitmap(qrBitmap);
+                    } catch (WriterException e) {
+                        e.printStackTrace();
+                    }
+                });
+            } else{
+                try {
+
+                    QRCodeWriter qrCodeWriter = new QRCodeWriter();
+
+                    // Generate a passKey for this version of the QRcode, store in database
+                    String passKey = UUID.randomUUID().toString();
+                    db.collection("events").document(eventID).update("qrCodePassKey", passKey);
+                    String qrContent = "myapp://event/" + eventID +"/"+passKey;
+
+                    BitMatrix bitMatrix = qrCodeWriter.encode(qrContent, BarcodeFormat.QR_CODE, 200, 200);
+                    int width = bitMatrix.getWidth();
+                    int height = bitMatrix.getHeight();
+                    Bitmap qrBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565);
+                    byte[] qrCodeByte;
+                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                    for (int x = 0; x < width; x++) {
+                        for (int y = 0; y < height; y++) {
+                            qrBitmap.setPixel(x, y, bitMatrix.get(x, y) ? Color.BLACK : Color.WHITE);
+                        }
+                    }
+                    qrBitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+                    qrCodeByte = baos.toByteArray();
+                    storageRef.putBytes(qrCodeByte)
+                            .addOnSuccessListener(taskSnapshot -> storageRef.getDownloadUrl().addOnSuccessListener(uri -> {
+                                String qrCodeLocationUrl = uri.toString();
+                                db.collection("events").document(eventID).update("qrCodeLocationUrl", qrCodeLocationUrl);
+                            }));
+                    System.out.println(storageRef.getBytes(1024 * 1024));
+
+                    // Set the QR code bitmap to the ImageView
+                    qrImageView.setImageBitmap(qrBitmap);
+                } catch (WriterException e) {
+                    e.printStackTrace();
+                }
+            }
         });
     }
 
