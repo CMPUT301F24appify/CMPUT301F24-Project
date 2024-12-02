@@ -47,7 +47,7 @@ public class lotteryAcceptDenyTest {
 
         // Set up a basic Entrant instance for the test
         entrantID = "test_entrant_id"; // Static ID for testing
-        //testEntrant = new Entrant(entrantID, "Test User", "1234567890", "testuser@example.com", "profilePicUrl", true);
+        testEntrant = new Entrant(entrantID, "Test User", "1234567890", "testuser@example.com", "profilePicUrl", true, "testFacilityID");
 
         // Prepopulate the waiting list with an "invited" status for the test entrant
         CollectionReference waitingListRef = db.collection("events").document(eventID).collection("waitingList");
