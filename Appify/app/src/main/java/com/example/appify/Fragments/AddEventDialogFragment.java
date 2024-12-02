@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.net.Uri;
 import android.util.Log;
+import android.widget.DatePicker;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -16,6 +17,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.appify.MyApp;
 import com.example.appify.R;
@@ -31,23 +33,22 @@ import java.util.Locale;
 import java.util.UUID;
 
 /**
- * AddEventDialogFragment is a dialog fragment for adding events.
- * It allows organizers to input event details, perform input validation,
- * upload images to Firebase Storage, and interact with Firestore.
+ * Fragment dialog for adding an event, allowing organizers to input event details.
+ * This fragment performs input validation and uploads images to Firebase storage.
  */
 public class AddEventDialogFragment extends DialogFragment {
+    private static final int PICK_IMAGE_REQUEST = 1;
+    private String posterUri;  // URI for the poster image
+    private AddEventDialogListener listener;  // Listener for communicating with parent activity
+    private Button uploadPosterButton, buttonEventDate, buttonRegistrationEndDate;  // Buttons for selecting dates
+    private boolean isGeolocate = false;  // Flag to indicate geolocation status
+    private String facilityID;  // ID for the facility
+    private String facilityName;  // Name of the facility
+    private EditText eventFacility, eventDescription, maxWaitEntrant, maxSampleEntrant;  // EditTexts for other fields
+    private Uri selectedImageUri; // Store the selected image URI
 
-    private static final int PICK_IMAGE_REQUEST = 1; // Request code for image selection
-    private String posterUri; // URI of the uploaded poster image
-    private AddEventDialogListener listener; // Listener for communicating with parent activity
-    private Button uploadPosterButton, buttonEventDate, buttonRegistrationEndDate; // UI buttons
-    private boolean isGeolocate = false; // Flag to indicate geolocation status
-    private String facilityID; // ID of the facility associated with the event
-    private String facilityName; // Name of the facility
-    private EditText eventFacility, eventDescription, maxWaitEntrant, maxSampleEntrant; // Input fields
-    private Uri selectedImageUri; // URI of the selected image
-    private Calendar calendar; // Calendar instance for date selection
 
+    private Calendar calendar;  // Calendar instance for date pickers
 
     /**
      * Interface for communicating with the parent activity to pass event details.
@@ -200,6 +201,7 @@ public class AddEventDialogFragment extends DialogFragment {
                     positiveButton.setEnabled(false); // Disable to prevent multiple clicks
 
                     if (selectedImageUri != null) {
+                        // Show a progress indicator if desired
                         // Upload the image
                         uploadImageToFirebase(selectedImageUri, new ImageUploadCallback() {
                             @Override
@@ -348,6 +350,38 @@ public class AddEventDialogFragment extends DialogFragment {
         return isValid;
     }
 
+    /**
+     * Checks if the registration end date is before the event date.
+     *
+     * @param eventDateStr The event date as a string in "MMM dd, yyyy" format.
+     * @param registrationEndDateStr The registration end date as a string in "MMM dd, yyyy" format.
+     * @return True if the registration end date is before the event date, otherwise false.
+     */
+    private boolean isRegistrationEndDateBeforeEventDate(String eventDateStr, String registrationEndDateStr) {
+        SimpleDateFormat sdf = new SimpleDateFormat("MMM dd, yyyy", Locale.getDefault());
+        sdf.setLenient(false); // Strict date parsing
+        try {
+            Date eventDate = sdf.parse(eventDateStr);
+            Date registrationEndDate = sdf.parse(registrationEndDateStr);
+            return registrationEndDate.before(eventDate); // Check if registration end date is before event date
+        } catch (ParseException e) {
+            return false; // Invalid date format
+        }
+    }
+
+    /**
+     * Checks if a given string represents a positive integer.
+     *
+     * @param text The string to check.
+     * @return True if the string is a positive integer, otherwise false.
+     */
+    private boolean isPositiveInteger(String text) {
+        try {
+            return Integer.parseInt(text) > 0;
+        } catch (NumberFormatException e) {
+            return false;
+        }
+    }
 
     /**
      * Validates if a given string is in a valid date format ("MMM dd, yyyy").
@@ -381,8 +415,24 @@ public class AddEventDialogFragment extends DialogFragment {
     }
 
     /**
+     * Parses a string to an integer. Shows a toast message if parsing fails.
+     *
+     * @param text The text to parse.
+     * @return The integer value if parsing is successful, otherwise 0.
+     */
+    private Integer parseIntegerOptional(String text) {
+        if (text == null || text.trim().isEmpty()) {
+            return Integer.MAX_VALUE;
+        }
+        try {
+            return Integer.parseInt(text.trim());
+        } catch (NumberFormatException e) {
+            return Integer.MAX_VALUE;
+        }
+    }
+
+    /**
      * Opens a file chooser to select an image for the event poster.
-     * Launches an intent to allow the user to choose an image from their device's storage.
      */
     private void openFileChooser() {
         Intent intent = new Intent();
@@ -392,12 +442,11 @@ public class AddEventDialogFragment extends DialogFragment {
     }
 
     /**
-     * Handles the result of the file chooser intent, capturing the selected image.
-     * Updates the UI to indicate that an image has been selected for upload.
+     * Handles the result of the file chooser intent, uploading the selected image to Firebase.
      *
      * @param requestCode The request code originally supplied to startActivityForResult.
-     * @param resultCode  The result code returned by the file chooser activity.
-     * @param data        The intent containing the selected image data.
+     * @param resultCode  The result code returned by the child activity.
+     * @param data        The intent containing the result data.
      */
     @Override
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
@@ -414,12 +463,14 @@ public class AddEventDialogFragment extends DialogFragment {
      * Provides methods to handle success or failure when uploading an image to Firebase Storage.
      */
     public interface ImageUploadCallback {
+
         /**
          * Called when the image upload is successful.
          *
          * @param posterUri The URI of the uploaded image.
          */
         void onSuccess(String posterUri);
+
         /**
          * Called when the image upload fails.
          *
@@ -443,7 +494,7 @@ public class AddEventDialogFragment extends DialogFragment {
         posterRef.putFile(imageUri)
                 .addOnSuccessListener(taskSnapshot -> posterRef.getDownloadUrl()
                         .addOnSuccessListener(downloadUri -> {
-                            posterUri = downloadUri.toString();
+                            String posterUri = downloadUri.toString();
                             callback.onSuccess(posterUri);
                         })
                         .addOnFailureListener(callback::onFailure))

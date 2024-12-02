@@ -51,14 +51,12 @@ public class AdminListActivity extends AppCompatActivity {
     private CustomFolderAdapter folderAdapter;
     private LinearLayout noFacilityView;
     private LinearLayout noEventsView;
-    private LinearLayout noImagesView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.admin_page);
 
-        // Initialize Firestore instance
         MyApp app = (MyApp) getApplication();
         db = app.getFirebaseInstance();
 
@@ -74,7 +72,6 @@ public class AdminListActivity extends AppCompatActivity {
         listView = findViewById(R.id.admin_list);
         noFacilityView = findViewById(R.id.noFacilityView);
         noEventsView = findViewById(R.id.noEventsView);
-        noImagesView = findViewById(R.id.noImagesLayout);
 
         // HeaderNavigation
         HeaderNavigation headerNavigation = new HeaderNavigation(this);
@@ -87,26 +84,19 @@ public class AdminListActivity extends AppCompatActivity {
         RadioGroup toggleGroup = findViewById(R.id.toggle_group);
         toggleGroup.setOnCheckedChangeListener((group, checkedId) -> {
             if (checkedId == R.id.toggle_facilities) {
-                // Load and display facilities
                 listView.setAdapter(facilityAdapter);
                 noEventsView.setVisibility(View.GONE);
-                noImagesView.setVisibility(View.GONE);
                 loadFacilitiesFromFirestore();
             } else if (checkedId == R.id.toggle_events) {
-                // Load and display events
                 listView.setAdapter(eventAdapter);
                 noFacilityView.setVisibility(View.GONE);
-                noImagesView.setVisibility(View.GONE);
                 loadEventsFromFirestore();
             } else if (checkedId == R.id.toggle_profiles) {
-                // Load and display profiles
                 listView.setAdapter(entrantAdapter);
                 noFacilityView.setVisibility(View.GONE);
                 noEventsView.setVisibility(View.GONE);
-                noImagesView.setVisibility(View.GONE);
                 loadProfilesFromFirestore();
             } else if (checkedId == R.id.toggle_images) {
-                // Load and display images
                 listView.setAdapter(folderAdapter);
                 noFacilityView.setVisibility(View.GONE);
                 noEventsView.setVisibility(View.GONE);
@@ -116,8 +106,8 @@ public class AdminListActivity extends AppCompatActivity {
             }
         });
 
-        // Set default selection to facilities
-        toggleGroup.check(R.id.toggle_facilities);
+        // Load default selection (e.g., facilities)
+        toggleGroup.check(R.id.toggle_facilities); // Default selection
     }
 
     /**
@@ -138,14 +128,12 @@ public class AdminListActivity extends AppCompatActivity {
                     int capacity = doc.getLong("capacity").intValue();
                     String organizerID = doc.getString("organizerID");
 
-                    // Create and add a Facility object to the list
                     Facility facility = new Facility(id, name, location, email, description, capacity, organizerID);
                     facilityList.add(facility);
                     noFacilityView.setVisibility(View.GONE);
                 }
                 facilityAdapter.notifyDataSetChanged();
 
-                // Show the no facilities view if the list is empty
                 if (facilityList.isEmpty()){
                     noFacilityView.setVisibility(View.VISIBLE);
                 }
@@ -161,7 +149,7 @@ public class AdminListActivity extends AppCompatActivity {
 
         eventsRef.get().addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
-                eventList.clear(); // Clear the list to avoid duplicates
+                eventList.clear();
                 for (QueryDocumentSnapshot doc : task.getResult()) {
                     String id = doc.getId();
                     String name = doc.getString("name");
@@ -173,7 +161,7 @@ public class AdminListActivity extends AppCompatActivity {
                     String organizerID = doc.getString("organizerID");
                     String posterURI = doc.getString("posterUri");
 
-                    // Create and add an Event object to the list
+
                     Event event = new Event(name,date,facility,registrationEndDate,
                             maxWaitEntrants,maxSampleEntrants,organizerID);
                     event.setEventId(id);
@@ -185,7 +173,6 @@ public class AdminListActivity extends AppCompatActivity {
                 }
                 eventAdapter.notifyDataSetChanged();
 
-                // Show the no events view if the list is empty
                 if (eventList.isEmpty()){
                     noEventsView.setVisibility(View.VISIBLE);
                 }
@@ -201,7 +188,7 @@ public class AdminListActivity extends AppCompatActivity {
 
         entrantRef.get().addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
-                entrantList.clear(); // Clear the list to avoid duplicates
+                entrantList.clear();
                 for (QueryDocumentSnapshot doc : task.getResult()) {
 
                     String id = doc.getId();
@@ -214,7 +201,6 @@ public class AdminListActivity extends AppCompatActivity {
                     Double latitude = doc.getDouble("latitude");
                     Double longitude = doc.getDouble("longitude");
 
-                    // Create and add an Entrant object to the list
                     Entrant entrant = new Entrant(id,name,phoneNumber,email,profilePictureURL,notifications, facilityID);
 
                     if(latitude != null && longitude != null){
@@ -229,28 +215,21 @@ public class AdminListActivity extends AppCompatActivity {
     }
 
     /**
-     * Fetches image folder references from Firebase Storage and updates the adapter.
+     * Fetches profiles from Firestore and updates the adapter.
      */
     private void loadImagesFromFirestore() {
         FirebaseStorage storage = FirebaseStorage.getInstance();
         StorageReference ref = storage.getReference();
         ref.listAll()
                 .addOnSuccessListener(result -> {
-                    folderList.clear(); // Clear the list to avoid duplicates
+                    folderList.clear();
                     for (StorageReference folder : result.getPrefixes()) {
-                        // Skip specific folders
                         if(folder.getName().contains("qrcode") || folder.getName().contains("generated")) {
                             continue;
                         }
                         folderList.add(folder);
-                        noImagesView.setVisibility(View.GONE);
                     }
                     folderAdapter.notifyDataSetChanged();
-
-                    if (folderList.isEmpty()){
-                        noImagesView.setVisibility(View.VISIBLE);
-                    }
-
                 });
     }
 }

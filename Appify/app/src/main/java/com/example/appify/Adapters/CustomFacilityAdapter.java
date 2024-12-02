@@ -2,6 +2,7 @@ package com.example.appify.Adapters;
 
 import android.app.AlertDialog;
 import android.content.Context;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -25,10 +26,10 @@ import java.util.List;
  * It binds facility data to views and provides deletion functionality for facility and its associated events.
  */
 public class CustomFacilityAdapter extends ArrayAdapter<Facility> {
+    private Context context;
+    private List<Facility> facilityList;
 
-    private Context context; // Context in which the adapter is used
-    private List<Facility> facilityList; // List of facilities to display
-    private FirebaseFirestore db = FirebaseFirestore.getInstance(); // Firestore database instance
+    private FirebaseFirestore db = FirebaseFirestore.getInstance();
 
     /**
      * Constructor for initializing the adapter with facility data.
@@ -41,7 +42,6 @@ public class CustomFacilityAdapter extends ArrayAdapter<Facility> {
         this.context = context;
         this.facilityList = facilityList;
     }
-
 
     /**
      * Provides a view for each facility in the ListView.
@@ -58,23 +58,19 @@ public class CustomFacilityAdapter extends ArrayAdapter<Facility> {
             convertView = LayoutInflater.from(context).inflate(R.layout.facility_list_content, parent, false);
         }
 
-        // Retrieve the facility at the current position
         Facility facility = facilityList.get(position);
 
-        // Bind views to layout components
         TextView facilityName = convertView.findViewById(R.id.facility_name);
         TextView facilityLocation = convertView.findViewById(R.id.facility_location);
         TextView facilityCapacity = convertView.findViewById(R.id.facility_capacity);
         ImageView xIcon = convertView.findViewById(R.id.x_icon);
 
-        // Set facility details
         facilityName.setText(facility.getName());
         facilityLocation.setText(facility.getLocation());
         facilityCapacity.setText(String.format("Capacity: %s", facility.getCapacity()));
 
-        // Attach click listener to the delete icon
         xIcon.setOnClickListener(v -> {
-            showCancelFacilityDialog(facility); // Show confirmation dialog for deleting the facility
+            showCancelFacilityDialog(facility);
         });
 
         return convertView;

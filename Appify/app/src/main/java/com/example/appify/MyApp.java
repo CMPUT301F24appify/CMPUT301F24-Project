@@ -45,7 +45,9 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-
+/**
+ * MyApp serves as a global application that is periodically used throughout the codebase.
+ **/
 public class MyApp extends Application {
     private static final String TAG = "MyApp";
     private static final String NOTIFICATION_CHANNEL_ID = "event_channel_id";
@@ -68,7 +70,6 @@ public class MyApp extends Application {
     // Handler for scheduling flag and message resets
     private Handler handler = new Handler(Looper.getMainLooper());
     private ScheduledExecutorService scheduler;
-
 
     /**
      * Initializes the application upon startup.
@@ -129,11 +130,10 @@ public class MyApp extends Application {
                     // Loop through the waitingList of each event
                     for (QueryDocumentSnapshot queryDocumentSnapshot : querySnapshot){
                         String eventID = queryDocumentSnapshot.getId();
-
                         db.collection("events").document(eventID).get().addOnSuccessListener(documentSnapshot -> {
                             if (documentSnapshot.exists()){
                                 Boolean lotteryRanFlag = documentSnapshot.getBoolean("lotteryRanFlag"); // NOT FINALIZED NAME
-                                String eventName = documentSnapshot.getString("name");
+
                                 String status = queryDocumentSnapshot.getString("status");
 
                                 // If user gets invited, send them a notification
@@ -142,7 +142,7 @@ public class MyApp extends Application {
 
                                     NotificationCompat.Builder builder = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
                                             .setSmallIcon(R.drawable.notification_bell) // Replace with your own icon
-                                            .setContentTitle("Appify: "+eventName)
+                                            .setContentTitle("TODO: Event Name Here")
                                             .setContentText("You have been invited")
                                             .setPriority(NotificationCompat.PRIORITY_DEFAULT);
 
@@ -162,7 +162,7 @@ public class MyApp extends Application {
 
                                     NotificationCompat.Builder builder = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
                                             .setSmallIcon(R.drawable.notification_bell) // Replace with your own icon
-                                            .setContentTitle("Appify: "+eventName)
+                                            .setContentTitle("TODO: Event Name Here")
                                             .setContentText("You have not been invited")
                                             .setPriority(NotificationCompat.PRIORITY_DEFAULT);
 
@@ -200,19 +200,6 @@ public class MyApp extends Application {
         }
     }
 
-    /**
-     * Sets the device's Android ID in SharedPreferences.
-     *
-     * @param id The Android ID to store.
-     */
-    public void setAndroidId(String id) {
-        SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
-        SharedPreferences.Editor editor = prefs.edit();
-        editor.putString(PREF_ANDROID_ID, id);
-        editor.apply();
-        Log.d(TAG, "Android ID set to: " + id);
-    }
-
 
     /**
      * Retrieves the Firestore database instance.
@@ -230,6 +217,19 @@ public class MyApp extends Application {
      */
     public void setFirebaseInstance(FirebaseFirestore db){
         this.db = db;
+    }
+
+    /**
+     * Sets the device's Android ID in SharedPreferences.
+     *
+     * @param id The Android ID to store.
+     */
+    public void setAndroidId(String id) {
+        SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putString(PREF_ANDROID_ID, id);
+        editor.apply();
+        Log.d(TAG, "Android ID set to: " + id);
     }
 
 

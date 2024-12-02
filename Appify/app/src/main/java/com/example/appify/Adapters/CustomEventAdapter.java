@@ -1,4 +1,3 @@
-
 package com.example.appify.Adapters;
 
 import android.app.AlertDialog;
@@ -17,6 +16,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.constraintlayout.widget.ConstraintLayout;
 
+import com.example.appify.Activities.EntrantEnlistActivity;
 import com.example.appify.Activities.EventDetailActivity;
 import com.example.appify.Model.Event;
 import com.example.appify.MyApp;
@@ -35,12 +35,11 @@ import java.util.Objects;
  * based on the context (Organizer, Admin, or Participant views).
  */
 public class CustomEventAdapter extends ArrayAdapter<Event> {
-
-    private Context context; // Context in which the adapter is used
-    private List<Event> eventList; // List of events to display
-    private boolean isOrganizePage; // Indicates if this adapter is used on the organizer's page
-    private boolean isAdminPage; // Indicates if this adapter is used on the admin page
-    private FirebaseFirestore db = FirebaseFirestore.getInstance(); // Firestore instance
+    private Context context;
+    private List<Event> eventList;
+    private boolean isOrganizePage;
+    private boolean isAdminPage;
+    private FirebaseFirestore db = FirebaseFirestore.getInstance();
 
     /**
      * Constructor for CustomEventAdapter.
@@ -60,12 +59,12 @@ public class CustomEventAdapter extends ArrayAdapter<Event> {
 
 
     /**
-     * Provides a view for an event in the ListView, binds event data to views,
-     * and dynamically updates UI elements based on the event's status and context.
+     * Provides a view for an AdapterView (ListView) for each event.
+     * Sets event details in the view and fetches status data from Firebase for display.
      *
      * @param position     Position of the item within the adapter's data set.
      * @param convertView  The old view to reuse, if possible.
-     * @param parent       The parent view that this view will eventually be attached to.
+     * @param parent       The parent that this view will eventually be attached to.
      * @return The View corresponding to the data at the specified position.
      */
     @NonNull
@@ -75,19 +74,19 @@ public class CustomEventAdapter extends ArrayAdapter<Event> {
             convertView = LayoutInflater.from(context).inflate(R.layout.event_list_content, parent, false);
         }
 
-        // Retrieve event and user details
         MyApp app = (MyApp) context.getApplicationContext();
         String entrantID = app.getAndroidId();
         Event event = eventList.get(position);
 
-        // Bind views
         TextView eventTitle = convertView.findViewById(R.id.event_title);
+//        TextView eventDesc = convertView.findViewById(R.id.event_desc);
         TextView eventRegistrationEndDate = convertView.findViewById(R.id.registration_date);
         TextView eventStartDate = convertView.findViewById(R.id.event_date);
         ImageView statusIcon = convertView.findViewById(R.id.statusIcon);
         ImageView x_Icon = convertView.findViewById(R.id.x_icon);
         ConstraintLayout eventCard = convertView.findViewById(R.id.event_information);
 
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
         if(!isAdminPage) {
             db.collection("AndroidID").document(entrantID).collection("waitListedEvents").document(event.getEventId()).get().addOnSuccessListener(DocumentSnapshot -> {
                 String status = DocumentSnapshot.getString("status");
@@ -113,12 +112,12 @@ public class CustomEventAdapter extends ArrayAdapter<Event> {
             });
         }
 
-        // Set event details
+
         eventTitle.setText(event.getName());
+//        eventDesc.setText(event.getDescription());
         eventRegistrationEndDate.setText(event.getRegistrationEndDate());
         eventStartDate.setText(event.getDate());
 
-        // Hide event for organizers viewing as participants
         if (Objects.equals(event.getOrganizerID(), entrantID) && !isOrganizePage && !isAdminPage){
             LinearLayout topPart = convertView.findViewById(R.id.top_part);
             LinearLayout bottomPart = convertView.findViewById(R.id.profile_information);

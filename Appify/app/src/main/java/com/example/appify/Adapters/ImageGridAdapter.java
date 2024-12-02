@@ -2,6 +2,7 @@ package com.example.appify.Adapters;
 
 import android.app.AlertDialog;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -15,8 +16,12 @@ import android.widget.ImageView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import android.widget.ArrayAdapter;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
+import com.example.appify.Activities.editUserActivity;
+import com.example.appify.Activities.userProfileActivity;
+import com.example.appify.Model.Entrant;
 import com.example.appify.R;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
@@ -33,9 +38,10 @@ import java.util.Random;
  */
 public class ImageGridAdapter extends ArrayAdapter<String> {
 
-    private Context context; // Context in which the adapter is used
-    private List<String> imageUrls; // List of image URLs to display
-    private int resource; // Layout resource ID for each grid item
+    private Context context;
+    private List<String> imageUrls;
+    private int resource;
+    private String pictureUri;
 
     /**
      * Constructor for initializing the adapter with image data and context.
@@ -63,23 +69,19 @@ public class ImageGridAdapter extends ArrayAdapter<String> {
     @Override
     public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
         if (convertView == null) {
-            // Inflate the layout for a single grid item
             LayoutInflater inflater = LayoutInflater.from(context);
             convertView = inflater.inflate(resource, parent, false);
         }
 
-        // Bind ImageView and delete icon
         ImageView imageView = convertView.findViewById(R.id.image_item);
         ImageView x_icon = convertView.findViewById(R.id.x_icon);
 
-        // Load the image from the URL into the ImageView using Glide
         Glide.with(context)
                 .load(imageUrls.get(position))
                 .into(imageView);
 
-        // Set click listener for the delete icon
         x_icon.setOnClickListener(v -> {
-            showCancelImageDialog(imageUrls.get(position)); // Show confirmation dialog for deleting the image
+            showCancelImageDialog(imageUrls.get(position));
         });
 
         return convertView;
@@ -238,12 +240,14 @@ public class ImageGridAdapter extends ArrayAdapter<String> {
      * Interface for handling profile picture URL generation callbacks.
      */
     public interface OnProfileURLGenerated {
+
         /**
          * Called when the profile picture URL is successfully generated.
          *
          * @param url The generated URL.
          */
         void onSuccess(String url);
+
         /**
          * Called when an error occurs during URL generation.
          *
