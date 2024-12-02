@@ -22,6 +22,10 @@ import com.example.appify.Activities.editUserActivity;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+
 /**
  * Main activity that initiates the application and directs users based on their profile status.
  * Displays an animated logo on startup, retrieves the device's unique AndroidID,
@@ -32,14 +36,16 @@ public class MainActivity extends AppCompatActivity {
     private FirebaseFirestore db;
     private String android_id;
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+
         // Retrieve the unique AndroidID
         android_id = Secure.getString(getContentResolver(), Secure.ANDROID_ID);
-        Log.d("MainActivity", "AndroidID: " + android_id);
+        System.out.println("MainActivity "+ "AndroidID: " + android_id);
 
         // Set AndroidID in the global application class
         MyApp app = (MyApp) getApplication();
@@ -61,6 +67,8 @@ public class MainActivity extends AppCompatActivity {
         // Start the startup animation
         startUpAnimation();
     }
+
+
 
     /**
      * Initiates an animated sequence for the Appify logo components on the main screen.
