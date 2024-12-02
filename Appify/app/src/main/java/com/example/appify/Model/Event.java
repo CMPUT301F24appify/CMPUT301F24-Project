@@ -353,7 +353,6 @@ public class Event {
 
                     // If there are no slots available, exit early
                     if (slotsAvailable <= 0) {
-                        Log.d("Lottery", "No slots available for additional invites.");
                         db.collection("events").document(eventID)
                                 .update("lotteryRanFlag", true, "lotteryButton", true)
                                 .addOnSuccessListener(aVoid -> Log.d("Lottery", "lotteryRanFlag and lotteryButton reset for event " + eventID))
@@ -364,15 +363,14 @@ public class Event {
 
                     db.collection("events").document(eventID)
                             .collection("waitingList")
-                            .whereEqualTo("status", "accepted")
+                            .whereEqualTo("status", "invited")
                             .get()
                             .addOnSuccessListener(invitedSnapshot -> {
-                                int invitedCount = acceptedSnapshot.size();
+                                int invitedCount = invitedSnapshot.size();
                                 int slotsAvaliableFinal = slotsAvailable - invitedCount; // Adjust for remaining slots
 
                                 // If there are no slots available, exit early
                                 if (slotsAvaliableFinal <= 0) {
-                                    Log.d("Lottery", "No slots available for additional invites.");
                                     db.collection("events").document(eventID)
                                             .update("lotteryRanFlag", true, "lotteryButton", true)
                                             .addOnSuccessListener(aVoid -> Log.d("Lottery", "lotteryRanFlag and lotteryButton reset for event " + eventID))
@@ -390,6 +388,7 @@ public class Event {
                                         for (QueryDocumentSnapshot document : querySnapshot) {
                                             eligibleEntrants.add(document.getId());
                                         }
+
 
                                         // Randomly select entrants until reaching available slots or list is empty
                                         while (selectedEntrants.size() < slotsAvaliableFinal && !eligibleEntrants.isEmpty()) {
