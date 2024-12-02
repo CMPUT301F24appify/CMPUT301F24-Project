@@ -1,17 +1,21 @@
 package com.example.appify.Activities;
 
+import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.appify.Adapters.CustomEntrantAdapter;
 import com.example.appify.Adapters.CustomEntrantAdminAdapter;
 import com.example.appify.Adapters.CustomEventAdapter;
 import com.example.appify.Adapters.CustomFacilityAdapter;
@@ -35,19 +39,19 @@ import java.util.ArrayList;
  * based on user selection. It interacts with Firestore to fetch data dynamically.
  */
 public class AdminListActivity extends AppCompatActivity {
-
-    private FirebaseFirestore db; // Firestore database instance
-    private ListView listView; // ListView to display data
-    private CustomFacilityAdapter facilityAdapter; // Adapter for facilities
-    private ArrayList<Facility> facilityList; // List of facilities
-    private ArrayList<Event> eventList; // List of events
-    private CustomEventAdapter eventAdapter; // Adapter for events
-    private ArrayList<Entrant> entrantList; // List of entrants (profiles)
-    private CustomEntrantAdminAdapter entrantAdapter; // Adapter for entrants
-    private ArrayList<StorageReference> folderList; // List of image folders
-    private CustomFolderAdapter folderAdapter; // Adapter for folders
-    private LinearLayout noFacilityView; // View displayed when no facilities are available
-    private LinearLayout noEventsView; // View displayed when no events are available
+    private FirebaseFirestore db;
+    private ListView listView;
+    private CustomFacilityAdapter  facilityAdapter; // Update to use appropriate adapters for other types
+    private ArrayList<Facility> facilityList; // Update to handle other types (events, profiles, images)
+    private ArrayList<Event> eventList;
+    private CustomEventAdapter eventAdapter;
+    private ArrayList<Entrant> entrantList;
+    private CustomEntrantAdminAdapter entrantAdapter;
+    private ArrayList<StorageReference> folderList;
+    private CustomFolderAdapter folderAdapter;
+    private LinearLayout noFacilityView;
+    private LinearLayout noEventsView;
+    private LinearLayout noImagesView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,12 +71,12 @@ public class AdminListActivity extends AppCompatActivity {
         entrantAdapter = new CustomEntrantAdminAdapter(this, entrantList);
         folderList = new ArrayList<>();
         folderAdapter = new CustomFolderAdapter(this, folderList);
+        listView = findViewById(R.id.admin_list);
+        noFacilityView = findViewById(R.id.noFacilityView);
+        noEventsView = findViewById(R.id.noEventsView);
+        noImagesView = findViewById(R.id.noImagesLayout);
 
-        listView = findViewById(R.id.admin_list); // ListView reference
-        noFacilityView = findViewById(R.id.noFacilityView); // No facilities view
-        noEventsView = findViewById(R.id.noEventsView); // No events view
-
-        // Set up navigation header
+        // HeaderNavigation
         HeaderNavigation headerNavigation = new HeaderNavigation(this);
         headerNavigation.setupNavigation();
         TextView facilitiesText = findViewById(R.id.adminText_navBar);
@@ -86,17 +90,20 @@ public class AdminListActivity extends AppCompatActivity {
                 // Load and display facilities
                 listView.setAdapter(facilityAdapter);
                 noEventsView.setVisibility(View.GONE);
+                noImagesView.setVisibility(View.GONE);
                 loadFacilitiesFromFirestore();
             } else if (checkedId == R.id.toggle_events) {
                 // Load and display events
                 listView.setAdapter(eventAdapter);
                 noFacilityView.setVisibility(View.GONE);
+                noImagesView.setVisibility(View.GONE);
                 loadEventsFromFirestore();
             } else if (checkedId == R.id.toggle_profiles) {
                 // Load and display profiles
                 listView.setAdapter(entrantAdapter);
                 noFacilityView.setVisibility(View.GONE);
                 noEventsView.setVisibility(View.GONE);
+                noImagesView.setVisibility(View.GONE);
                 loadProfilesFromFirestore();
             } else if (checkedId == R.id.toggle_images) {
                 // Load and display images
@@ -236,8 +243,14 @@ public class AdminListActivity extends AppCompatActivity {
                             continue;
                         }
                         folderList.add(folder);
+                        noImagesView.setVisibility(View.GONE);
                     }
                     folderAdapter.notifyDataSetChanged();
+
+                    if (folderList.isEmpty()){
+                        noImagesView.setVisibility(View.VISIBLE);
+                    }
+
                 });
     }
 }

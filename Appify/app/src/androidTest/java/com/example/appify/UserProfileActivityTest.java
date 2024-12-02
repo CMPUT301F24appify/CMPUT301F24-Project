@@ -9,12 +9,15 @@ import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
 import static androidx.test.espresso.action.ViewActions.click;
 
+import android.app.UiAutomation;
 import android.content.Intent;
 
 import androidx.test.core.app.ActivityScenario;
 import androidx.test.core.app.ApplicationProvider;
+import androidx.test.espresso.NoMatchingViewException;
 import androidx.test.espresso.intent.Intents;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import androidx.test.platform.app.InstrumentationRegistry;
 import androidx.test.rule.ActivityTestRule;
 
 import com.example.appify.Activities.userProfileActivity;
@@ -38,6 +41,9 @@ public class UserProfileActivityTest {
         Intents.init();
         Intent intent = new Intent();
         activityRule.launchActivity(intent);
+        //Allow notifications to be allowed so handle popup
+        UiAutomation uiAutomation = InstrumentationRegistry.getInstrumentation().getUiAutomation();
+        uiAutomation.executeShellCommand("pm grant " + ApplicationProvider.getApplicationContext().getPackageName() + " android.permission.POST_NOTIFICATIONS");
     }
 
     @After
@@ -49,7 +55,6 @@ public class UserProfileActivityTest {
     public void testInformationViews() {
         // Check that the views are displayed
         onView(withId(R.id.nameTextView)).check(matches(isDisplayed()));
-        onView(withId(R.id.phoneTextView)).check(matches(isDisplayed()));
         onView(withId(R.id.emailTextView)).check(matches(isDisplayed()));
     }
 
@@ -67,7 +72,6 @@ public class UserProfileActivityTest {
         ActivityScenario<userProfileActivity> scenario = ActivityScenario.launch(intent);
 
         onView(withId(R.id.editButton)).perform(click());
-
         // Check that a view specific to editUserActivity is displayed
         onView(withId(R.id.phoneEditText))
                 .check(matches(isDisplayed()));

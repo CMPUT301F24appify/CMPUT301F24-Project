@@ -141,4 +141,40 @@
             android:textColor="#808080"
             android:gravity="center"/>
     </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/noImagesLayout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        android:visibility="gone">
+        <ImageView
+
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:srcCompat="@drawable/empty_events_icon"
+            android:gravity="center"
+            android:layout_marginLeft="15dp"/>
+        <TextView
+
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="No Images Have Been Uploaded."
+            android:gravity="center"
+            android:textColor="#808080"
+            android:padding="10dp"
+            android:textStyle="bold"
+            android:textSize="20dp"/>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Wait for a user to upload an image."
+            android:textColor="#808080"
+            android:gravity="center"/>
+    </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>
