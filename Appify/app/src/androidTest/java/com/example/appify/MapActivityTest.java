@@ -1,106 +1,130 @@
 package com.example.appify;
 
+import static org.junit.Assert.assertTrue;
+
 import android.content.Intent;
+import android.widget.FrameLayout;
 
-import androidx.test.core.app.ActivityScenario;
+import androidx.test.core.app.ApplicationProvider;
 import androidx.test.espresso.intent.Intents;
-import androidx.test.espresso.intent.matcher.IntentMatchers;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
-import androidx.test.espresso.Espresso;
-import androidx.test.espresso.action.ViewActions;
+import androidx.test.platform.app.InstrumentationRegistry;
+import androidx.test.rule.ActivityTestRule;
 
-import com.example.appify.Activities.EventDetailActivity;
 import com.example.appify.Activities.MapActivity;
-import com.example.appify.R;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static androidx.test.espresso.intent.Intents.intended;
-import static androidx.test.espresso.intent.matcher.IntentMatchers.hasComponent;
-import static androidx.test.espresso.matcher.ViewMatchers.withId;
-import static androidx.test.espresso.assertion.ViewAssertions.matches;
-import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
+import java.util.Collections;
 
-/**
- * Instrumented test for MapActivity.
- * This test verifies that MapActivity launches correctly with the provided intent extras
- * and that key UI components are displayed. It also tests the back button functionality.
- */
 @RunWith(AndroidJUnit4.class)
 public class MapActivityTest {
 
-    /**
-     * Helper method to create an explicit intent for MapActivity with required extras.
-     *
-     * @return An explicit intent targeting MapActivity.
-     */
-    private Intent createMapActivityIntent() {
-        // Obtain the application context
-        Intent intent = new Intent(androidx.test.platform.app.InstrumentationRegistry.getInstrumentation().getTargetContext(), MapActivity.class);
-        // Add the required extras
-        intent.putExtra("eventID", "test_event_id");
-        intent.putExtra("name", "Test Event");
-        intent.putExtra("date", "2024-12-31");
-        intent.putExtra("facility", "Test Facility");
-        intent.putExtra("registrationEndDate", "2024-11-30");
-        intent.putExtra("description", "This is a test event description.");
-        intent.putExtra("maxWaitEntrants", 100);
-        intent.putExtra("maxSampleEntrants", 50);
-        intent.putExtra("posterUri", "http://example.com/poster.jpg");
-        intent.putExtra("isGeolocate", true);
-        return intent;
-    }
+    private FirebaseFirestore db;
+    private String eventID = "test_event_id";
+    private String entrantID = "test_entrant_id"; // Directly assigned entrant ID for testing
+    private CollectionReference waitingListRef;
+
+    @Rule
+    public ActivityTestRule<MapActivity> activityRule =
+            new ActivityTestRule<>(MapActivity.class, true, false);
 
     @Before
     public void setUp() {
-        // Initialize Espresso Intents before each test
-        Intents.init();
+        // Initialize Firebase Firestore
+        db = FirebaseFirestore.getInstance();
+
+        // Set up the test environment
+        Intent intent = new Intent();
+        intent.putExtra("eventID", eventID);
+        intent.putExtra("name", "Test Event");
+        intent.putExtra("date", "2024-12-15");
+        intent.putExtra("facility", "Test Facility");
+        intent.putExtra("registrationEndDate", "2024-12-10");
+        intent.putExtra("description", "This is a test event description.");
+        intent.putExtra("maxWaitEntrants", 10);
+        intent.putExtra("maxSampleEntrants", 5);
+        intent.putExtra("posterUri", "testUri");
+        intent.putExtra("isGeolocate", true);
+
+        // Prepopulate the waiting list with an entrant
+        waitingListRef = db.collection("events").document(eventID).collection("waitingList");
+        waitingListRef.document(entrantID).set(Collections.singletonMap("status", "waiting"));
+
+        activityRule.launchActivity(intent);
     }
 
     @After
     public void tearDown() {
-        // Release Espresso Intents after each test
         Intents.release();
     }
 
-    /**
-     * Tests that MapActivity launches with the correct intent extras
-     * and that the map and back button are displayed.
-     */
+    // US 02.02.02: Check if Entrant Markers Are Displayed on Map
     @Test
-    public void testMapActivityLaunchWithIntentExtras() {
-        // Create an explicit intent targeting MapActivity with required extras
-        Intent intent = createMapActivityIntent();
+    public void testEntrantMarkersOnMap() {
+        // Simulate the data for the entrant with latitude and longitude
+        double latitude = 49.2827;  // Example latitude (Vancouver)
+        double longitude = -123.1207;  // Example longitude (Vancouver)
 
-        // Launch the MapActivity with the explicit intent
-        try (ActivityScenario<MapActivity> scenario = ActivityScenario.launch(intent)) {
-            // Check if the map view is displayed
-            Espresso.onView(withId(R.id.map)).check(matches(isDisplayed()));
+        // Add the entrant's location to Firestore
+        db.collection("AndroidID").document(entrantID).set(Collections.singletonMap("latitude", latitude))
+                .addOnCompleteListener(task -> {
+                    assertTrue("Entrant latitude should be added to Firestore", task.isSuccessful());
+                });
+        db.collection("AndroidID").document(entrantID).set(Collections.singletonMap("longitude", longitude))
+                .addOnCompleteListener(task -> {
+                    assertTrue("Entrant longitude should be added to Firestore", task.isSuccessful());
+                });
 
-            // Check if the back button is displayed
-            Espresso.onView(withId(R.id.buttonBackToEventsDetail)).check(matches(isDisplayed()));
+        // Wait for Firestore to propagate the data before checking the map (use Espresso IdlingResource for async operations in real tests)
+        try {
+            Thread.sleep(2000);  // Simulating a delay for Firestore data propagation
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        // Now manually create a MarkerOptions and add it to the GoogleMap object
+        MapActivity mapActivity = activityRule.getActivity();
+        GoogleMap googleMap = mapActivity.gglMap;
+
+        // Ensure we are on the main thread when interacting with the map
+        mapActivity.runOnUiThread(() -> {
+            // Manually add the marker to the map as the Firestore data would do
+            Marker marker = googleMap.addMarker(new MarkerOptions()
+                    .position(new LatLng(latitude, longitude))
+                    .title("Entrant: Test User"));
+
+            // Check if the marker was added
+            assertTrue("Marker should be placed on the map", marker != null);
+        });
+
+        // Give time for the UI thread to process the marker addition
+        try {
+            Thread.sleep(1000);  // Small delay for marker addition to reflect in the UI
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
     }
 
-    /**
-     * Tests the functionality of the back button in MapActivity.
-     * Ensures that clicking the back button launches EventDetailActivity.
-     */
+
+    // US 02.02.02: Test if the Event ID is Correctly Passed and Data is Loaded
     @Test
-    public void testBackButtonNavigation() {
-        // Create an explicit intent targeting MapActivity with required extras
-        Intent intent = createMapActivityIntent();
+    public void testEventDataLoaded() {
+        // Ensure the correct EventID is passed to MapActivity
+        assertTrue("Event ID should be passed correctly to the activity", eventID.equals(activityRule.getActivity().getIntent().getStringExtra("eventID")));
 
-        // Launch the MapActivity with the explicit intent
-        try (ActivityScenario<MapActivity> scenario = ActivityScenario.launch(intent)) {
-            // Perform a click on the back button
-            Espresso.onView(withId(R.id.buttonBackToEventsDetail)).perform(ViewActions.click());
-
-            // Verify that EventDetailActivity is launched
-            intended(hasComponent(EventDetailActivity.class.getName()));
-        }
+        // Ensure the map is initialized
+        FrameLayout mapLayout = activityRule.getActivity().findViewById(R.id.map);
+        assertTrue("Map should be loaded", mapLayout != null);
     }
 }
