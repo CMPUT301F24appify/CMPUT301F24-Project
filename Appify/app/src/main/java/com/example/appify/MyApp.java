@@ -133,7 +133,7 @@ public class MyApp extends Application {
                         db.collection("events").document(eventID).get().addOnSuccessListener(documentSnapshot -> {
                             if (documentSnapshot.exists()){
                                 Boolean lotteryRanFlag = documentSnapshot.getBoolean("lotteryRanFlag"); // NOT FINALIZED NAME
-
+                                String eventName = documentSnapshot.getString("name"); // Retrieve the actual event name
                                 String status = queryDocumentSnapshot.getString("status");
 
                                 // If user gets invited, send them a notification
@@ -142,7 +142,7 @@ public class MyApp extends Application {
 
                                     NotificationCompat.Builder builder = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
                                             .setSmallIcon(R.drawable.notification_bell) // Replace with your own icon
-                                            .setContentTitle("TODO: Event Name Here")
+                                            .setContentTitle(eventName) // Set the event name as the title
                                             .setContentText("You have been invited")
                                             .setPriority(NotificationCompat.PRIORITY_DEFAULT);
 
@@ -162,7 +162,7 @@ public class MyApp extends Application {
 
                                     NotificationCompat.Builder builder = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
                                             .setSmallIcon(R.drawable.notification_bell) // Replace with your own icon
-                                            .setContentTitle("TODO: Event Name Here")
+                                            .setContentTitle(eventName) // Set the event name as the title
                                             .setContentText("You have not been invited")
                                             .setPriority(NotificationCompat.PRIORITY_DEFAULT);
 

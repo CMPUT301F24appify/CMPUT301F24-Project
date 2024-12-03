@@ -2,16 +2,12 @@ package com.example.appify.Activities;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
-import android.view.View;
 import android.widget.Button;
 import android.widget.FrameLayout;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.fragment.app.FragmentActivity;
 
-import com.example.appify.Adapters.CustomEntrantAdapter;
 import com.example.appify.MyApp;
 import com.example.appify.R;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -19,14 +15,12 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
-import com.google.firebase.storage.FirebaseStorage;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,14 +31,12 @@ import java.util.List;
  */
 public class MapActivity extends AppCompatActivity implements OnMapReadyCallback {
 
-    private FirebaseFirestore db;
-    private GoogleMap gglMap;
-    private FrameLayout map;
-    private Button backButton;
-    CollectionReference waitingListRef;
-//    private String eventID;
-
-    private final List<Marker> markerList = new ArrayList<>();
+    private FirebaseFirestore db; // Firestore instance for database interactions
+    public GoogleMap gglMap; // GoogleMap object for displaying the map
+    private FrameLayout map; // Layout containing the map fragment
+    private Button backButton; // Button to navigate back to the EventDetailActivity
+    private CollectionReference waitingListRef; // Reference to the waiting list collection for an event
+    private final List<Marker> markerList = new ArrayList<>(); // List to store markers displayed on the map
 
     /**
      * Called when the activity is created. Initializes the UI components, sets up the map fragment,
@@ -57,10 +49,12 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_map);
 
+        // Initialize Firestore instance
         MyApp app = (MyApp) getApplication();
         db = app.getFirebaseInstance();
         Intent intent = getIntent();
 
+        // Retrieve event details from the intent
         String eventID = intent.getStringExtra("eventID");
         String name = intent.getStringExtra("name");
         String date = intent.getStringExtra("date");
@@ -72,6 +66,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         String posterUriString = intent.getStringExtra("posterUri");
         boolean isGeolocate = intent.getBooleanExtra("isGeolocate", false);
 
+        // Set up the back button to navigate to EventDetailActivity
         backButton = findViewById(R.id.buttonBackToEventsDetail);
         backButton.setOnClickListener(v -> {
             Intent sendIntent = new Intent(MapActivity.this, EventDetailActivity.class);
@@ -90,13 +85,11 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
         map = findViewById(R.id.map);
 
+        // Set up the map fragment and initialize the map
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
-        mapFragment.getMapAsync(this);
-
-        // Reload data for the map
-//        reloadData(eventID);
-
-
+        if (mapFragment != null) {
+            mapFragment.getMapAsync(this);
+        }
     }
 
 
@@ -110,10 +103,9 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     public void onMapReady(@NonNull GoogleMap googleMap) {
         this.gglMap = googleMap;
 
-//        LatLng mapCanada = new LatLng(56.1304, -106.3468);
-//        Marker marker = this.gglMap.addMarker(new MarkerOptions().position(mapCanada).title("Marker in Canada"));
-//        this.gglMap.moveCamera(CameraUpdateFactory.newLatLng(mapCanada));
-//        markerList.add(marker);
+        // Setting default position for Map Camera to open to, for convenience sakes
+        LatLng canadaLatLng = new LatLng(56.1304, -106.3468);
+        this.gglMap.moveCamera(CameraUpdateFactory.newLatLngZoom(canadaLatLng, 4.0f));
 
         // Call reloadData here, now that gglMap is initialized
         Intent intent = getIntent();
@@ -121,8 +113,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         if (eventID != null) {
             reloadData(eventID);
         }
-
-
     }
 
     /**
@@ -135,23 +125,21 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         gglMap.clear();
         markerList.clear();
 
+        // Reference the waiting list collection for the event
         waitingListRef = db.collection("events").document(eventID).collection("waitingList");
         waitingListRef.get().addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
                 // Setup the adapter AFTER firebase retrieves all the data, by checking when all tasks are complete
                 int[] tasksCompleted = {0};
-                int totalTasks = task.getResult().size();
                 for (QueryDocumentSnapshot document : task.getResult()) {
                     // For each user in the waiting list, get their details from the "AndroidID" collection
                     String userID = document.getId();
-                    Object waitingListStatus = document.get("status");
 
                     // Access each entrant in the waiting list for this event.
                     db.collection("AndroidID").document(userID).get()
                             .addOnCompleteListener(task2 -> {
                                 if (task2.isSuccessful() && task2.getResult() != null) {
                                     DocumentSnapshot entrantData = task2.getResult();
-                                    String entrantID = userID;
                                     String entrantName = entrantData.get("name").toString();
                                     Double latitude = entrantData.getDouble("latitude");
                                     Double longitude = entrantData.getDouble("longitude");
@@ -166,11 +154,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
                                 }
                                 tasksCompleted[0]++;
-
-//                                if (tasksCompleted[0] == totalTasks) {
-                                    // All tasks complete, set up adapter
-//                                    return;
-//                                }
                             });
 
                 }
@@ -178,20 +161,5 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             }
         });
     }
-
-    private void adjustCameraToMarkers() {
-        if (markerList.isEmpty()) return;
-        LatLngBounds.Builder builder = new LatLngBounds.Builder();
-
-        for (Marker marker : markerList) { // Use gglMap's marker list if available
-            builder.include(marker.getPosition());
-        }
-
-        LatLngBounds bounds = builder.build();
-        int padding = 100; // Adjust padding as needed
-        gglMap.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds, padding));
-    }
-
-
 }
 
