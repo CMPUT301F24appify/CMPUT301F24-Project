@@ -148,11 +148,24 @@ public class ManageFacilityActivity extends AppCompatActivity implements AddFaci
      * @param facilityID The ID of the facility to edit.
      */
     private void editFacility(String facilityID) {
-        // Pass existing facility data to the dialog
-        AddFacilityDialogFragment editDialog = AddFacilityDialogFragment.newInstance(
-                facilityID, name, location, email, description, capacity);
-        editDialog.setFacilityUpdateListener(this); // Set the listener
-        editDialog.show(getSupportFragmentManager(), "EditFacilityDialog");
+        // Re-fetch updated facility data from Firestore
+        db.collection("facilities").document(facilityID).get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        // Fetch the updated facility details
+                        String updatedName = documentSnapshot.getString("name");
+                        String updatedLocation = documentSnapshot.getString("location");
+                        String updatedEmail = documentSnapshot.getString("email");
+                        String updatedDescription = documentSnapshot.getString("description");
+                        int updatedCapacity = documentSnapshot.getLong("capacity").intValue();
+
+                        // Pass existing facility data to the dialog
+                        AddFacilityDialogFragment editDialog = AddFacilityDialogFragment.newInstance(
+                                facilityID, updatedName, updatedLocation, updatedEmail, updatedDescription, updatedCapacity);
+                        editDialog.setFacilityUpdateListener(this); // Set the listener
+                        editDialog.show(getSupportFragmentManager(), "EditFacilityDialog");
+                    }
+                });
     }
 
     /**

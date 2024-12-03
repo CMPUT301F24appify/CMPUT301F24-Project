@@ -34,6 +34,7 @@ public class Facility {
         this.organizerID = organizerID;
     }
 
+    // Getters
     /**
      * Returns the unique identifier of the facility.
      *
@@ -82,4 +83,52 @@ public class Facility {
      * @return The organizer's ID.
      */
     public String getOrganizerID() { return organizerID; }
+
+
+    // Setters
+    /**
+     * Sets the name of the facility.
+     *
+     * @param name The new name for the facility.
+     */
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    /**
+     * Sets the physical location of the facility.
+     *
+     * @param location The new location for the facility.
+     */
+    public void setLocation(String location) {
+        this.location = location;
+    }
+
+    /**
+     * Sets the contact email for the facility.
+     *
+     * @param email The new email address for the facility.
+     */
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    /**
+     * Sets a brief description of the facility.
+     *
+     * @param description The new description for the facility.
+     */
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    /**
+     * Sets the maximum capacity of people that the facility can hold.
+     *
+     * @param capacity The new capacity for the facility.
+     */
+    public void setCapacity(Integer capacity) {
+        this.capacity = capacity;
+    }
+
 }
