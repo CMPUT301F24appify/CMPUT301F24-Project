@@ -121,7 +121,7 @@ public class AdminListActivityTest {
      * Test clicking delete on an entrant to trigger confirmation dialog.
      */
     @Test
-    public void testDeleteEntrantTriggersDialog() {
+    public void testDeleteEntrantTriggersDialog() throws InterruptedException {
         Entrant entrant = new Entrant("1", "John Doe", "1234567890", "john.doe@example.com", null, true, "facility1");
         activityRule.getScenario().onActivity(activity -> {
             List<Entrant> mockEntrants = new ArrayList<>(Arrays.asList(
@@ -135,6 +135,7 @@ public class AdminListActivityTest {
         });
 
         onView(withId(R.id.x_icon)).perform(click());
+        Thread.sleep(2000); //Wait to ensure the text can be checked
         onView(withText("Delete User: " + entrant.getName())).check(matches(isDisplayed()));
 
         onView(withText("Please confirm that you want to delete: " + entrant.getName() + ". User will be removed from all waiting lists. If the user owns a facility, ALL events at that facility as well as the facility will be deleted. This action cannot be undone."))
